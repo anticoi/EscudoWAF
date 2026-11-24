@@ -41,9 +41,9 @@ export default function ResetPasswordPage() {
 
             {/* Texto descriptivo inferior */}
             <div className="text-center text-xs text-white/70 dark:text-white mt-8 z-10 flex items-center justify-center gap-1 animate-fade-in-up [animation-delay:400ms]">
-                <span>Made with</span>
+                <span>{t('auth.madeWith')}</span>
                 <Heart className="h-3 w-3 text-red-500 fill-red-500" />
-                <span>by</span>
+                <span>{t('auth.madeBy')}</span>
                 <a href="https://github.com/anticoi/EscudoWAF" target="_blank" rel="noopener noreferrer" className="text-white/70 dark:text-white dark:text-shadow-glow-white">EscudoWAF team</a>
             </div>
         </div>

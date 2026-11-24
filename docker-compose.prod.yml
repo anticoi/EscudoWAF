@@ -1,0 +1,58 @@
+# EscudoWAF - Configuración de producción endurecida
+# Uso: docker compose -f docker-compose.prod.yml up -d
+#
+# ANTES DE USAR: reemplaza TODOS los valores CHANGE_ME
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: escudo-mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:?Define MONGO_PASSWORD en .env} # CHANGE_ME
+    volumes:
+      - mongodb_data:/data/db
+    # NOTA: no se expone el puerto 27017 al host - solo accesible desde la red interna
+    networks:
+      - waf-network
+    healthcheck:
+      test: mongosh --quiet --eval "db.adminCommand('ping').ok" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  escudo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: escudo-waf
+    restart: always
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      DB_URI: mongodb://root:${MONGO_PASSWORD:?}@mongodb:27017
+      JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env - usa un valor aleatorio largo} # CHANGE_ME
+      IS_PRODUCTION: "true"
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:2333/api/v1}
+    ports:
+      - "2333:2333"   # Panel web + API - considera restringirlo (VPN, firewall, proxy inverso con auth)
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+      - "9443:9443"
+      - "8404:8404"
+    volumes:
+      - escudo_data:/app/data
+    networks:
+      - waf-network
+
+volumes:
+  mongodb_data:
+    driver: local
+  escudo_data:
+    driver: local
+
+networks:
+  waf-network:
+    driver: bridge

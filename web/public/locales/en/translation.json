@@ -104,7 +104,9 @@
         "confirmNewPassword": "Confirm New Password",
         "enterNewPasswordAgain": "Enter new password again",
         "submitting": "Submitting...",
-        "passwordRequirement": "Password must be at least 6 characters"
+        "passwordRequirement": "Password must be at least 6 characters",
+        "madeWith": "Made with",
+        "madeBy": "by"
     },
     "filter": "Filter",
     "reset": "Reset",

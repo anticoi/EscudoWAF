@@ -1,0 +1,15 @@
+.git
+node_modules
+web/node_modules
+web/dist
+server/public/dist
+**/dist
+**/__debug_bin*
+.DS_Store
+*.log
+.env
+.env.local
+doc/
+.github/
+inicio-rapido.sh
+docker-compose*.yml

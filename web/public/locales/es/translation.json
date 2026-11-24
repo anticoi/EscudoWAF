@@ -104,7 +104,9 @@
         "confirmNewPassword": "Confirmar nueva contraseña",
         "enterNewPasswordAgain": "Introduzca la nueva contraseña de nuevo",
         "submitting": "Enviando...",
-        "passwordRequirement": "La contraseña debe tener al menos 6 caracteres"
+        "passwordRequirement": "La contraseña debe tener al menos 6 caracteres",
+        "madeWith": "Hecho con",
+        "madeBy": "por"
     },
     "filter": "Filtrar",
     "reset": "Restablecer",
