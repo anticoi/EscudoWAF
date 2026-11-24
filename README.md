@@ -114,6 +114,17 @@ graph TD
 - Docker y Docker Compose (para despliegue)
 - Go 1.24+ y Node.js con pnpm (para desarrollo local)
 
+## ⚡ Inicio rápido (1 comando)
+
+```bash
+git clone https://github.com/anticoi/EscudoWAF.git && cd EscudoWAF && ./inicio-rapido.sh
+```
+
+El script comprueba los prerrequisitos, levanta todo con Docker Compose y te da la URL y credenciales. Usuario: **admin** / contraseña: **admin123**.
+
+📖 **Guía completa paso a paso (sin ser experto): [doc/GUIA-INICIO-RAPIDO.md](doc/GUIA-INICIO-RAPIDO.md)**
+❓ **Problemas: [doc/FAQ.md](doc/FAQ.md)**
+
 ## Despliegue con Docker
 
 1. Clonar el repositorio:
