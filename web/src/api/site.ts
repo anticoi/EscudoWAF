@@ -6,18 +6,18 @@ import {
     UpdateSiteRequest
 } from '@/types/site'
 
-// 站点API接口基础路径
+// Ruta base de la API de sitios
 const BASE_URL = '/site'
 
 /**
- * 站点相关API服务
+ * Servicios de API relacionados con sitios
  */
 export const siteApi = {
     /**
-     * 获取站点列表
-     * @param page 页码
-     * @param size 每页数量
-     * @returns 站点列表响应数据
+     * Obtener lista de sitios
+     * @param page número de página
+     * @param size cantidad por página
+     * @returns datos de respuesta de lista de sitios
      */
     getSites: (page: number = 1, size: number = 10): Promise<SiteListResponse> => {
         return get<SiteListResponse>(BASE_URL, {
@@ -26,36 +26,36 @@ export const siteApi = {
     },
 
     /**
-     * 创建新站点
-     * @param site 站点创建请求数据
-     * @returns 创建后的站点详情
+     * Crear nuevo sitio
+     * @param site datos de la petición de creación de sitio
+     * @returns detalles del sitio creado
      */
     createSite: (site: CreateSiteRequest): Promise<Site> => {
         return post<Site>(BASE_URL, site)
     },
 
     /**
-     * 获取单个站点详情
-     * @param id 站点ID
-     * @returns 站点详情
+     * Obtener detalles de un sitio
+     * @param id ID del sitio
+     * @returns detalles del sitio
      */
     getSite: (id: string): Promise<Site> => {
         return get<Site>(`${BASE_URL}/${id}`)
     },
 
     /**
-     * 更新站点
-     * @param id 站点ID
-     * @param site 站点更新请求数据
-     * @returns 更新后的站点详情
+     * Actualizar sitio
+     * @param id ID del sitio
+     * @param site datos de la petición de actualización de sitio
+     * @returns detalles del sitio actualizado
      */
     updateSite: (id: string, site: UpdateSiteRequest): Promise<Site> => {
         return put<Site>(`${BASE_URL}/${id}`, site)
     },
 
     /**
-     * 删除站点
-     * @param id 站点ID
+     * Eliminar sitio
+     * @param id ID del sitio
      * @returns void
      */
     deleteSite: (id: string): Promise<void> => {

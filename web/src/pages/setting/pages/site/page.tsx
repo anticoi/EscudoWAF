@@ -32,29 +32,29 @@ export default function SiteManagerPage() {
     const queryClient = useQueryClient()
 
 
-    // 处理添加站点
+    // Manejar la adición de sitio
     const handleAddSite = () => {
         setIsAddDialogOpen(true)
     }
 
-    // 处理编辑站点
+    // Manejar la edición de sitio
     const handleEditSite = (site: Site) => {
         setSelectedSite(site)
         setIsEditDialogOpen(true)
     }
 
-    // 处理删除站点
+    // Manejar la eliminación del sitio
     const handleDeleteSite = (id: string) => {
         setSelectedSiteId(id)
         setIsDeleteDialogOpen(true)
     }
 
-    // 刷新站点列表
+    // Actualizar la lista de sitios
     const refreshSites = () => {
         setIsRefreshAnimating(true)
         queryClient.invalidateQueries({ queryKey: ['sites'] })
 
-        // 停止动画，延迟1秒以匹配动画效果
+        // Detener la animación con 1 segundo de retraso para coincidir con el efecto
         setTimeout(() => {
             setIsRefreshAnimating(false)
         }, 1000)
@@ -121,14 +121,14 @@ export default function SiteManagerPage() {
                 </TabsAnimationProvider>
             </Tabs>
 
-            {/* 添加站点对话框 */}
+            {/* Diálogo de añadir sitio */}
             <SiteDialog
                 open={isAddDialogOpen}
                 onOpenChange={setIsAddDialogOpen}
                 mode="create"
             />
 
-            {/* 编辑站点对话框 */}
+            {/* Diálogo de editar sitio */}
             <SiteDialog
                 open={isEditDialogOpen}
                 onOpenChange={setIsEditDialogOpen}
@@ -136,7 +136,7 @@ export default function SiteManagerPage() {
                 site={selectedSite}
             />
 
-            {/* 删除站点确认对话框 */}
+            {/* Diálogo de confirmación de eliminación de sitio */}
             <DeleteSiteDialog
                 open={isDeleteDialogOpen}
                 onOpenChange={setIsDeleteDialogOpen}

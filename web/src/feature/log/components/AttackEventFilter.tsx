@@ -271,14 +271,14 @@ export function AttackEventFilter({
                                                 value={field.value ? new Date(field.value) : undefined}
                                                 onChange={(date) => {
                                                     if (!date) {
-                                                        // 用户清除了日期
+                                                        // El usuario borró la fecha
                                                         field.onChange("")
                                                         return
                                                     }
 
                                                     try {
                                                         const isoString = date.toISOString()
-                                                        const formattedDate = isoString.substring(0, 19) + 'Z' // 取YYYY-MM-DDTHH:MM:SS并添加Z
+                                                        const formattedDate = isoString.substring(0, 19) + 'Z' // Tomar YYYY-MM-DDTHH:MM:SS y añadir Z
                                                         field.onChange(formattedDate)
                                                     } catch (error) {
                                                         console.error("Invalid date format:", error)
@@ -304,14 +304,14 @@ export function AttackEventFilter({
                                                 value={field.value ? new Date(field.value) : undefined}
                                                 onChange={(date) => {
                                                     if (!date) {
-                                                        // 用户清除了日期
+                                                        // El usuario borró la fecha
                                                         field.onChange("")
                                                         return
                                                     }
 
                                                     try {
                                                         const isoString = date.toISOString()
-                                                        const formattedDate = isoString.substring(0, 19) + 'Z' // 取YYYY-MM-DDTHH:MM:SS并添加Z
+                                                        const formattedDate = isoString.substring(0, 19) + 'Z' // Tomar YYYY-MM-DDTHH:MM:SS y añadir Z
                                                         field.onChange(formattedDate)
                                                     } catch (error) {
                                                         console.error("Invalid date format:", error)

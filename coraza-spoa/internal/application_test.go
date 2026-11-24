@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-// 原始的bufio.Scanner实现（用于对比验证）
+// Implementación original con bufio.Scanner (para validación comparativa)
 func getHeaderValueOld(headers []byte, targetHeader string) (string, error) {
 	s := bufio.NewScanner(bytes.NewReader(headers))
 	for s.Scan() {
@@ -29,7 +29,7 @@ func getHeaderValueOld(headers []byte, targetHeader string) (string, error) {
 	return "", nil
 }
 
-// TestGetHeaderValue 测试getHeaderValue函数的正确性
+// TestGetHeaderValue prueba la corrección de la función getHeaderValue
 func TestGetHeaderValue(t *testing.T) {
 	testHeaders := []byte(`Host: example.com
 User-Agent: Mozilla/5.0
@@ -56,7 +56,7 @@ Authorization: Bearer token123`)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// 测试新实现
+			// Probar la nueva implementación
 			result, err := getHeaderValue(testHeaders, tt.header)
 			if err != nil {
 				t.Errorf("getHeaderValue() error = %v", err)
@@ -66,20 +66,20 @@ Authorization: Bearer token123`)
 				t.Errorf("getHeaderValue() = %v, want %v", result, tt.expected)
 			}
 
-			// 测试与旧实现的一致性
+			// Probar consistencia con la implementación anterior
 			oldResult, err := getHeaderValueOld(testHeaders, tt.header)
 			if err != nil {
 				t.Errorf("getHeaderValueOld() error = %v", err)
 				return
 			}
 			if oldResult != result {
-				t.Errorf("结果不一致: new=%v, old=%v", result, oldResult)
+				t.Errorf("Resultado inconsistente: nuevo=%v, anterior=%v", result, oldResult)
 			}
 		})
 	}
 }
 
-// TestGetHeaderValueEdgeCases 测试边界情况
+// TestGetHeaderValueEdgeCases prueba casos límite
 func TestGetHeaderValueEdgeCases(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -88,43 +88,43 @@ func TestGetHeaderValueEdgeCases(t *testing.T) {
 		expected string
 	}{
 		{
-			name:     "空headers",
+			name:     "Headers vacíos",
 			headers:  []byte(""),
 			header:   "test",
 			expected: "",
 		},
 		{
-			name:     "只有换行符",
+			name:     "Solo contiene saltos de línea",
 			headers:  []byte("\n\n\n"),
 			header:   "test",
 			expected: "",
 		},
 		{
-			name:     "无冒号的行",
+			name:     "Línea sin dos puntos",
 			headers:  []byte("invalid line\nHost: example.com"),
 			header:   "host",
 			expected: "example.com",
 		},
 		{
-			name:     "value前后有空格",
+			name:     "El valor tiene espacios al inicio o al final",
 			headers:  []byte("Host:   example.com   "),
 			header:   "host",
 			expected: "example.com",
 		},
 		{
-			name:     "key前后有空格",
+			name:     "La clave tiene espacios al inicio o al final",
 			headers:  []byte("   Host   : example.com"),
 			header:   "host",
 			expected: "example.com",
 		},
 		{
-			name:     "空value",
+			name:     "Valor vacío",
 			headers:  []byte("Empty-Header: "),
 			header:   "empty-header",
 			expected: "",
 		},
 		{
-			name:     "多个冒号",
+			name:     "Múltiples dos puntos",
 			headers:  []byte("Time: 12:34:56"),
 			header:   "time",
 			expected: "12:34:56",
@@ -145,7 +145,7 @@ func TestGetHeaderValueEdgeCases(t *testing.T) {
 	}
 }
 
-// TestGetRealClientIP 测试getRealClientIP函数的正确性
+// TestGetRealClientIP prueba la corrección de la función getRealClientIP
 func TestGetRealClientIP(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -153,13 +153,13 @@ func TestGetRealClientIP(t *testing.T) {
 		expected string
 	}{
 		{
-			name: "X-Forwarded-For单个IP",
+			name: "X-Forwarded-For con una IP",
 			headers: []byte(`Host: example.com
 X-Forwarded-For: 192.168.1.100`),
 			expected: "192.168.1.100",
 		},
 		{
-			name: "X-Forwarded-For多个IP",
+			name: "X-Forwarded-For con múltiples IPs",
 			headers: []byte(`Host: example.com
 X-Forwarded-For: 192.168.1.100, 10.0.0.1, 172.16.0.1`),
 			expected: "192.168.1.100",
@@ -177,22 +177,22 @@ CF-Connecting-IP: 1.2.3.4`),
 			expected: "1.2.3.4",
 		},
 		{
-			name: "优先级测试：X-Forwarded-For优先",
+			name: "Prueba de prioridad: X-Forwarded-For tiene prioridad",
 			headers: []byte(`Host: example.com
 X-Real-IP: 192.168.1.200
 X-Forwarded-For: 192.168.1.100`),
 			expected: "192.168.1.100",
 		},
 		{
-			name: "Forwarded标准头部",
+			name: "Cabecera estándar Forwarded",
 			headers: []byte(`Host: example.com
 Forwarded: for=192.168.1.100;proto=https;by=proxy`),
 			expected: "192.168.1.100",
 		},
 		{
-			name:     "无客户端IP头部",
+			name:     "Sin cabecera de IP de cliente",
 			headers:  []byte(`Host: example.com\nUser-Agent: test`),
-			expected: "", // 由于没有设置SrcIp，应该返回空
+			expected: "", // Como SrcIp no está configurada, debería devolver vacío
 		},
 	}
 

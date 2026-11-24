@@ -5,17 +5,17 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/dto"
-	"github.com/HUAHUAI23/RuiQi/server/model"
-	"github.com/HUAHUAI23/RuiQi/server/service"
-	"github.com/HUAHUAI23/RuiQi/server/utils/response"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/dto"
+	"github.com/anticoi/EscudoWAF/server/model"
+	"github.com/anticoi/EscudoWAF/server/service"
+	"github.com/anticoi/EscudoWAF/server/utils/response"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-// IPGroupController IP组控制器接口
+// IPGroupController interfaz del controlador de grupos de IPs
 type IPGroupController interface {
 	CreateIPGroup(ctx *gin.Context)
 	GetIPGroups(ctx *gin.Context)
@@ -25,13 +25,13 @@ type IPGroupController interface {
 	AddIPToBlacklist(ctx *gin.Context)
 }
 
-// IPGroupControllerImpl IP组控制器实现
+// IPGroupControllerImpl implementación del controlador de grupos de IPs
 type IPGroupControllerImpl struct {
 	ipGroupService service.IPGroupService
 	logger         zerolog.Logger
 }
 
-// NewIPGroupController 创建IP组控制器
+// NewIPGroupController crea el controlador de grupos de IPs
 func NewIPGroupController(ipGroupService service.IPGroupService) IPGroupController {
 	logger := config.GetControllerLogger("ipgroup")
 	return &IPGroupControllerImpl{
@@ -40,100 +40,100 @@ func NewIPGroupController(ipGroupService service.IPGroupService) IPGroupControll
 	}
 }
 
-// CreateIPGroup 创建IP组
+// CreateIPGroup Crear grupo de IPs
 //
-//	@Summary		创建IP组
-//	@Description	创建一个新的IP地址组，用于后续IP规则匹配
-//	@Tags			IP组管理
+//	@Summary		Crear grupo de IPs
+//	@Description	Crear un nuevo grupo de direcciones IP para su uso en reglas de IP
+//	@Tags			Gestión de grupos de IPs
 //	@Accept			json
 //	@Produce		json
-//	@Param			ipGroup	body	dto.IPGroupCreateRequest	true	"IP组信息"
+//	@Param			ipGroup	body	dto.IPGroupCreateRequest	true	"Información del grupo de IPs"
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponse{data=model.IPGroup}	"IP组创建成功"
-//	@Failure		400	{object}	model.ErrResponse							"请求参数错误"
-//	@Failure		401	{object}	model.ErrResponseDontShowError				"未授权访问"
-//	@Failure		403	{object}	model.ErrResponseDontShowError				"禁止访问"
-//	@Failure		409	{object}	model.ErrResponseDontShowError				"IP组名称已存在"
-//	@Failure		500	{object}	model.ErrResponseDontShowError				"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponse{data=model.IPGroup}	"Grupo de IPs creado con éxito"
+//	@Failure		400	{object}	model.ErrResponse							"Parámetros de la petición incorrectos"
+//	@Failure		401	{object}	model.ErrResponseDontShowError				"Acceso no autorizado"
+//	@Failure		403	{object}	model.ErrResponseDontShowError				"Acceso prohibido"
+//	@Failure		409	{object}	model.ErrResponseDontShowError				"El nombre del grupo de IPs ya existe"
+//	@Failure		500	{object}	model.ErrResponseDontShowError				"Error interno del servidor"
 //	@Router			/api/v1/ip-groups [post]
 func (c *IPGroupControllerImpl) CreateIPGroup(ctx *gin.Context) {
 	var req dto.IPGroupCreateRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		c.logger.Warn().Err(err).Msg("请求参数绑定失败")
+		c.logger.Warn().Err(err).Msg("Error al vincular los parámetros de la petición")
 		response.BadRequest(ctx, err, true)
 		return
 	}
 
-	c.logger.Info().Str("name", req.Name).Msg("创建IP组请求")
+	c.logger.Info().Str("name", req.Name).Msg("Petición de creación de grupo de IPs")
 	ipGroup, err := c.ipGroupService.CreateIPGroup(ctx, &req)
 	if err != nil {
 		if errors.Is(err, service.ErrIPGroupNameExists) {
-			response.Error(ctx, model.NewAPIError(http.StatusConflict, "IP组名称已存在", err), false)
+			response.Error(ctx, model.NewAPIError(http.StatusConflict, "El nombre del grupo de IPs ya existe", err), false)
 			return
 		}
-		c.logger.Error().Err(err).Msg("创建IP组失败")
+		c.logger.Error().Err(err).Msg("Error al crear el grupo de IPs")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	c.logger.Info().Str("id", ipGroup.ID.Hex()).Str("name", ipGroup.Name).Msg("IP组创建成功")
-	response.Success(ctx, "IP组创建成功", ipGroup)
+	c.logger.Info().Str("id", ipGroup.ID.Hex()).Str("name", ipGroup.Name).Msg("Grupo de IPs creado con éxito")
+	response.Success(ctx, "Grupo de IPs creado con éxito", ipGroup)
 }
 
-// GetIPGroups 获取IP组列表
+// GetIPGroups Obtener lista de grupos de IPs
 //
-//	@Summary		获取IP组列表
-//	@Description	获取所有IP组列表，支持分页
-//	@Tags			IP组管理
+//	@Summary		Obtener lista de grupos de IPs
+//	@Description	Obtener todos los grupos de IPs, con paginación
+//	@Tags			Gestión de grupos de IPs
 //	@Produce		json
-//	@Param			page	query	int	false	"页码"	default(1)
-//	@Param			size	query	int	false	"每页数量"	default(10)
+//	@Param			page	query	int	false	"Número de página"	default(1)
+//	@Param			size	query	int	false	"Cantidad por página"	default(10)
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponse{data=dto.IPGroupListResponse}	"获取IP组列表成功"
-//	@Failure		401	{object}	model.ErrResponseDontShowError						"未授权访问"
-//	@Failure		500	{object}	model.ErrResponseDontShowError						"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponse{data=dto.IPGroupListResponse}	"Lista de grupos de IPs obtenida con éxito"
+//	@Failure		401	{object}	model.ErrResponseDontShowError						"Acceso no autorizado"
+//	@Failure		500	{object}	model.ErrResponseDontShowError						"Error interno del servidor"
 //	@Router			/api/v1/ip-groups [get]
 func (c *IPGroupControllerImpl) GetIPGroups(ctx *gin.Context) {
 	page := ctx.DefaultQuery("page", "1")
 	size := ctx.DefaultQuery("size", "10")
 
-	c.logger.Info().Str("page", page).Str("size", size).Msg("获取IP组列表请求")
+	c.logger.Info().Str("page", page).Str("size", size).Msg("Petición de lista de grupos de IPs")
 	ipGroups, total, err := c.ipGroupService.GetIPGroups(ctx, page, size)
 	if err != nil {
-		c.logger.Error().Err(err).Msg("获取IP组列表失败")
+		c.logger.Error().Err(err).Msg("Error al obtener la lista de grupos de IPs")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	c.logger.Info().Int64("total", total).Msg("获取IP组列表成功")
-	response.Success(ctx, "获取IP组列表成功", gin.H{
+	c.logger.Info().Int64("total", total).Msg("Lista de grupos de IPs obtenida con éxito")
+	response.Success(ctx, "Lista de grupos de IPs obtenida con éxito", gin.H{
 		"total": total,
 		"items": ipGroups,
 	})
 }
 
-// GetIPGroupByID 获取单个IP组
+// GetIPGroupByID Obtener un grupo de IPs
 //
-//	@Summary		获取单个IP组
-//	@Description	根据ID获取IP组详情
-//	@Tags			IP组管理
+//	@Summary		Obtener un grupo de IPs
+//	@Description	Obtener detalles del grupo de IPs por ID
+//	@Tags			Gestión de grupos de IPs
 //	@Produce		json
-//	@Param			id	path	string	true	"IP组ID"
+//	@Param			id	path	string	true	"ID del grupo de IPs"
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponse{data=model.IPGroup}	"获取IP组详情成功"
-//	@Failure		400	{object}	model.ErrResponse							"无效的ID格式"
-//	@Failure		401	{object}	model.ErrResponseDontShowError				"未授权访问"
-//	@Failure		404	{object}	model.ErrResponseDontShowError				"IP组不存在"
-//	@Failure		500	{object}	model.ErrResponseDontShowError				"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponse{data=model.IPGroup}	"Detalles del grupo de IPs obtenidos con éxito"
+//	@Failure		400	{object}	model.ErrResponse							"Formato de ID no válido"
+//	@Failure		401	{object}	model.ErrResponseDontShowError				"Acceso no autorizado"
+//	@Failure		404	{object}	model.ErrResponseDontShowError				"El grupo de IPs no existe"
+//	@Failure		500	{object}	model.ErrResponseDontShowError				"Error interno del servidor"
 //	@Router			/api/v1/ip-groups/{id} [get]
 func (c *IPGroupControllerImpl) GetIPGroupByID(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	c.logger.Info().Str("id", id).Msg("获取IP组详情请求")
+	c.logger.Info().Str("id", id).Msg("Petición de detalles del grupo de IPs")
 
 	objectID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
-		c.logger.Error().Err(err).Str("id", id).Msg("无效的ID格式")
+		c.logger.Error().Err(err).Str("id", id).Msg("Formato de ID no válido")
 		response.BadRequest(ctx, err, true)
 		return
 	}
@@ -143,46 +143,46 @@ func (c *IPGroupControllerImpl) GetIPGroupByID(ctx *gin.Context) {
 			response.NotFound(ctx, err)
 			return
 		}
-		c.logger.Error().Err(err).Str("id", id).Msg("获取IP组详情失败")
+		c.logger.Error().Err(err).Str("id", id).Msg("Error al obtener los detalles del grupo de IPs")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	c.logger.Info().Str("id", id).Str("name", ipGroup.Name).Msg("获取IP组详情成功")
-	response.Success(ctx, "获取IP组详情成功", ipGroup)
+	c.logger.Info().Str("id", id).Str("name", ipGroup.Name).Msg("Detalles del grupo de IPs obtenidos con éxito")
+	response.Success(ctx, "Detalles del grupo de IPs obtenidos con éxito", ipGroup)
 }
 
-// UpdateIPGroup 更新IP组
+// UpdateIPGroup Actualizar grupo de IPs
 //
-//	@Summary		更新IP组
-//	@Description	更新指定IP组的信息
-//	@Tags			IP组管理
+//	@Summary		Actualizar grupo de IPs
+//	@Description	Actualizar la información del grupo de IPs especificado
+//	@Tags			Gestión de grupos de IPs
 //	@Accept			json
 //	@Produce		json
-//	@Param			id		path	string						true	"IP组ID"
-//	@Param			ipGroup	body	dto.IPGroupUpdateRequest	true	"IP组更新信息"
+//	@Param			id		path	string						true	"ID del grupo de IPs"
+//	@Param			ipGroup	body	dto.IPGroupUpdateRequest	true	"Información de actualización del grupo de IPs"
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponse{data=model.IPGroup}	"IP组更新成功"
-//	@Failure		400	{object}	model.ErrResponse							"请求参数错误"
-//	@Failure		401	{object}	model.ErrResponseDontShowError				"未授权访问"
-//	@Failure		403	{object}	model.ErrResponseDontShowError				"禁止操作系统默认IP组"
-//	@Failure		404	{object}	model.ErrResponseDontShowError				"IP组不存在"
-//	@Failure		409	{object}	model.ErrResponseDontShowError				"IP组名称已存在"
-//	@Failure		500	{object}	model.ErrResponseDontShowError				"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponse{data=model.IPGroup}	"Grupo de IPs actualizado con éxito"
+//	@Failure		400	{object}	model.ErrResponse							"Parámetros de la petición incorrectos"
+//	@Failure		401	{object}	model.ErrResponseDontShowError				"Acceso no autorizado"
+//	@Failure		403	{object}	model.ErrResponseDontShowError				"Prohibido operar sobre el grupo de IPs por defecto del sistema"
+//	@Failure		404	{object}	model.ErrResponseDontShowError				"El grupo de IPs no existe"
+//	@Failure		409	{object}	model.ErrResponseDontShowError				"El nombre del grupo de IPs ya existe"
+//	@Failure		500	{object}	model.ErrResponseDontShowError				"Error interno del servidor"
 //	@Router			/api/v1/ip-groups/{id} [put]
 func (c *IPGroupControllerImpl) UpdateIPGroup(ctx *gin.Context) {
 	id := ctx.Param("id")
 	var req dto.IPGroupUpdateRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		c.logger.Warn().Err(err).Str("id", id).Msg("请求参数绑定失败")
+		c.logger.Warn().Err(err).Str("id", id).Msg("Error al vincular los parámetros de la petición")
 		response.BadRequest(ctx, err, true)
 		return
 	}
 
-	c.logger.Info().Str("id", id).Msg("更新IP组请求")
+	c.logger.Info().Str("id", id).Msg("Petición de actualización de grupo de IPs")
 	objectID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
-		c.logger.Error().Err(err).Str("id", id).Msg("无效的ID格式")
+		c.logger.Error().Err(err).Str("id", id).Msg("Formato de ID no válido")
 		response.BadRequest(ctx, err, true)
 		return
 	}
@@ -192,43 +192,43 @@ func (c *IPGroupControllerImpl) UpdateIPGroup(ctx *gin.Context) {
 			response.NotFound(ctx, err)
 			return
 		} else if errors.Is(err, service.ErrIPGroupNameExists) {
-			response.Error(ctx, model.NewAPIError(http.StatusConflict, "IP组名称已存在", err), false)
+			response.Error(ctx, model.NewAPIError(http.StatusConflict, "El nombre del grupo de IPs ya existe", err), false)
 			return
 		} else if errors.Is(err, service.ErrSystemIPGroupNoMod) {
-			response.Error(ctx, model.NewAPIError(http.StatusForbidden, "系统默认IP组不允许修改名称", err), false)
+			response.Error(ctx, model.NewAPIError(http.StatusForbidden, "No se permite modificar el nombre del grupo de IPs por defecto del sistema", err), false)
 			return
 		}
-		c.logger.Error().Err(err).Str("id", id).Msg("更新IP组失败")
+		c.logger.Error().Err(err).Str("id", id).Msg("Error al actualizar el grupo de IPs")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	c.logger.Info().Str("id", id).Str("name", ipGroup.Name).Msg("IP组更新成功")
-	response.Success(ctx, "IP组更新成功", ipGroup)
+	c.logger.Info().Str("id", id).Str("name", ipGroup.Name).Msg("Grupo de IPs actualizado con éxito")
+	response.Success(ctx, "Grupo de IPs actualizado con éxito", ipGroup)
 }
 
-// DeleteIPGroup 删除IP组
+// DeleteIPGroup Eliminar grupo de IPs
 //
-//	@Summary		删除IP组
-//	@Description	删除指定的IP组，系统默认IP组不允许删除
-//	@Tags			IP组管理
+//	@Summary		Eliminar grupo de IPs
+//	@Description	Eliminar el grupo de IPs especificado; los grupos por defecto del sistema no se pueden eliminar
+//	@Tags			Gestión de grupos de IPs
 //	@Produce		json
-//	@Param			id	path	string	true	"IP组ID"
+//	@Param			id	path	string	true	"ID del grupo de IPs"
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponseNoData		"IP组删除成功"
-//	@Failure		400	{object}	model.ErrResponse				"无效的ID格式"
-//	@Failure		401	{object}	model.ErrResponseDontShowError	"未授权访问"
-//	@Failure		403	{object}	model.ErrResponseDontShowError	"禁止删除系统默认IP组"
-//	@Failure		404	{object}	model.ErrResponseDontShowError	"IP组不存在"
-//	@Failure		500	{object}	model.ErrResponseDontShowError	"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponseNoData		"Grupo de IPs eliminado con éxito"
+//	@Failure		400	{object}	model.ErrResponse				"Formato de ID no válido"
+//	@Failure		401	{object}	model.ErrResponseDontShowError	"Acceso no autorizado"
+//	@Failure		403	{object}	model.ErrResponseDontShowError	"Prohibido eliminar el grupo de IPs por defecto del sistema"
+//	@Failure		404	{object}	model.ErrResponseDontShowError	"El grupo de IPs no existe"
+//	@Failure		500	{object}	model.ErrResponseDontShowError	"Error interno del servidor"
 //	@Router			/api/v1/ip-groups/{id} [delete]
 func (c *IPGroupControllerImpl) DeleteIPGroup(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	c.logger.Info().Str("id", id).Msg("删除IP组请求")
+	c.logger.Info().Str("id", id).Msg("Petición de eliminación de grupo de IPs")
 	objectID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
-		c.logger.Error().Err(err).Str("id", id).Msg("无效的ID格式")
+		c.logger.Error().Err(err).Str("id", id).Msg("Formato de ID no válido")
 		response.BadRequest(ctx, err, true)
 		return
 	}
@@ -238,53 +238,53 @@ func (c *IPGroupControllerImpl) DeleteIPGroup(ctx *gin.Context) {
 			response.NotFound(ctx, err)
 			return
 		} else if errors.Is(err, service.ErrSystemIPGroupNoMod) {
-			response.Error(ctx, model.NewAPIError(http.StatusForbidden, "系统默认IP组不允许删除", err), false)
+			response.Error(ctx, model.NewAPIError(http.StatusForbidden, "No se permite eliminar el grupo de IPs por defecto del sistema", err), false)
 			return
 		}
-		c.logger.Error().Err(err).Str("id", id).Msg("删除IP组失败")
+		c.logger.Error().Err(err).Str("id", id).Msg("Error al eliminar el grupo de IPs")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	c.logger.Info().Str("id", id).Msg("IP组删除成功")
-	response.Success(ctx, "IP组删除成功", nil)
+	c.logger.Info().Str("id", id).Msg("Grupo de IPs eliminado con éxito")
+	response.Success(ctx, "Grupo de IPs eliminado con éxito", nil)
 }
 
-// AddIPToBlacklist 添加IP到系统默认黑名单
+// AddIPToBlacklist añade una IP a la lista negra por defecto del sistema
 //
-//	@Summary		添加IP到黑名单
-//	@Description	将指定的IP地址或CIDR添加到系统默认黑名单组中
-//	@Tags			IP组管理
+//	@Summary		Añadir IP a la lista negra
+//	@Description	Añadir la dirección IP o CIDR especificada al grupo de lista negra por defecto del sistema
+//	@Tags			Gestión de grupos de IPs
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body	dto.AddIPToBlacklistRequest	true	"IP地址或CIDR"
+//	@Param			request	body	dto.AddIPToBlacklistRequest	true	"Dirección IP o CIDR"
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponseNoData		"IP添加成功"
-//	@Failure		400	{object}	model.ErrResponse				"请求参数错误"
-//	@Failure		401	{object}	model.ErrResponseDontShowError	"未授权访问"
-//	@Failure		404	{object}	model.ErrResponseDontShowError	"系统默认黑名单不存在"
-//	@Failure		500	{object}	model.ErrResponseDontShowError	"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponseNoData		"IP añadida con éxito"
+//	@Failure		400	{object}	model.ErrResponse				"Parámetros de la petición incorrectos"
+//	@Failure		401	{object}	model.ErrResponseDontShowError	"Acceso no autorizado"
+//	@Failure		404	{object}	model.ErrResponseDontShowError	"La lista negra por defecto del sistema no existe"
+//	@Failure		500	{object}	model.ErrResponseDontShowError	"Error interno del servidor"
 //	@Router			/api/v1/ip-groups/blacklist/add [post]
 func (c *IPGroupControllerImpl) AddIPToBlacklist(ctx *gin.Context) {
 	var req dto.AddIPToBlacklistRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		c.logger.Warn().Err(err).Msg("请求参数绑定失败")
+		c.logger.Warn().Err(err).Msg("Error al vincular los parámetros de la petición")
 		response.BadRequest(ctx, err, true)
 		return
 	}
 
-	c.logger.Info().Str("ip", req.IP).Msg("添加IP到黑名单请求")
+	c.logger.Info().Str("ip", req.IP).Msg("Petición para añadir IP a la lista negra")
 	err := c.ipGroupService.AddIPToBlacklist(ctx, req.IP)
 	if err != nil {
 		if errors.Is(err, service.ErrIPGroupNotFound) {
 			response.NotFound(ctx, err)
 			return
 		}
-		c.logger.Error().Err(err).Str("ip", req.IP).Msg("添加IP到黑名单失败")
+		c.logger.Error().Err(err).Str("ip", req.IP).Msg("Error al añadir la IP a la lista negra")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	c.logger.Info().Str("ip", req.IP).Msg("IP添加到黑名单成功")
-	response.Success(ctx, "IP添加到黑名单成功", nil)
+	c.logger.Info().Str("ip", req.IP).Msg("IP añadida a la lista negra con éxito")
+	response.Success(ctx, "IP añadida a la lista negra con éxito", nil)
 }

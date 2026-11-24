@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useTranslation } from 'react-i18next'
 import { useConfigQuery } from '@/feature/global-setting/hooks/useConfig'
 
-// 更新流量控制配置mutation hook
+// Hook de mutación de actualización de configuración de control de flujo
 export const useUpdateFlowControlConfig = () => {
     const queryClient = useQueryClient()
     const { toast } = useToast()
@@ -17,17 +17,17 @@ export const useUpdateFlowControlConfig = () => {
         mutationFn: (data: ConfigPatchRequest) => configApi.updateConfig(data),
         onSuccess: () => {
             toast({
-                title: t('flowControl.toast.updateSuccess', '更新成功'),
-                description: t('flowControl.toast.configUpdated', '流量控制配置已成功更新'),
+                title: t('flowControl.toast.updateSuccess', 'Actualizado con éxito'),
+                description: t('flowControl.toast.configUpdated', 'Configuración de control de flujo actualizada con éxito'),
             })
             queryClient.invalidateQueries({ queryKey: ['config'] })
         },
         onError: (error: ApiError) => {
-            console.error('更新流量控制配置失败:', error)
-            setError(error.message || t('flowControl.toast.updateError', '更新配置时出现错误'))
+            console.error('Error al actualizar la configuración de control de flujo:', error)
+            setError(error.message || t('flowControl.toast.updateError', 'Se produjo un error al actualizar la configuración'))
             toast({
-                title: t('flowControl.toast.updateFailed', '更新失败'),
-                description: error.message || t('flowControl.toast.updateError', '更新配置时出现错误'),
+                title: t('flowControl.toast.updateFailed', 'Error de actualización'),
+                description: error.message || t('flowControl.toast.updateError', 'Se produjo un error al actualizar la configuración'),
                 variant: "destructive",
             })
         }
@@ -41,7 +41,7 @@ export const useUpdateFlowControlConfig = () => {
     }
 }
 
-// 获取流量控制配置
+// Obtener la configuración de control de flujo
 export const useFlowControlConfig = () => {
     const { config, isLoading, error, refetch } = useConfigQuery()
     

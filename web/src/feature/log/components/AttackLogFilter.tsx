@@ -254,7 +254,7 @@ export function AttackLogFilter({ onFilter, onRefresh, defaultValues = {} }: Att
                                                 value={field.value ? new Date(field.value) : undefined}
                                                 onChange={(date) => {
                                                     if (!date) {
-                                                        // 用户清除了日期
+                                                        // El usuario borró la fecha
                                                         field.onChange("")
                                                         return
                                                     }
@@ -287,7 +287,7 @@ export function AttackLogFilter({ onFilter, onRefresh, defaultValues = {} }: Att
                                                 value={field.value ? new Date(field.value) : undefined}
                                                 onChange={(date) => {
                                                     if (!date) {
-                                                        // 用户清除了日期
+                                                        // El usuario borró la fecha
                                                         field.onChange("")
                                                         return
                                                     }

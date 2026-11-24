@@ -3,21 +3,21 @@ import { ConfigResponse, ConfigPatchRequest } from '@/types/config'
 
 const BASE_URL = '/config'
 /**
- * 配置相关API服务
+ * Servicios de API relacionados con configuración
  */
 export const configApi = {
     /**
-     * 获取系统配置
-     * @returns 系统配置信息
+     * Obtener la configuración del sistema
+     * @returns información de configuración del sistema
      */
     getConfig: (): Promise<ConfigResponse> => {
         return get<ConfigResponse>(BASE_URL)
     },
 
     /**
-     * 更新系统配置
-     * @param config 要更新的配置信息
-     * @returns 更新后的系统配置
+     * Actualizar la configuración del sistema
+     * @param config información de configuración a actualizar
+     * @returns configuración del sistema actualizada
      */
     updateConfig: (config: ConfigPatchRequest): Promise<ConfigResponse> => {
         return patch<ConfigResponse>(BASE_URL, config)

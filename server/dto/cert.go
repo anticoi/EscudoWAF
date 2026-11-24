@@ -3,38 +3,38 @@ package dto
 import (
 	"time"
 
-	"github.com/HUAHUAI23/RuiQi/server/model"
+	"github.com/anticoi/EscudoWAF/server/model"
 )
 
-// CertificateCreateRequest 创建证书请求
-// @Description 创建证书的请求参数
+// CertificateCreateRequest petición de creación de certificado
+// @Description Parámetros de la petición para crear un certificado
 type CertificateCreateRequest struct {
-	Name        string    `json:"name" example:"example-cert"`               // 证书名称/别名
-	Description string    `json:"description" example:"用于example.com的证书"`    // 证书描述
-	PublicKey   string    `json:"publicKey" binding:"required"`              // 公钥内容（PEM格式）
-	PrivateKey  string    `json:"privateKey" binding:"required"`             // 私钥内容（PEM格式）
-	ExpireDate  time.Time `json:"expireDate" example:"2023-12-31T23:59:59Z"` // 证书过期日期
-	IssuerName  string    `json:"issuerName" example:"Let's Encrypt"`        // 颁发机构
-	FingerPrint string    `json:"fingerPrint" example:"AA:BB:CC:DD:..."`     // 证书指纹
-	Domains     []string  `json:"domains" example:"[\"example.com\"]"`       // 证书绑定的域名列表
+	Name        string    `json:"name" example:"example-cert"`               // Nombre/alias del certificado
+	Description string    `json:"description" example:"Certificado para example.com"`    // Descripción del certificado
+	PublicKey   string    `json:"publicKey" binding:"required"`              // Contenido de la clave pública (formato PEM)
+	PrivateKey  string    `json:"privateKey" binding:"required"`             // Contenido de la clave privada (formato PEM)
+	ExpireDate  time.Time `json:"expireDate" example:"2023-12-31T23:59:59Z"` // Fecha de expiración del certificado
+	IssuerName  string    `json:"issuerName" example:"Let's Encrypt"`        // Autoridad emisora
+	FingerPrint string    `json:"fingerPrint" example:"AA:BB:CC:DD:..."`     // Huella del certificado
+	Domains     []string  `json:"domains" example:"[\"example.com\"]"`       // Lista de dominios vinculados al certificado
 }
 
-// CertificateUpdateRequest 更新证书请求
-// @Description 更新证书的请求参数
+// CertificateUpdateRequest petición de actualización de certificado
+// @Description Parámetros de la petición para actualizar un certificado
 type CertificateUpdateRequest struct {
-	Name        string    `json:"name,omitempty" example:"example-cert"`               // 证书名称/别名
-	Description string    `json:"description,omitempty" example:"用于example.com的证书"`    // 证书描述
-	PublicKey   string    `json:"publicKey,omitempty"`                                 // 公钥内容（PEM格式）
-	PrivateKey  string    `json:"privateKey,omitempty"`                                // 私钥内容（PEM格式）
-	ExpireDate  time.Time `json:"expireDate,omitempty" example:"2023-12-31T23:59:59Z"` // 证书过期日期
-	IssuerName  string    `json:"issuerName,omitempty" example:"Let's Encrypt"`        // 颁发机构
-	FingerPrint string    `json:"fingerPrint,omitempty" example:"AA:BB:CC:DD:..."`     // 证书指纹
-	Domains     []string  `json:"domains,omitempty" example:"[\"example.com\"]"`       // 证书绑定的域名列表
+	Name        string    `json:"name,omitempty" example:"example-cert"`               // Nombre/alias del certificado
+	Description string    `json:"description,omitempty" example:"Certificado para example.com"`    // Descripción del certificado
+	PublicKey   string    `json:"publicKey,omitempty"`                                 // Contenido de la clave pública (formato PEM)
+	PrivateKey  string    `json:"privateKey,omitempty"`                                // Contenido de la clave privada (formato PEM)
+	ExpireDate  time.Time `json:"expireDate,omitempty" example:"2023-12-31T23:59:59Z"` // Fecha de expiración del certificado
+	IssuerName  string    `json:"issuerName,omitempty" example:"Let's Encrypt"`        // Autoridad emisora
+	FingerPrint string    `json:"fingerPrint,omitempty" example:"AA:BB:CC:DD:..."`     // Huella del certificado
+	Domains     []string  `json:"domains,omitempty" example:"[\"example.com\"]"`       // Lista de dominios vinculados al certificado
 }
 
-// CertificateListResponse 证书列表响应
-// @Description 证书列表响应
+// CertificateListResponse Respuesta de lista de certificados
+// @Description Respuesta de lista de certificados
 type CertificateListResponse struct {
-	Total int64                    `json:"total"` // 总数
-	Items []model.CertificateStore `json:"items"` // 证书列表
+	Total int64                    `json:"total"` // Total
+	Items []model.CertificateStore `json:"items"` // Lista de certificados
 }

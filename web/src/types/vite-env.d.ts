@@ -8,10 +8,10 @@ interface ImportMetaEnv {
     readonly PROD: boolean
     readonly SSR: boolean
 
-    // 自定义环境变量
+    // Variables de entorno personalizadas
     readonly VITE_API_BASE_URL?: string
     readonly VITE_API_TIMEOUT?: string
-    // 添加更多自定义环境变量
+    // Añadir más variables de entorno personalizadas
 }
 
 interface ImportMeta {

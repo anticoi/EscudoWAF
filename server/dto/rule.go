@@ -5,40 +5,40 @@ import (
 	"encoding/json"
 )
 
-// MicroRuleCreateRequest 创建微规则请求
-// @Description 创建微规则的请求参数
+// MicroRuleCreateRequest petición de creación de microrregla
+// @Description Parámetros de la petición para crear una microrregla
 type MicroRuleCreateRequest struct {
-	Name      string          `json:"name" binding:"required" example:"SQL注入防护规则"`                           // 规则名称
-	Type      string          `json:"type" binding:"required,oneof=whitelist blacklist" example:"blacklist"` // 规则类型
-	Status    string          `json:"status" binding:"required,oneof=enabled disabled" example:"enabled"`    // 规则状态
-	Priority  int             `json:"priority" binding:"required" example:"100"`                             // 优先级字段，数字越大优先级越高
-	Condition json.RawMessage `json:"condition" binding:"required" swaggertype:"object"`                     // 规则条件
+	Name      string          `json:"name" binding:"required" example:"Regla de protección contra inyección SQL"`                           // Nombre de la regla
+	Type      string          `json:"type" binding:"required,oneof=whitelist blacklist" example:"blacklist"` // Tipo de regla
+	Status    string          `json:"status" binding:"required,oneof=enabled disabled" example:"enabled"`    // Estado de la regla
+	Priority  int             `json:"priority" binding:"required" example:"100"`                             // Campo de prioridad; a mayor número, mayor prioridad
+	Condition json.RawMessage `json:"condition" binding:"required" swaggertype:"object"`                     // Condición de la regla
 }
 
-// MicroRuleUpdateRequest 更新微规则请求
-// @Description 更新微规则的请求参数
+// MicroRuleUpdateRequest petición de actualización de microrregla
+// @Description Parámetros de la petición para actualizar una microrregla
 type MicroRuleUpdateRequest struct {
-	Name      string          `json:"name,omitempty" example:"SQL注入防护规则"`                                               // 规则名称
-	Type      string          `json:"type,omitempty" binding:"omitempty,oneof=whitelist blacklist" example:"blacklist"` // 规则类型
-	Status    string          `json:"status,omitempty" binding:"omitempty,oneof=enabled disabled" example:"enabled"`    // 规则状态
-	Priority  *int            `json:"priority,omitempty" example:"100"`                                                 // 优先级字段，数字越大优先级越高
-	Condition json.RawMessage `json:"condition,omitempty" swaggertype:"object"`                                         // 规则条件
+	Name      string          `json:"name,omitempty" example:"Regla de protección contra inyección SQL"`                                               // Nombre de la regla
+	Type      string          `json:"type,omitempty" binding:"omitempty,oneof=whitelist blacklist" example:"blacklist"` // Tipo de regla
+	Status    string          `json:"status,omitempty" binding:"omitempty,oneof=enabled disabled" example:"enabled"`    // Estado de la regla
+	Priority  *int            `json:"priority,omitempty" example:"100"`                                                 // Campo de prioridad; a mayor número, mayor prioridad
+	Condition json.RawMessage `json:"condition,omitempty" swaggertype:"object"`                                         // Condición de la regla
 }
 
-// MicroRuleResponse 微规则响应
-// @Description 微规则响应参数
+// MicroRuleResponse respuesta de microrregla
+// @Description Parámetros de respuesta de la microrregla
 type MicroRuleResponse struct {
 	ID        string          `json:"id,omitempty" example:"60a763d0f03239868b50e810"`
-	Name      string          `json:"name,omitempty" example:"SQL注入防护规则"`                                               // 规则名称
-	Type      string          `json:"type,omitempty" binding:"omitempty,oneof=whitelist blacklist" example:"blacklist"` // 规则类型
-	Status    string          `json:"status,omitempty" binding:"omitempty,oneof=enabled disabled" example:"enabled"`    // 规则状态
-	Priority  *int            `json:"priority,omitempty" example:"100"`                                                 // 优先级字段，数字越大优先级越高
-	Condition json.RawMessage `json:"condition,omitempty" swaggertype:"object"`                                         // 规则条件
+	Name      string          `json:"name,omitempty" example:"Regla de protección contra inyección SQL"`                                               // Nombre de la regla
+	Type      string          `json:"type,omitempty" binding:"omitempty,oneof=whitelist blacklist" example:"blacklist"` // Tipo de regla
+	Status    string          `json:"status,omitempty" binding:"omitempty,oneof=enabled disabled" example:"enabled"`    // Estado de la regla
+	Priority  *int            `json:"priority,omitempty" example:"100"`                                                 // Campo de prioridad; a mayor número, mayor prioridad
+	Condition json.RawMessage `json:"condition,omitempty" swaggertype:"object"`                                         // Condición de la regla
 }
 
-// MicroRuleListResponse 微规则列表响应
-// @Description 微规则列表响应
+// MicroRuleListResponse Respuesta de lista de microrreglas
+// @Description Respuesta de lista de microrreglas
 type MicroRuleListResponse struct {
-	Total int64               `json:"total"` // 总数
-	Items []MicroRuleResponse `json:"items"` // 微规则列表
+	Total int64               `json:"total"` // Total
+	Items []MicroRuleResponse `json:"items"` // Lista de microrreglas
 }

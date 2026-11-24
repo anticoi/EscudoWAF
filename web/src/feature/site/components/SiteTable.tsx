@@ -38,13 +38,13 @@ interface SiteTableProps {
 export function SiteTable({ onEdit, onDelete }: SiteTableProps) {
     const { t } = useTranslation()
 
-    // 引用用于无限滚动
+    // Referencia usada para scroll infinito
     const sentinelRef = useRef<HTMLDivElement>(null)
 
-    // 每页数据条数
+    // Cantidad de registros por página
     const PAGE_SIZE = 20
 
-    // 获取站点列表
+    // Obtener lista de sitios
     const {
         data,
         isLoading,
@@ -56,28 +56,28 @@ export function SiteTable({ onEdit, onDelete }: SiteTableProps) {
         queryFn: ({ pageParam }) => siteApi.getSites(pageParam as number, PAGE_SIZE),
         initialPageParam: 1,
         getNextPageParam: (lastPage, allPages) => {
-            // 优化判断逻辑：使用实际获取的数据总量，而不是假设每页恰好有PAGE_SIZE条
+            // Lógica optimizada: usar el total real de datos obtenidos en lugar de asumir PAGE_SIZE por página
             const fetchedItemsCount = allPages.reduce((total, page) => total + page.items.length, 0)
             return fetchedItemsCount < lastPage.total ? allPages.length + 1 : undefined
         },
     })
 
-    // 扁平化分页数据
+    // Datos de paginación aplanados
     const flatData = useMemo(() =>
         data?.pages.flatMap(page => page.items) || [],
         [data]
     )
 
 
-    // 优化的无限滚动实现
+    // Implementación optimizada de scroll infinito
     useEffect(() => {
-        // 只有当有更多页面可加载时才创建观察器
+        // Solo crear el observador cuando hay más páginas por cargar
         if (!hasNextPage) return
 
         const options = {
-            // 降低threshold使其更容易触发
+            // Reducir el umbral para que se dispare más fácilmente
             threshold: 0.1,
-            // 减小rootMargin以避免过早触发，但仍保持一定的预加载空间
+            // Reducir rootMargin para evitar activación prematura, manteniendo algo de precarga
             rootMargin: '100px 0px'
         }
 
@@ -105,7 +105,7 @@ export function SiteTable({ onEdit, onDelete }: SiteTableProps) {
 
 
 
-    // 表格列定义
+    // Definición de columnas de tabla
     const columns: ColumnDef<Site>[] = [
         {
             accessorKey: 'name',
@@ -286,7 +286,7 @@ export function SiteTable({ onEdit, onDelete }: SiteTableProps) {
         },
     ]
 
-    // 初始化表格
+    // Inicializar la tabla
     const table = useReactTable({
         data: flatData,
         columns,
@@ -295,7 +295,7 @@ export function SiteTable({ onEdit, onDelete }: SiteTableProps) {
 
     return (
         <div className="flex-1 overflow-hidden flex flex-col">
-            {/* 表格 */}
+            {/* Tabla */}
             <div className="overflow-auto h-full">
                 <DataTable loadingStyle='skeleton'
                     table={table}
@@ -306,7 +306,7 @@ export function SiteTable({ onEdit, onDelete }: SiteTableProps) {
                 />
 
 
-                {/* 无限滚动监测元素，只在有更多数据时显示 */}
+                {/* Elemento de detección de scroll infinito, visible solo si hay más datos */}
                 {hasNextPage && (
                     <div
                         ref={sentinelRef}

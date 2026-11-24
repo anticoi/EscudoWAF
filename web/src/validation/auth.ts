@@ -4,22 +4,22 @@ import { z } from 'zod';
 export const loginSchema = z.object({
   username: z
     .string()
-    .min(3, { message: '用户名至少需要3个字符' })
-    .max(20, { message: '用户名最多20个字符' }),
+    .min(3, { message: 'El nombre de usuario debe tener al menos 3 caracteres' })
+    .max(20, { message: 'El nombre de usuario puede tener máximo 20 caracteres' }),
   password: z
     .string()
-    .min(6, { message: '密码至少需要6个字符' }),
+    .min(6, { message: 'La contraseña debe tener al menos 6 caracteres' }),
 });
 
 // Password reset validation schema
 export const passwordResetSchema = z
   .object({
-    oldPassword: z.string().min(1, { message: '请输入当前密码' }),
-    newPassword: z.string().min(6, { message: '新密码至少需要6个字符' }),
-    confirmPassword: z.string().min(6, { message: '请确认新密码' }),
+    oldPassword: z.string().min(1, { message: 'Por favor, introduzca la contraseña actual' }),
+    newPassword: z.string().min(6, { message: 'La nueva contraseña debe tener al menos 6 caracteres' }),
+    confirmPassword: z.string().min(6, { message: 'Por favor, confirme la nueva contraseña' }),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
-    message: '两次输入的密码不一致',
+    message: 'Las contraseñas introducidas no coinciden',
     path: ['confirmPassword'],
   });
 

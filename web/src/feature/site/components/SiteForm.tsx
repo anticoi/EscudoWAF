@@ -66,12 +66,12 @@ export function SiteForm({
     },
 }: SiteFormProps) {
     const { t } = useTranslation()
-    // 状态
+    // Estado
     const [showCertificateDialog, setShowCertificateDialog] = useState(false)
     const [selectedCertificate, setSelectedCertificate] = useState<Certificate | null>(null)
     const [selectedCertificateId, setSelectedCertificateId] = useState<string>('')
 
-    // API钩子
+    // Hooks de la API
     const {
         createSite,
         isLoading: isCreating,
@@ -86,31 +86,31 @@ export function SiteForm({
         clearError: clearUpdateError
     } = useUpdateSite()
 
-    // 获取证书列表
+    // Obtener lista de certificados
     const { data: certificates, refetch: refetchCertificates } = useQuery({
         queryKey: ['certificates'],
         queryFn: () => certificatesApi.getCertificates(1, 100),
         select: (data) => data.items,
     })
 
-    // 动态状态
+    // Estado dinámico
     const isLoading = mode === 'create' ? isCreating : isUpdating
     const error = mode === 'create' ? createError : updateError
     const clearError = mode === 'create' ? clearCreateError : clearUpdateError
 
-    // 表单设置
+    // Configuración del formulario
     const form = useForm<CreateSiteRequest>({
         resolver: zodResolver(siteFormSchema),
         defaultValues,
     })
 
-    // 服务器字段数组
+    // Array de campos de servidor
     const { fields: serverFields, append: appendServer, remove: removeServer } = useFieldArray({
         control: form.control,
         name: "backend.servers"
     })
 
-    // 初始化选中的证书ID（如果有）
+    // Inicializar el ID del certificado seleccionado (si existe)
     useEffect(() => {
         if (defaultValues.certificate && certificates) {
             const cert = certificates.find(c =>
@@ -123,13 +123,13 @@ export function SiteForm({
         }
     }, [defaultValues.certificate, certificates])
 
-    // 监听证书选择变化
+    // Escuchar cambios en la selección de certificado
     useEffect(() => {
         if (selectedCertificateId && certificates) {
             const cert = certificates.find(c => c.id === selectedCertificateId)
             if (cert) {
                 setSelectedCertificate(cert)
-                // 更新证书字段
+                // Campos de actualización del certificado
                 form.setValue('certificate', {
                     certName: cert.name,
                     expireDate: cert.expireDate,
@@ -145,7 +145,7 @@ export function SiteForm({
         }
     }, [selectedCertificateId, certificates, form])
 
-    // 处理证书选择变更
+    // Manejar el cambio de selección de certificado
     const handleCertificateChange = (value: string) => {
         if (value === 'upload-new') {
             setShowCertificateDialog(true)
@@ -154,14 +154,14 @@ export function SiteForm({
         }
     }
 
-    // 添加新服务器
+    // Añadir nuevo servidor
     const addServer = () => {
         appendServer({ host: '', port: 80, isSSL: false })
     }
 
-    // 表单提交处理
+    // Manejo del envío del formulario
     const onSubmit = (data: CreateSiteRequest) => {
-        // 清除之前的错误
+        // Limpiar los errores anteriores
         if (clearError) clearError()
 
         if (mode === 'create') {
@@ -187,7 +187,7 @@ export function SiteForm({
             <AnimatedContainer>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                        {/* API错误提示 */}
+                        {/* Aviso de error de API */}
                         {error && (
                             <Alert variant="destructive">
                                 <AlertCircle className="h-4 w-4" />
@@ -195,7 +195,7 @@ export function SiteForm({
                             </Alert>
                         )}
 
-                        {/* 基本信息部分 */}
+                        {/* Sección de información básica */}
                         <div className="space-y-5">
                             <h3 className="text-lg font-medium">{t("site.dialog.basicInfo")}</h3>
 
@@ -278,7 +278,7 @@ export function SiteForm({
                             </div>
                         </div>
 
-                        {/* HTTPS设置 */}
+                        {/* Configuración HTTPS */}
                         <div className="space-y-5">
                             <h3 className="text-lg font-medium">{t('site.dialog.httpsSettings')}</h3>
 
@@ -379,7 +379,7 @@ export function SiteForm({
 
                         </div>
 
-                        {/* 后端服务器 */}
+                        {/* Servidores backend */}
                         <div className="space-y-5">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-lg font-medium">{t('site.dialog.backendServers')}</h3>
@@ -483,7 +483,7 @@ export function SiteForm({
                             </div>
                         </div>
 
-                        {/* WAF设置 */}
+                        {/* Configuración del WAF */}
                         <div className="space-y-5">
                             <h3 className="text-lg font-medium">{t('site.dialog.wafSettings')}</h3>
 
@@ -556,7 +556,7 @@ export function SiteForm({
                             )}
                         </div>
 
-                        {/* 提交按钮 */}
+                        {/* Botón de envío */}
                         <div className="flex justify-end gap-2">
                             <AnimatedButton>
                                 <Button type="submit" disabled={isLoading}>
@@ -568,7 +568,7 @@ export function SiteForm({
                 </Form>
             </AnimatedContainer>
 
-            {/* 证书创建对话框 */}
+            {/* Diálogo de creación de certificado */}
             <CertificateDialog
                 open={showCertificateDialog || selectedCertificateId === 'upload-new'}
                 onOpenChange={(open) => {

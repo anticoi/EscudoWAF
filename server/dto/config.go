@@ -4,131 +4,131 @@ import (
 	"time"
 )
 
-// ConfigPatchRequest 配置补丁更新请求
-// @Description 用于部分更新配置的请求参数
+// ConfigPatchRequest petición de actualización parcial de configuración
+// @Description Parámetros de la petición para actualización parcial de configuración
 type ConfigPatchRequest struct {
-	Name            *string          `json:"name,omitempty" binding:"omitempty" example:"AppConfig"`        // 配置名称
-	Engine          *EnginePatchDTO  `json:"engine,omitempty" binding:"omitempty"`                          // 引擎配置
-	Haproxy         *HaproxyPatchDTO `json:"haproxy,omitempty" binding:"omitempty"`                         // HAProxy配置
-	IsResponseCheck *bool            `json:"isResponseCheck,omitempty" binding:"omitempty" example:"false"` // 是否检查响应
-	IsDebug         *bool            `json:"isDebug,omitempty" binding:"omitempty" example:"false"`         // 是否开启调试模式
-	IsK8s           *bool            `json:"isK8s,omitempty" binding:"omitempty" example:"false"`           // 是否在K8s环境
+	Name            *string          `json:"name,omitempty" binding:"omitempty" example:"AppConfig"`        // Nombre de la configuración
+	Engine          *EnginePatchDTO  `json:"engine,omitempty" binding:"omitempty"`                          // Configuración del motor
+	Haproxy         *HaproxyPatchDTO `json:"haproxy,omitempty" binding:"omitempty"`                         // Configuración de HAProxy
+	IsResponseCheck *bool            `json:"isResponseCheck,omitempty" binding:"omitempty" example:"false"` // Si se inspeccionan las respuestas
+	IsDebug         *bool            `json:"isDebug,omitempty" binding:"omitempty" example:"false"`         // Si el modo de depuración está activado
+	IsK8s           *bool            `json:"isK8s,omitempty" binding:"omitempty" example:"false"`           // Si está en entorno K8s
 }
 
-// EnginePatchDTO 引擎配置补丁DTO
+// EnginePatchDTO DTO de actualización parcial de configuración del motor
 type EnginePatchDTO struct {
-	Bind            *string                 `json:"bind,omitempty" binding:"omitempty" example:"127.0.0.1:2342"`                      // 引擎绑定地址
-	UseBuiltinRules *bool                   `json:"useBuiltinRules,omitempty" binding:"omitempty" example:"true"`                     // 是否使用内置规则
-	ASNDBPath       *string                 `json:"asnDBPath,omitempty" binding:"omitempty" example:"/opt/geoip/GeoLite2-ASN.mmdb"`   // ASN数据库路径
-	CityDBPath      *string                 `json:"cityDBPath,omitempty" binding:"omitempty" example:"/opt/geoip/GeoLite2-City.mmdb"` // 城市数据库路径
-	AppConfig       []AppConfigPatchDTO     `json:"appConfig,omitempty" binding:"omitempty,dive"`                                     // 应用配置列表
-	FlowController  *FlowControllerPatchDTO `json:"flowController,omitempty" binding:"omitempty"`                                     // 流量控制配置
+	Bind            *string                 `json:"bind,omitempty" binding:"omitempty" example:"127.0.0.1:2342"`                      // Dirección de enlace del motor
+	UseBuiltinRules *bool                   `json:"useBuiltinRules,omitempty" binding:"omitempty" example:"true"`                     // Si se usan reglas integradas
+	ASNDBPath       *string                 `json:"asnDBPath,omitempty" binding:"omitempty" example:"/opt/geoip/GeoLite2-ASN.mmdb"`   // Ruta de la base de datos ASN
+	CityDBPath      *string                 `json:"cityDBPath,omitempty" binding:"omitempty" example:"/opt/geoip/GeoLite2-City.mmdb"` // Ruta de la base de datos de ciudades
+	AppConfig       []AppConfigPatchDTO     `json:"appConfig,omitempty" binding:"omitempty,dive"`                                     // Lista de configuraciones de aplicación
+	FlowController  *FlowControllerPatchDTO `json:"flowController,omitempty" binding:"omitempty"`                                     // Configuración de control de flujo
 }
 
-// AppConfigPatchDTO 应用配置补丁DTO
+// AppConfigPatchDTO DTO de actualización parcial de configuración
 type AppConfigPatchDTO struct {
-	Name           *string `json:"name,omitempty" binding:"omitempty" example:"coraza"`          // 应用名称
-	Directives     *string `json:"directives,omitempty" binding:"omitempty"`                     // 指令配置
-	TransactionTTL *int64  `json:"transactionTTL,omitempty" binding:"omitempty" example:"60000"` // 事务超时时间(毫秒)
-	LogLevel       *string `json:"logLevel,omitempty" binding:"omitempty" example:"info"`        // 日志级别
-	LogFile        *string `json:"logFile,omitempty" binding:"omitempty" example:"/dev/stdout"`  // 日志文件
-	LogFormat      *string `json:"logFormat,omitempty" binding:"omitempty" example:"console"`    // 日志格式
+	Name           *string `json:"name,omitempty" binding:"omitempty" example:"coraza"`          // Nombre de la aplicación
+	Directives     *string `json:"directives,omitempty" binding:"omitempty"`                     // Configuración de directivas
+	TransactionTTL *int64  `json:"transactionTTL,omitempty" binding:"omitempty" example:"60000"` // Tiempo de espera de la transacción (ms)
+	LogLevel       *string `json:"logLevel,omitempty" binding:"omitempty" example:"info"`        // Nivel de log
+	LogFile        *string `json:"logFile,omitempty" binding:"omitempty" example:"/dev/stdout"`  // Archivo de log
+	LogFormat      *string `json:"logFormat,omitempty" binding:"omitempty" example:"console"`    // Formato de log
 }
 
-// HaproxyPatchDTO HAProxy配置补丁DTO
+// HaproxyPatchDTO DTO de actualización parcial de configuración de HAProxy
 type HaproxyPatchDTO struct {
-	ConfigBaseDir *string `json:"configBaseDir,omitempty" binding:"omitempty" example:"/RuiQi"`    // 配置文件根目录
-	HaproxyBin    *string `json:"haproxyBin,omitempty" binding:"omitempty" example:"haproxy"`      // HAProxy二进制文件路径
-	BackupsNumber *int    `json:"backupsNumber,omitempty" binding:"omitempty" example:"5"`         // 备份数量
-	SpoeAgentAddr *string `json:"spoeAgentAddr,omitempty" binding:"omitempty" example:"127.0.0.1"` // SPOE代理地址
-	SpoeAgentPort *int    `json:"spoeAgentPort,omitempty" binding:"omitempty" example:"2342"`      // SPOE代理端口
-	Thread        *int    `json:"thread,omitempty" binding:"omitempty,min=0,max=256" example:"4"`  // 线程数
+	ConfigBaseDir *string `json:"configBaseDir,omitempty" binding:"omitempty" example:"/EscudoWAF"`    // Directorio raíz de archivos de configuración
+	HaproxyBin    *string `json:"haproxyBin,omitempty" binding:"omitempty" example:"haproxy"`      // Ruta del binario de HAProxy
+	BackupsNumber *int    `json:"backupsNumber,omitempty" binding:"omitempty" example:"5"`         // Cantidad de copias de seguridad
+	SpoeAgentAddr *string `json:"spoeAgentAddr,omitempty" binding:"omitempty" example:"127.0.0.1"` // Dirección del agente SPOE
+	SpoeAgentPort *int    `json:"spoeAgentPort,omitempty" binding:"omitempty" example:"2342"`      // Puerto del agente SPOE
+	Thread        *int    `json:"thread,omitempty" binding:"omitempty,min=0,max=256" example:"4"`  // Número de hilos
 }
 
-// FlowControllerPatchDTO 流量控制器配置补丁DTO
+// FlowControllerPatchDTO DTO de actualización parcial de configuración del controlador de flujo
 type FlowControllerPatchDTO struct {
-	VisitLimit  *LimitConfigPatchDTO `json:"visitLimit,omitempty" binding:"omitempty"`  // 访问频率限制配置
-	AttackLimit *LimitConfigPatchDTO `json:"attackLimit,omitempty" binding:"omitempty"` // 攻击频率限制配置
-	ErrorLimit  *LimitConfigPatchDTO `json:"errorLimit,omitempty" binding:"omitempty"`  // 错误频率限制配置
+	VisitLimit  *LimitConfigPatchDTO `json:"visitLimit,omitempty" binding:"omitempty"`  // Configuración del límite de frecuencia de acceso
+	AttackLimit *LimitConfigPatchDTO `json:"attackLimit,omitempty" binding:"omitempty"` // Configuración del límite de frecuencia de ataques
+	ErrorLimit  *LimitConfigPatchDTO `json:"errorLimit,omitempty" binding:"omitempty"`  // Configuración del límite de frecuencia de errores
 }
 
-// LimitConfigPatchDTO 限制配置补丁DTO
+// LimitConfigPatchDTO DTO de actualización parcial de configuración de límites
 type LimitConfigPatchDTO struct {
-	Enabled        *bool  `json:"enabled,omitempty" binding:"omitempty" example:"true"`         // 是否启用
-	Threshold      *int64 `json:"threshold,omitempty" binding:"omitempty" example:"100"`        // 阈值
-	StatDuration   *int64 `json:"statDuration,omitempty" binding:"omitempty" example:"60"`      // 统计时间窗口（秒）
-	BlockDuration  *int64 `json:"blockDuration,omitempty" binding:"omitempty" example:"600"`    // 封禁时长（秒）
-	BurstCount     *int64 `json:"burstCount,omitempty" binding:"omitempty" example:"10"`        // 允许的突发请求数
-	ParamsCapacity *int64 `json:"paramsCapacity,omitempty" binding:"omitempty" example:"10000"` // 缓存容量
+	Enabled        *bool  `json:"enabled,omitempty" binding:"omitempty" example:"true"`         // Si está habilitado
+	Threshold      *int64 `json:"threshold,omitempty" binding:"omitempty" example:"100"`        // Umbral
+	StatDuration   *int64 `json:"statDuration,omitempty" binding:"omitempty" example:"60"`      // Ventana de tiempo de estadísticas (segundos)
+	BlockDuration  *int64 `json:"blockDuration,omitempty" binding:"omitempty" example:"600"`    // Duración del bloqueo (segundos)
+	BurstCount     *int64 `json:"burstCount,omitempty" binding:"omitempty" example:"10"`        // Número de peticiones en ráfaga permitidas
+	ParamsCapacity *int64 `json:"paramsCapacity,omitempty" binding:"omitempty" example:"10000"` // Capacidad de caché
 }
 
-// ConfigResponse 配置响应
-// @Description 配置响应
+// ConfigResponse Respuesta de configuración
+// @Description Respuesta de configuración
 type ConfigResponse struct {
-	ID              string     `json:"id,omitempty"`    // 配置ID
-	Name            string     `json:"name"`            // 配置名称
-	Engine          EngineDTO  `json:"engine"`          // 引擎配置
-	Haproxy         HaproxyDTO `json:"haproxy"`         // HAProxy配置
-	CreatedAt       time.Time  `json:"createdAt"`       // 创建时间
-	UpdatedAt       time.Time  `json:"updatedAt"`       // 更新时间
-	IsResponseCheck bool       `json:"isResponseCheck"` // 是否检查响应
-	IsDebug         bool       `json:"isDebug"`         // 是否开启调试模式
-	IsK8s           bool       `json:"isK8s"`           // 是否在K8s环境
+	ID              string     `json:"id,omitempty"`    // ID de configuración
+	Name            string     `json:"name"`            // Nombre de la configuración
+	Engine          EngineDTO  `json:"engine"`          // Configuración del motor
+	Haproxy         HaproxyDTO `json:"haproxy"`         // Configuración de HAProxy
+	CreatedAt       time.Time  `json:"createdAt"`       // Fecha de creación
+	UpdatedAt       time.Time  `json:"updatedAt"`       // Hora de actualización
+	IsResponseCheck bool       `json:"isResponseCheck"` // Si se inspeccionan las respuestas
+	IsDebug         bool       `json:"isDebug"`         // Si el modo de depuración está activado
+	IsK8s           bool       `json:"isK8s"`           // Si está en entorno K8s
 }
 
-// EngineDTO 引擎配置DTO
+// EngineDTO DTO de configuración del motor
 type EngineDTO struct {
-	Bind            string            `json:"bind"`            // 引擎绑定地址
-	UseBuiltinRules bool              `json:"useBuiltinRules"` // 是否使用内置规则
-	ASNDBPath       string            `json:"asnDBPath"`       // ASN数据库路径
-	CityDBPath      string            `json:"cityDBPath"`      // 城市数据库路径
-	AppConfig       []AppConfigDTO    `json:"appConfig"`       // 应用配置列表
-	FlowController  FlowControllerDTO `json:"flowController"`  // 流量控制配置
+	Bind            string            `json:"bind"`            // Dirección de enlace del motor
+	UseBuiltinRules bool              `json:"useBuiltinRules"` // Si se usan reglas integradas
+	ASNDBPath       string            `json:"asnDBPath"`       // Ruta de la base de datos ASN
+	CityDBPath      string            `json:"cityDBPath"`      // Ruta de la base de datos de ciudades
+	AppConfig       []AppConfigDTO    `json:"appConfig"`       // Lista de configuraciones de aplicación
+	FlowController  FlowControllerDTO `json:"flowController"`  // Configuración de control de flujo
 }
 
-// AppConfigDTO 应用配置DTO
+// AppConfigDTO DTO de configuración de aplicación
 type AppConfigDTO struct {
-	Name           string `json:"name"`                           // 应用名称
-	Directives     string `json:"directives"`                     // 指令配置
-	TransactionTTL int64  `json:"transactionTTL" example:"60000"` // 事务超时时间(毫秒)
-	LogLevel       string `json:"logLevel"`                       // 日志级别
-	LogFile        string `json:"logFile"`                        // 日志文件
-	LogFormat      string `json:"logFormat"`                      // 日志格式
+	Name           string `json:"name"`                           // Nombre de la aplicación
+	Directives     string `json:"directives"`                     // Configuración de directivas
+	TransactionTTL int64  `json:"transactionTTL" example:"60000"` // Tiempo de espera de la transacción (ms)
+	LogLevel       string `json:"logLevel"`                       // Nivel de log
+	LogFile        string `json:"logFile"`                        // Archivo de log
+	LogFormat      string `json:"logFormat"`                      // Formato de log
 }
 
-// HaproxyDTO HAProxy配置DTO
+// HaproxyDTO DTO de configuración de HAProxy
 type HaproxyDTO struct {
-	ConfigBaseDir string `json:"configBaseDir"` // 配置文件根目录
-	HaproxyBin    string `json:"haproxyBin"`    // HAProxy二进制文件路径
-	BackupsNumber int    `json:"backupsNumber"` // 备份数量
-	SpoeAgentAddr string `json:"spoeAgentAddr"` // SPOE代理地址
-	SpoeAgentPort int    `json:"spoeAgentPort"` // SPOE代理端口
-	Thread        int    `json:"thread"`        // 线程数
+	ConfigBaseDir string `json:"configBaseDir"` // Directorio raíz de archivos de configuración
+	HaproxyBin    string `json:"haproxyBin"`    // Ruta del binario de HAProxy
+	BackupsNumber int    `json:"backupsNumber"` // Cantidad de copias de seguridad
+	SpoeAgentAddr string `json:"spoeAgentAddr"` // Dirección del agente SPOE
+	SpoeAgentPort int    `json:"spoeAgentPort"` // Puerto del agente SPOE
+	Thread        int    `json:"thread"`        // Número de hilos
 }
 
-// FlowControllerDTO 流量控制器配置DTO
+// FlowControllerDTO DTO de configuración del controlador de flujo
 type FlowControllerDTO struct {
-	VisitLimit  LimitConfigDTO `json:"visitLimit"`  // 访问频率限制配置
-	AttackLimit LimitConfigDTO `json:"attackLimit"` // 攻击频率限制配置
-	ErrorLimit  LimitConfigDTO `json:"errorLimit"`  // 错误频率限制配置
+	VisitLimit  LimitConfigDTO `json:"visitLimit"`  // Configuración del límite de frecuencia de acceso
+	AttackLimit LimitConfigDTO `json:"attackLimit"` // Configuración del límite de frecuencia de ataques
+	ErrorLimit  LimitConfigDTO `json:"errorLimit"`  // Configuración del límite de frecuencia de errores
 }
 
-// LimitConfigDTO 限制配置DTO
+// LimitConfigDTO DTO de configuración de límites
 type LimitConfigDTO struct {
-	Enabled        bool  `json:"enabled"`        // 是否启用
-	Threshold      int64 `json:"threshold"`      // 阈值
-	StatDuration   int64 `json:"statDuration"`   // 统计时间窗口（秒）
-	BlockDuration  int64 `json:"blockDuration"`  // 封禁时长（秒）
-	BurstCount     int64 `json:"burstCount"`     // 允许的突发请求数
-	ParamsCapacity int64 `json:"paramsCapacity"` // 缓存容量
+	Enabled        bool  `json:"enabled"`        // Si está habilitado
+	Threshold      int64 `json:"threshold"`      // Umbral
+	StatDuration   int64 `json:"statDuration"`   // Ventana de tiempo de estadísticas (segundos)
+	BlockDuration  int64 `json:"blockDuration"`  // Duración del bloqueo (segundos)
+	BurstCount     int64 `json:"burstCount"`     // Número de peticiones en ráfaga permitidas
+	ParamsCapacity int64 `json:"paramsCapacity"` // Capacidad de caché
 }
 
-// 将 time.Duration 转换为毫秒表示的 int64
+// Convertir time.Duration a int64 en milisegundos
 func DurationToMillis(d time.Duration) int64 {
 	return int64(d / time.Millisecond)
 }
 
-// 将毫秒表示的 int64 转换为 time.Duration
+// Convertir int64 en milisegundos a time.Duration
 func MillisToDuration(millis int64) time.Duration {
 	return time.Duration(millis) * time.Millisecond
 }

@@ -12,14 +12,14 @@ import {
 } from "@/components/ui/popover"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 
-// 定义选择器类型
+// Definición de tipos de selectores
 export type DateTimePickerType = "date" | "dateHour" | "dateHourMinute" | "dateHourMinuteSecond"
 
 interface DateTimePicker24hProps {
     value?: Date
     onChange?: (date: Date | undefined) => void
     className?: string
-    // 添加类型属性，默认为完整的日期时间选择
+    // Añadir propiedad de tipo, por defecto selector completo de fecha y hora
     type?: DateTimePickerType
 }
 
@@ -27,9 +27,9 @@ export function DateTimePicker24h({
     value,
     onChange,
     className,
-    type = "dateHourMinute" // 默认为日期+小时+分钟
+    type = "dateHourMinute" // Por defecto fecha+hora+minuto
 }: DateTimePicker24hProps) {
-    // 使用内部状态管理弹出框的开关状态
+    // Usar estado interno para gestionar el estado del popup
     const [isOpen, setIsOpen] = React.useState(false)
 
     const hours = Array.from({ length: 24 }, (_, i) => i)
@@ -38,7 +38,7 @@ export function DateTimePicker24h({
 
     const handleDateSelect = (selectedDate: Date | undefined) => {
         if (selectedDate && onChange) {
-            // 保留之前选择的时间
+            // Conservar el tiempo seleccionado anteriormente
             if (value) {
                 selectedDate.setHours(value.getHours(), value.getMinutes(), value.getSeconds())
             }
@@ -61,7 +61,7 @@ export function DateTimePicker24h({
             }
             onChange(newDate)
         } else if (onChange) {
-            // 如果尚未选择日期，则创建当前日期并设置时间
+            // Si aún no se seleccionó fecha, crear la fecha actual y establecer la hora
             const newDate = new Date()
             if (timeType === "hour") {
                 newDate.setHours(parseInt(valueStr))
@@ -74,7 +74,7 @@ export function DateTimePicker24h({
         }
     }
 
-    // 根据类型决定显示格式
+    // Determinar el formato de visualización según el tipo
     const getFormatString = () => {
         switch (type) {
             case "date":
@@ -90,7 +90,7 @@ export function DateTimePicker24h({
         }
     }
 
-    // 根据类型决定占位符文本
+    // Determinar el texto del placeholder según el tipo
     const getPlaceholderText = () => {
         switch (type) {
             case "date":
@@ -138,10 +138,10 @@ export function DateTimePicker24h({
                         initialFocus
                     />
 
-                    {/* 根据类型条件渲染时间选择器 */}
+                    {/* Renderizar el selector de tiempo según el tipo */}
                     {type !== "date" && (
                         <div className="flex flex-col sm:flex-row sm:h-[300px] divide-y sm:divide-y-0 sm:divide-x">
-                            {/* 小时选择器 - 对于所有包含小时的类型 */}
+                            {/* Selector de horas - para todos los tipos que incluyen horas */}
                             <ScrollArea className="w-64 sm:w-auto">
                                 <div className="flex sm:flex-col p-2">
                                     {hours.map((hour) => (
@@ -159,7 +159,7 @@ export function DateTimePicker24h({
                                 <ScrollBar orientation="horizontal" className="sm:hidden" />
                             </ScrollArea>
 
-                            {/* 分钟选择器 - 仅对包含分钟的类型 */}
+                            {/* Selector de minutos - solo para tipos que incluyen minutos */}
                             {(type === "dateHourMinute" || type === "dateHourMinuteSecond") && (
                                 <ScrollArea className="w-64 sm:w-auto">
                                     <div className="flex sm:flex-col p-2">
@@ -179,7 +179,7 @@ export function DateTimePicker24h({
                                 </ScrollArea>
                             )}
 
-                            {/* 秒选择器 - 仅对包含秒的类型 */}
+                            {/* Selector de segundos - solo para tipos que incluyen segundos */}
                             {type === "dateHourMinuteSecond" && (
                                 <ScrollArea className="w-64 sm:w-auto">
                                     <div className="flex sm:flex-col p-2">

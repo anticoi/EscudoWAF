@@ -216,7 +216,7 @@ export function IPGroupForm({
                                                 <ScrollArea scrollbarVariant="neon" className="h-[200px] pr-4">
                                                     <ul className="divide-y dark:divide-slate-700">
                                                         {filteredIpItems.map((item) => {
-                                                            // 找出原始数组中的真实索引
+                                                            // Encontrar el índice real en el array original
                                                             const originalIndex = ipItems.indexOf(item)
                                                             return (
                                                                 <li

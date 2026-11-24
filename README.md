@@ -1,213 +1,172 @@
-# RuiQi WAF
+# EscudoWAF
 
 <div align="center">
-<a href="https://deepwiki.com/HUAHUAI23/RuiQi"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki" width="160" height="30"></a>
-  <img src="https://img.shields.io/badge/Go-1.24.1-00ADD8?style=flat&logo=go" alt="Go Version" width="140" height="30">
+  <img src="https://img.shields.io/badge/Go-1.24.1-00ADD8?style=flat&logo=go" alt="Versión de Go" width="140" height="30">
   <img src="https://img.shields.io/badge/HAProxy-3.0-green?style=flat&logo=haproxy" alt="HAProxy" width="140" height="30">
   <img src="https://img.shields.io/badge/OWASP-Coraza-blue?style=flat" alt="Coraza WAF" width="140" height="30">
-  <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat" alt="License" width="140" height="30">
+  <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat" alt="Licencia" width="140" height="30">
 </div>
 
 <br>
 
-A modern web application firewall (WAF) management system built on top of [HAProxy](https://www.haproxy.org/) and [OWASP Coraza WAF](https://github.com/corazawaf/coraza) with the [Coraza SPOA](https://github.com/corazawaf/coraza-spoa) integration. This system provides a comprehensive backend API for managing HAProxy configurations, Coraza WAF rules, and traffic inspection.
+**EscudoWAF** es un sistema de gestión de firewall de aplicaciones web (WAF) construido sobre [HAProxy](https://www.haproxy.org/) y [OWASP Coraza WAF](https://github.com/corazawaf/coraza), con la integración [Coraza SPOA](https://github.com/corazawaf/coraza-spoa). Proporciona una API backend completa y un panel web para gestionar la configuración de HAProxy, las reglas del WAF y la inspección de tráfico.
 
-## 🌐 Click To Run
+EscudoWAF es un fork traducido al español de [RuiQi](https://github.com/HUAHUAI23/RuiQi) (MIT), de HUAHUAI23. Todo el crédito de la arquitectura y la implementación original corresponde a su autor.
 
-run the application in less than 30 seconds,default username: **admin**,default password: **admin123**
-
-[![](https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg)](https://usw.sealos.io/?openapp=system-template%3FtemplateName%3DRuiqi-Waf)
-
-## 📺 Demo Video
-
-https://github.com/user-attachments/assets/f74000d7-d229-4d00-843b-1ba28caeb13d
-
-## 📸 RuiQi WAF Interface Showcase
+## 📸 Interfaz
 
 <div align="center">
   <table cellspacing="0" cellpadding="10" style="border-collapse: separate; border-spacing: 15px; background-color: #f8f9fa;">
     <tr>
       <td align="center" style="border-radius: 8px; border: 1px solid #ddd; padding: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-        <img width="767" alt="RuiQi WAF Dashboard" src="./doc/image/waf-1.png" style="border-radius: 6px; max-width: 100%;">
+        <img width="767" alt="Panel de EscudoWAF" src="./doc/image/waf-1.png" style="border-radius: 6px; max-width: 100%;">
       </td>
       <td align="center" style="border-radius: 8px; border: 1px solid #ddd; padding: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-        <img width="767" alt="RuiQi WAF Rule Management" src="./doc/image/waf-2.png" style="border-radius: 6px; max-width: 100%;">
+        <img width="767" alt="Gestión de reglas de EscudoWAF" src="./doc/image/waf-2.png" style="border-radius: 6px; max-width: 100%;">
       </td>
     </tr>
     <tr>
       <td align="center" style="border-radius: 8px; border: 1px solid #ddd; padding: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-        <img width="767" alt="RuiQi WAF Analytics" src="./doc/image/waf-3.png" style="border-radius: 6px; max-width: 100%;">
+        <img width="767" alt="Analítica de EscudoWAF" src="./doc/image/waf-3.png" style="border-radius: 6px; max-width: 100%;">
       </td>
       <td align="center" style="border-radius: 8px; border: 1px solid #ddd; padding: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-        <img width="767" alt="RuiQi WAF Security Config" src="./doc/image/waf-4.png" style="border-radius: 6px; max-width: 100%;">
+        <img width="767" alt="Configuración de seguridad de EscudoWAF" src="./doc/image/waf-4.png" style="border-radius: 6px; max-width: 100%;">
       </td>
     </tr>
   </table>
 </div>
 
-## Core Architecture
+## Arquitectura
 
-Simple WAF implements a modular architecture with HAProxy at the front handling traffic and multiple security engines providing protection:
+EscudoWAF implementa una arquitectura modular con HAProxy al frente gestionando el tráfico y varios motores de seguridad proporcionando protección:
 
-1. **Coraza WAF Engine**: OWASP ModSecurity-compatible filtering
-2. **MicroEngine**: Rule-based matching engine for IP filtering, URL checking, and complex conditional logic
-3. **Geographic Analysis**: Location-based traffic filtering
-4. **Rate Limiting**: Traffic control and request throttling
-
-The system uses a plugin architecture that allows for continuous enhancement with new security modules.
+1. **Motor Coraza WAF**: filtrado compatible con OWASP ModSecurity
+2. **MicroEngine**: motor de coincidencia basado en reglas para filtrado de IP, comprobación de URL y lógica condicional compleja
+3. **Análisis geográfico**: filtrado de tráfico basado en ubicación
+4. **Limitación de velocidad**: control de tráfico y restricción de peticiones
 
 ```mermaid
 graph TD
-    Client[Client] -->|HTTP Request| HAProxy
-    HAProxy -->|TCP Connection| SPOE[Coraza SPOE Agent]
-    SPOE -->|Message Type Recognition| TypeCheck
-    TypeCheck -->|coraza-req| ReqHandler[Request Handler]
-    TypeCheck -->|coraza-res| ResHandler[Response Handler]
-    ReqHandler -->|Get App Name| ReqApp[Find Application]
-    ResHandler -->|Get App Name| ResApp[Find Application]
-    ReqApp -->|Process Request| ReqProcess[Request Processor]
-    ResApp -->|Process Response| ResProcess[Response Processor]
-    ReqProcess --> Return[Return Results to HAProxy]
+    Client[Cliente] -->|Petición HTTP| HAProxy
+    HAProxy -->|Conexión TCP| SPOE[Agente Coraza SPOE]
+    SPOE -->|Reconocimiento de tipo de mensaje| TypeCheck
+    TypeCheck -->|coraza-req| ReqHandler[Procesador de peticiones]
+    TypeCheck -->|coraza-res| ResHandler[Procesador de respuestas]
+    ReqHandler -->|Obtener nombre de app| ReqApp[Buscar aplicación]
+    ResHandler -->|Obtener nombre de app| ResApp[Buscar aplicación]
+    ReqApp -->|Procesar petición| ReqProcess[Procesador de petición]
+    ResApp -->|Procesar respuesta| ResProcess[Procesador de respuesta]
+    ReqProcess --> Return[Devolver resultados a HAProxy]
     ResProcess --> Return
-    HAProxy -->|Apply Action| Action[Allow/Deny/Log]
-    Action -->|Response| Client
+    HAProxy -->|Aplicar acción| Action[Permitir/Denegar/Registrar]
+    Action -->|Respuesta| Client
 ```
 
-### SPOE Communication Workflow
+## Funcionalidades
 
-```
-[HAProxy Request] → [internal.Agent.Serve(Listener)]
-                          ↓
-                   Create spop.Agent
-                   agent := spop.Agent{
-                       Handler: a,
-                       BaseContext: a.Context,
-                   }
-                          ↓
-                [spop.Agent.Serve(Listener)]
-                          ↓
-                   Accept new connections
-                   nc, err := l.Accept()
-                          ↓
-                   Create protocol handler
-                   p := newProtocolClient(ctx, nc, as, handler)
-                          ↓
-                   Start goroutine for connection
-                   go func() {
-                       p.Serve()
-                   }()
-                          ↓
-                [protocolClient.Serve]
-                   Process frames in connection
-                          ↓
-                [frameHandler processes Frame]
-                   Dispatch based on frame type
-                          ↓
-                [onNotify handles messages]
-                   Create message scanner and objects
-                   Call Handler.HandleSPOE
-                          ↓
-                [internal.Agent.HandleSPOE processing]
-                          ↓
-                   Parse message type (coraza-req/coraza-res)
-                          ↓
-                   Get application name
-                          ↓
-                   Find Application
-                          ↓
-                   Execute message handler
-                          ↓
-                   Process return results
-                          ↓
-                [Return to HAProxy]
-```
+- **Protección multi-motor**
 
-## Features
-
-- **Multi-Engine Protection**
-
-  - **Coraza WAF Engine**:
-
-    - OWASP Core Rule Set (CRS) support
-    - ModSecurity SecLang rule compatibility
-    - Custom rule management
+  - **Motor Coraza WAF**:
+    - Soporte del OWASP Core Rule Set (CRS)
+    - Compatibilidad con reglas SecLang de ModSecurity
+    - Gestión de reglas personalizadas
 
   - **MicroEngine**:
+    - Coincidencia basada en reglas para IP, URL y ruta de petición
+    - Combinaciones de condiciones complejas (lógica AND/OR)
+    - Listas blancas/negras de IP con soporte CIDR
+    - Coincidencia eficiente por regex con caché
 
-    - Rule-based matching for IP, URL, and request path
-    - Complex condition combinations (AND/OR logic)
-    - IP blacklist/whitelist with CIDR support
-    - Efficient regex matching with caching
+  - **Análisis geográfico**:
+    - Filtrado por país y región
+    - Visualización geográfica de ataques
 
-  - **Geographic Analysis**:
+  - **Control de tráfico**:
+    - Limitación de velocidad y restricción de peticiones
+    - Mecanismos de control de conexión
 
-    - Country and region-based filtering
-    - Geographic attack visualization
+- **Integración con HAProxy**
 
-  - **Traffic Control**:
-    - Rate limiting and request throttling
-    - Connection control mechanisms
+  - Gestión completa del ciclo de vida de HAProxy (iniciar, detener, reiniciar)
+  - Generación dinámica de configuración
+  - Monitorización de estado en tiempo real
 
-- **HAProxy Integration**
+- **Seguridad avanzada**
 
-  - Full HAProxy lifecycle management (start, stop, restart)
-  - Dynamic configuration generation
-  - Real-time status monitoring
+  - Inspección de peticiones HTTP
+  - Inspección de respuestas HTTP
+  - Detección y prevención de ataques en tiempo real
+  - Sistema de permisos de usuario RBAC
 
-- **Advanced Security**
+- **Monitorización y registros**
 
-  - HTTP request inspection
-  - HTTP response inspection
-  - Real-time attack detection and prevention
-  - RBAC user permission system
+  - Registros y analítica de ataques del WAF
+  - Estadísticas de tráfico
+  - Métricas de rendimiento
 
-- **Monitoring and Logging**
+- **Flujo de trabajo basado en API**
+  - API RESTful con el framework Gin
+  - Documentación de API con Swagger/ReDoc
+  - Autenticación JWT
 
-  - WAF attack logs and analytics
-  - Traffic statistics
-  - Performance metrics
+## Requisitos previos
 
-- **API-Driven Workflow**
-  - RESTful API with Gin framework
-  - Swagger/ReDoc API documentation
-  - JWT authentication
+- Docker y Docker Compose (para despliegue)
+- Go 1.24+ y Node.js con pnpm (para desarrollo local)
 
-## Prerequisites
+## Despliegue con Docker
 
-- Go 1.24.1 or higher
-- Node.js 23.10.0 and pnpm 10.11.0 (for frontend development)
-- HAProxy 3.0 (for local development)
-- MongoDB 6.0
-- Docker and Docker Compose (for containerized deployment)
-
-## Local Development
-
-1. Clone the repository:
+1. Clonar el repositorio:
 
 ```bash
-git clone https://github.com/HUAHUAI23/RuiQi.git
-cd RuiQi
+git clone https://github.com/anticoi/EscudoWAF.git
+cd EscudoWAF
 ```
 
-2. Setup the frontend development environment:
+2. Desplegar con Docker Compose (incluye MongoDB):
 
 ```bash
-cd server/web
+# Editar docker-compose.yaml para ajustar las variables de entorno si es necesario
+docker-compose up -d
+```
+
+3. Alternativamente, compilar la imagen Docker manualmente:
+
+```bash
+docker build -t escudo-waf:latest .
+docker run -p 2333:2333 -p 8080:8080 -p 443:443 -p 80:80 -p 9443:9443 -p 8404:8404 escudo-waf:latest
+```
+
+Usuario por defecto: **admin** · Contraseña por defecto: **admin123**
+
+## Desarrollo local
+
+1. Clonar el repositorio:
+
+```bash
+git clone https://github.com/anticoi/EscudoWAF.git
+cd EscudoWAF
+```
+
+2. Preparar el entorno de desarrollo del frontend:
+
+```bash
+cd web
 pnpm install
-pnpm dev # For development mode with hot reload
-# or
-pnpm build # For production build
-cd ../..
+pnpm dev    # modo desarrollo con recarga en caliente
+# o
+pnpm build  # compilación de producción
+cd ..
 ```
 
-3. Configure backend environment:
+3. Configurar el entorno del backend:
 
 ```bash
 cp server/.env.template server/.env
-# Edit .env with your configurations
+# Editar .env con tu configuración
 ```
 
-4. Run the Go backend service:
+4. Ejecutar el servicio backend en Go:
 
 ```bash
 go work use ./coraza-spoa ./pkg ./server
@@ -215,85 +174,20 @@ cd server
 go run main.go
 ```
 
-The development server will start with:
+El servidor de desarrollo se iniciará con:
 
-- API server: `http://localhost:2333/api/v1`
+- API: `http://localhost:2333/api/v1`
 - Swagger UI: `http://localhost:2333/swagger/index.html`
-- ReDoc UI: `http://localhost:2333/redoc`
+- ReDoc: `http://localhost:2333/redoc`
 - Frontend: `http://localhost:2333/`
 
-## Docker Deployment
+## Licencia
 
-1. Clone the repository:
+Este proyecto está licenciado bajo la licencia MIT — ver el archivo [LICENSE](./LICENSE) para más detalles.
 
-```bash
-git clone https://github.com/HUAHUAI23/RuiQi.git
-cd RuiQi
-```
+## Agradecimientos
 
-2. Build the Docker image:
-
-```bash
-docker build -t ruiqi-waf:latest .
-```
-
-3. Run as a standalone container:
-
-```bash
-docker run -p 2333:2333 -p 8080:8080 -p 443:443 -p 80:80 -p 9443:9443 -p 8404:8404 ruiqi-waf:latest
-```
-
-4. Alternatively, use Docker Compose for a complete deployment with MongoDB:
-
-```bash
-# Edit docker-compose.yaml to configure environment variables if needed
-docker-compose up -d
-```
-
-This will start both MongoDB and Simple WAF services with all required configurations.
-
-## Roadmap
-
-Our project features and development progress:
-
-1. **Monitoring Dashboard**
-
-   - [x] Real-time attack visualization map
-   - [x] Geographic attack origin analytics
-   - [ ] Comprehensive security metrics dashboard
-
-2. **Advanced Traffic Control**
-
-   - [x] Fine-grained rate limiting
-   - [x] Request frequency analysis
-   - [ ] Adaptive throttling based on traffic patterns
-
-3. **Alert Integration**
-
-   - [ ] Webhook alert system
-   - [ ] Integration with popular messaging platforms
-   - [ ] Customizable alert templates
-
-4. **AI Security Analysis**
-
-   - [ ] ML-based attack pattern detection
-   - [ ] AI-assisted rule generation
-   - [ ] Automated ModSecurity directive creation
-   - [ ] MCP (Model Control Plane) integration
-
-5. **Enhanced Rule Management**
-   - [ ] OWASP Top 10 specific rule templates
-   - [ ] Rule effectiveness scoring
-   - [ ] One-click protection profiles
-
-For detailed technical documentation on engine architecture and implementation, see the proposals in the `/doc/proposal` directory.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
-
-## Acknowledgements
-
+- [RuiQi](https://github.com/HUAHUAI23/RuiQi) — proyecto original del que deriva este fork (MIT, © HUAHUAI23)
 - [OWASP Coraza WAF](https://github.com/corazawaf/coraza)
 - [Coraza SPOA](https://github.com/corazawaf/coraza-spoa)
 - [HAProxy](https://www.haproxy.org/)

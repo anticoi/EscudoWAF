@@ -2,64 +2,64 @@ package model
 
 import "time"
 
-// 角色常量
+// Constantes de roles
 const (
-	RoleAdmin        = "admin"        // 管理员，拥有所有权限
-	RoleAuditor      = "auditor"      // 审计员，可查看日志和审计信息
-	RoleConfigurator = "configurator" // 配置管理员，可管理系统配置
-	RoleUser         = "user"         // 普通用户，基本操作权限
+	RoleAdmin        = "admin"        // Administrador, tiene todos los permisos
+	RoleAuditor      = "auditor"      // Auditor, puede ver logs e información de auditoría
+	RoleConfigurator = "configurator" // Administrador de configuración, puede gestionar la configuración del sistema
+	RoleUser         = "user"         // Usuario normal, permisos de operación básicos
 )
 
-// 权限常量
+// Constantes de permisos
 const (
-	// 用户管理权限
+	// Permisos de gestión de usuarios
 	PermUserCreate = "user:create"
 	PermUserRead   = "user:read"
 	PermUserUpdate = "user:update"
 	PermUserDelete = "user:delete"
 
-	// 站点管理权限
+	// Permisos de gestión de sitios
 	PermSiteCreate = "site:create"
 	PermSiteRead   = "site:read"
 	PermSiteUpdate = "site:update"
 	PermSiteDelete = "site:delete"
 
-	// 证书管理权限
+	// Permisos de gestión de certificados
 	PermCertCreate = "cert:create"
 	PermCertRead   = "cert:read"
 	PermCertUpdate = "cert:update"
 	PermCertDelete = "cert:delete"
 
-	// 配置管理权限
+	// Permisos de gestión de configuración
 	PermConfigRead   = "config:read"
 	PermConfigUpdate = "config:update"
 
-	// 审计日志权限
+	// Permisos de logs de auditoría
 	PermAuditRead = "audit:read"
 
-	// 系统管理权限
+	// Permisos de administración del sistema
 	PermSystemRestart = "system:restart"
 	PermSystemStatus  = "system:status"
 
-	// WAF日志权限
+	// Permisos de logs del WAF
 	PermWAFLogRead = "waf:log:read"
 )
 
-// Role 角色模型
+// Role modelo de rol
 type Role struct {
 	ID          string    `bson:"_id,omitempty" json:"id,omitempty"`
-	Name        string    `bson:"name" json:"name"`               // 角色名称
-	Description string    `bson:"description" json:"description"` // 角色描述
-	Permissions []string  `bson:"permissions" json:"permissions"` // 权限列表
+	Name        string    `bson:"name" json:"name"`               // Nombre del rol
+	Description string    `bson:"description" json:"description"` // Descripción del rol
+	Permissions []string  `bson:"permissions" json:"permissions"` // Lista de permisos
 	CreatedAt   time.Time `bson:"createdAt" json:"createdAt"`
 	UpdatedAt   time.Time `bson:"updatedAt" json:"updatedAt"`
 }
 
-// 获取默认角色权限映射
+// Obtener el mapeo de permisos de roles por defecto
 func GetDefaultRolePermissions() map[string][]string {
 	return map[string][]string{
 		RoleAdmin: {
-			// 管理员拥有所有权限
+			// El administrador tiene todos los permisos
 			PermUserCreate, PermUserRead, PermUserUpdate, PermUserDelete,
 			PermSiteCreate, PermSiteRead, PermSiteUpdate, PermSiteDelete,
 			PermConfigRead, PermConfigUpdate,
@@ -69,7 +69,7 @@ func GetDefaultRolePermissions() map[string][]string {
 			PermCertCreate, PermCertRead, PermCertUpdate, PermCertDelete,
 		},
 		RoleAuditor: {
-			// 审计员可以查看用户、站点、配置和审计日志
+			// El auditor puede ver usuarios, sitios, configuración y logs de auditoría
 			PermUserRead,
 			PermSiteRead,
 			PermConfigRead,
@@ -79,7 +79,7 @@ func GetDefaultRolePermissions() map[string][]string {
 			PermCertRead,
 		},
 		RoleConfigurator: {
-			// 配置管理员可以管理站点和配置
+			// El administrador de configuración puede gestionar sitios y configuración
 			PermSiteCreate, PermSiteRead, PermSiteUpdate, PermSiteDelete,
 			PermConfigRead, PermConfigUpdate,
 			PermSystemStatus,
@@ -87,7 +87,7 @@ func GetDefaultRolePermissions() map[string][]string {
 			PermCertRead, PermCertUpdate, PermCertDelete,
 		},
 		RoleUser: {
-			// 普通用户只能查看站点和系统状态
+			// Los usuarios normales solo pueden ver sitios y estado del sistema
 			PermSiteRead,
 			PermSystemStatus,
 			PermWAFLogRead,
@@ -96,7 +96,7 @@ func GetDefaultRolePermissions() map[string][]string {
 	}
 }
 
-// GetCollectionName 返回集合名称
+// GetCollectionName devuelve el nombre de la colección
 func (r *Role) GetCollectionName() string {
 	return "role"
 }

@@ -8,29 +8,29 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// 初始化字符串相关验证器
+// Inicializar validadores de cadenas
 func init() {
 	Register("domain", DomainOrIPValidator)
 }
 
-// DomainOrIPValidator 验证字符串是否为有效的域名或IP地址
+// DomainOrIPValidator valida si una cadena es un dominio o dirección IP válida
 var DomainOrIPValidator validator.Func = func(fl validator.FieldLevel) bool {
 	value, ok := fl.Field().Interface().(string)
 	if !ok {
 		return false
 	}
 
-	// 1. 检查是否为有效的IP地址
+	// 1. Comprobar si es una dirección IP válida
 	if ip := net.ParseIP(value); ip != nil {
 		return true
 	}
 
-	// 2. 检查是否为有效的域名
-	// 域名正则表达式
-	// 规则:
-	// 1. 由字母、数字、连字符组成，连字符不能在开头或结尾
-	// 2. 每个标签(点之间的部分)长度不超过63个字符
-	// 3. 至少有一个点，最后一个部分至少2个字符(TLD)
+	// 2. Comprobar si es un dominio válido
+	// Expresión regular de dominio
+	// Reglas:
+	// 1. Compuesto por letras, números y guiones; el guion no puede ir al inicio ni al final
+	// 2. Cada etiqueta (parte entre puntos) no puede superar 63 caracteres
+	// 3. Al menos un punto; la última parte debe tener al menos 2 caracteres (TLD)
 	domainRegex := regexp.MustCompile(`^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$`)
 
 	return domainRegex.MatchString(value)

@@ -33,10 +33,10 @@ export function DeleteCertificateDialog({
     onDeleted
 }: DeleteCertificateDialogProps) {
     const { t } = useTranslation()
-    // 删除证书钩子
+    // Hook de eliminación de certificado
     const { deleteCertificate, isLoading } = useDeleteCertificate()
 
-    // 处理删除证书
+    // Manejar la eliminación del certificado
     const handleDeleteCertificate = () => {
         if (!certificateId) return
 

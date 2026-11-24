@@ -1,12 +1,12 @@
 import { ENV } from "@/utils/env"
 
 /**
- * 常量类型定义
+ * Definición de tipos de constantes
  */
 export type ConstantValue = string | number | boolean | null | undefined
 
 /**
- * 常量分类枚举
+ * Enumeración de categorías de constantes
  */
 export enum ConstantCategory {
     SYSTEM = 'system',
@@ -16,7 +16,7 @@ export enum ConstantCategory {
 }
 
 /**
- * 常量存储接口
+ * Interfaz de almacenamiento de constantes
  */
 interface ConstantStore {
     [category: string]: {
@@ -25,8 +25,8 @@ interface ConstantStore {
 }
 
 /**
- * 常量存储对象
- * 使用分类存储不同类型的常量
+ * Objeto de almacenamiento de constantes
+ * Usar categorías para almacenar distintos tipos de constantes
  */
 const constantStore: ConstantStore = {
     [ConstantCategory.SYSTEM]: {
@@ -54,11 +54,11 @@ const constantStore: ConstantStore = {
 }
 
 /**
- * 常量获取函数
- * @param category 常量分类
- * @param key 常量键名
- * @param defaultValue 默认值（当常量不存在时返回）
- * @returns 常量值或默认值
+ * Función de obtención de constantes
+ * @param category categoría de la constante
+ * @param key nombre de la clave de la constante
+ * @param defaultValue valor por defecto (devuelto si la constante no existe)
+ * @returns valor de la constante o valor por defecto
  */
 export function getConstant<T extends ConstantValue>(
     category: ConstantCategory,
@@ -75,11 +75,11 @@ export function getConstant<T extends ConstantValue>(
 }
 
 /**
- * 常量设置函数
- * @param category 常量分类
- * @param key 常量键名
- * @param value 要设置的值
- * @returns 是否设置成功
+ * Función de establecimiento de constantes
+ * @param category categoría de la constante
+ * @param key nombre de la clave de la constante
+ * @param value valor a establecer
+ * @returns si se estableció con éxito
  */
 export function setConstant(
     category: ConstantCategory,
@@ -87,12 +87,12 @@ export function setConstant(
     value: ConstantValue
 ): boolean {
     try {
-        // 确保分类存在
+        // Asegurar que la categoría exista
         if (!constantStore[category]) {
             constantStore[category] = {}
         }
 
-        // 设置常量值
+        // Establecer el valor de la constante
         constantStore[category][key] = value
         return true
     } catch (error) {
@@ -102,10 +102,10 @@ export function setConstant(
 }
 
 /**
- * 检查常量是否存在
- * @param category 常量分类
- * @param key 常量键名
- * @returns 是否存在
+ * Comprobar si la constante existe
+ * @param category categoría de la constante
+ * @param key nombre de la clave de la constante
+ * @returns si existe
  */
 export function hasConstant(
     category: ConstantCategory,
@@ -118,9 +118,9 @@ export function hasConstant(
 }
 
 /**
- * 获取分类下的所有常量
- * @param category 常量分类
- * @returns 常量对象
+ * Obtener todas las constantes de la categoría
+ * @param category categoría de la constante
+ * @returns objeto de la constante
  */
 export function getCategoryConstants(
     category: ConstantCategory
@@ -129,22 +129,22 @@ export function getCategoryConstants(
 }
 
 /**
- * 批量设置常量
- * @param category 常量分类
- * @param constants 常量键值对
- * @returns 是否全部设置成功
+ * Establecer constantes por lotes
+ * @param category categoría de la constante
+ * @param constants pares clave-valor de constantes
+ * @returns si todo se estableció con éxito
  */
 export function setBatchConstants(
     category: ConstantCategory,
     constants: Record<string, ConstantValue>
 ): boolean {
     try {
-        // 确保分类存在
+        // Asegurar que la categoría exista
         if (!constantStore[category]) {
             constantStore[category] = {}
         }
 
-        // 批量设置常量
+        // Establecer constantes por lotes
         Object.entries(constants).forEach(([key, value]) => {
             constantStore[category][key] = value
         })

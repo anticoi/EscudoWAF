@@ -3,28 +3,28 @@ package controller
 import (
 	"errors"
 
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/dto"
-	"github.com/HUAHUAI23/RuiQi/server/service"
-	"github.com/HUAHUAI23/RuiQi/server/service/daemon"
-	"github.com/HUAHUAI23/RuiQi/server/utils/response"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/dto"
+	"github.com/anticoi/EscudoWAF/server/service"
+	"github.com/anticoi/EscudoWAF/server/service/daemon"
+	"github.com/anticoi/EscudoWAF/server/utils/response"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 )
 
-// RunnerController 运行器控制器接口
+// RunnerController interfaz del controlador del runner
 type RunnerController interface {
 	GetStatus(ctx *gin.Context)
 	Control(ctx *gin.Context)
 }
 
-// RunnerControllerImpl 运行器控制器实现
+// RunnerControllerImpl implementación del controlador del runner
 type RunnerControllerImpl struct {
 	runnerService service.RunnerService
 	logger        zerolog.Logger
 }
 
-// NewRunnerController 创建运行器控制器
+// NewRunnerController crea el controlador del runner
 func NewRunnerController(runnerService service.RunnerService) RunnerController {
 	logger := config.GetControllerLogger("runner")
 	return &RunnerControllerImpl{
@@ -33,7 +33,7 @@ func NewRunnerController(runnerService service.RunnerService) RunnerController {
 	}
 }
 
-// getStateString 将ServiceState转换为字符串
+// getStateString convierte ServiceState a cadena
 func getStateString(state daemon.ServiceState) string {
 	switch state {
 	case daemon.ServiceRunning:
@@ -47,30 +47,30 @@ func getStateString(state daemon.ServiceState) string {
 	}
 }
 
-// isStateRunning 检查状态是否为运行中
+// isStateRunning comprueba si el estado es en ejecución
 func isStateRunning(state daemon.ServiceState) bool {
 	return state == daemon.ServiceRunning
 }
 
-// getSuccessMessage 根据操作类型返回成功消息
+// getSuccessMessage devuelve el mensaje de éxito según el tipo de operación
 func getSuccessMessage(action string) string {
 	switch action {
 	case "start":
-		return "运行器已成功启动"
+		return "El runner se inició con éxito"
 	case "stop":
-		return "运行器已成功停止"
+		return "El runner se detuvo con éxito"
 	case "restart":
-		return "运行器已成功重启"
+		return "El runner se reinició con éxito"
 	case "force_stop":
-		return "运行器已强制停止"
+		return "El runner se detuvo forzosamente"
 	case "reload":
-		return "运行器配置已重新加载"
+		return "Configuración del runner recargada"
 	default:
-		return "操作成功"
+		return "Operación exitosa"
 	}
 }
 
-// toRunnerStatusResponse 将状态转换为响应对象
+// toRunnerStatusResponse convierte el estado a objeto de respuesta
 func toRunnerStatusResponse(state daemon.ServiceState) dto.RunnerStatusResponse {
 	return dto.RunnerStatusResponse{
 		State:     getStateString(state),
@@ -78,7 +78,7 @@ func toRunnerStatusResponse(state daemon.ServiceState) dto.RunnerStatusResponse 
 	}
 }
 
-// buildControlResponse 构建控制响应
+// buildControlResponse construye la respuesta de control
 func buildControlResponse(action string, state daemon.ServiceState) dto.RunnerControlResponse {
 	return dto.RunnerControlResponse{
 		Success: true,
@@ -88,59 +88,59 @@ func buildControlResponse(action string, state daemon.ServiceState) dto.RunnerCo
 	}
 }
 
-// GetStatus 获取运行器状态
+// GetStatus obtiene el estado del runner
 //
-//	@Summary		获取后台运行器状态
-//	@Description	获取WAF后台运行器的运行状态
-//	@Tags			运行器管理
+//	@Summary		Obtener el estado del runner en segundo plano
+//	@Description	Obtener el estado de ejecución del runner del WAF
+//	@Tags			Gestión del runner
 //	@Produce		json
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponse{data=dto.RunnerStatusResponse}	"获取运行器状态成功"
-//	@Failure		500	{object}	model.ErrResponseDontShowError							"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponse{data=dto.RunnerStatusResponse}	"Estado del runner obtenido con éxito"
+//	@Failure		500	{object}	model.ErrResponseDontShowError							"Error interno del servidor"
 //	@Router			/api/runner/status [get]
 func (c *RunnerControllerImpl) GetStatus(ctx *gin.Context) {
-	// 获取运行器状态
+	// Obtener el estado del runner
 	state, err := c.runnerService.GetStatus(ctx)
 	if err != nil {
-		c.logger.Error().Err(err).Msg("获取运行器状态失败")
+		c.logger.Error().Err(err).Msg("Error al obtener el estado del runner")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	// 构建响应
+	// Construir la respuesta
 	resp := toRunnerStatusResponse(state)
 
-	response.Success(ctx, "获取运行器状态成功", resp)
+	response.Success(ctx, "Estado del runner obtenido con éxito", resp)
 }
 
-// Control 控制运行器
+// Control controla el runner
 //
-//	@Summary		控制后台运行器
-//	@Description	执行启动、停止、重启、强制停止或热重载操作
-//	@Tags			运行器管理
+//	@Summary		Controlar el runner en segundo plano
+//	@Description	Ejecutar operación de inicio, parada, reinicio, parada forzada o recarga en caliente
+//	@Tags			Gestión del runner
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body	dto.RunnerControlRequest	true	"运行器控制请求"
+//	@Param			request	body	dto.RunnerControlRequest	true	"Petición de control del runner"
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponse{data=dto.RunnerControlResponse}	"操作成功"
-//	@Failure		400	{object}	model.ErrResponse										"请求参数错误"
-//	@Failure		500	{object}	model.ErrResponseDontShowError							"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponse{data=dto.RunnerControlResponse}	"Operación exitosa"
+//	@Failure		400	{object}	model.ErrResponse										"Parámetros de la petición incorrectos"
+//	@Failure		500	{object}	model.ErrResponseDontShowError							"Error interno del servidor"
 //	@Router			/api/runner/control [post]
 func (c *RunnerControllerImpl) Control(ctx *gin.Context) {
 	var req dto.RunnerControlRequest
 
-	// 绑定请求参数
+	// Vincular los parámetros de la petición
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		c.logger.Warn().Err(err).Msg("请求参数绑定失败")
+		c.logger.Warn().Err(err).Msg("Error al vincular los parámetros de la petición")
 		response.BadRequest(ctx, err, true)
 		return
 	}
 
-	c.logger.Info().Str("action", req.Action).Msg("控制运行器请求")
+	c.logger.Info().Str("action", req.Action).Msg("Petición de control del runner")
 
 	var err error
 
-	// 根据操作类型执行相应的操作
+	// Ejecutar la operación correspondiente según el tipo
 	switch req.Action {
 	case "start":
 		err = c.runnerService.Start(ctx)
@@ -153,34 +153,34 @@ func (c *RunnerControllerImpl) Control(ctx *gin.Context) {
 	case "reload":
 		err = c.runnerService.Reload(ctx)
 	default:
-		c.logger.Warn().Str("action", req.Action).Msg("不支持的操作类型")
-		response.BadRequest(ctx, errors.New("不支持的操作类型"), true)
+		c.logger.Warn().Str("action", req.Action).Msg("Tipo de operación no soportada")
+		response.BadRequest(ctx, errors.New("Tipo de operación no soportada"), true)
 		return
 	}
 
-	// 处理操作结果
+	// Manejar el resultado de la operación
 	if err != nil {
 		if errors.Is(err, service.ErrRunnerNotRunning) {
-			c.logger.Warn().Str("action", req.Action).Msg("运行器未在运行")
+			c.logger.Warn().Str("action", req.Action).Msg("El runner no está en ejecución")
 			response.BadRequest(ctx, err, true)
 			return
 		} else if errors.Is(err, service.ErrRunnerAlreadyRunning) {
-			c.logger.Warn().Str("action", req.Action).Msg("运行器已经在运行中")
+			c.logger.Warn().Str("action", req.Action).Msg("El runner ya está en ejecución")
 			response.BadRequest(ctx, err, true)
 			return
 		}
 
-		c.logger.Error().Err(err).Str("action", req.Action).Msg("运行器操作失败")
+		c.logger.Error().Err(err).Str("action", req.Action).Msg("Operación del runner fallida")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	// 操作成功后获取最新状态
+	// Obtener el estado más reciente tras una operación exitosa
 	state, _ := c.runnerService.GetStatus(ctx)
 
-	// 构建响应
+	// Construir la respuesta
 	resp := buildControlResponse(req.Action, state)
 
-	c.logger.Info().Str("action", req.Action).Str("state", resp.State).Msg("运行器操作成功")
-	response.Success(ctx, "操作成功", resp)
+	c.logger.Info().Str("action", req.Action).Str("state", resp.State).Msg("Operación del runner exitosa")
+	response.Success(ctx, "Operación exitosa", resp)
 }

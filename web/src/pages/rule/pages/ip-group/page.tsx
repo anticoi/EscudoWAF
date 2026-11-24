@@ -187,15 +187,15 @@ export default function IPGroupPage() {
                 }
                 const newPagination = updater(oldPagination)
 
-                // 只有当页码改变时才更新页码
+                // Solo actualizar el número de página cuando cambia
                 if (newPagination.pageIndex !== oldPagination.pageIndex) {
                     setPage(newPagination.pageIndex + 1)
                 }
 
-                // 只有当每页条数改变时才更新每页条数并重置页码
+                // Solo actualizar la cantidad por página y reiniciar la página cuando cambia
                 if (newPagination.pageSize !== oldPagination.pageSize) {
                     setPageSize(newPagination.pageSize)
-                    setPage(1) // 重置到第一页
+                    setPage(1) // Volver a la primera página
                 }
             }
         }
@@ -203,7 +203,7 @@ export default function IPGroupPage() {
 
     return (
         <Card className="flex flex-col h-full p-6 border-none shadow-none">
-            {/* 头部操作栏 */}
+            {/* Barra de acciones superior */}
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold text-primary dark:text-white">
                     {t('ipGroup.title')}
@@ -220,7 +220,7 @@ export default function IPGroupPage() {
                 </AnimatedButton>
             </div>
 
-            {/* 表格区域 */}
+            {/* Área de tabla */}
             <div className="flex-1 overflow-auto">
                 {isError ? (
                     <AdvancedErrorDisplay error={error} onRetry={refetch} />
@@ -237,14 +237,14 @@ export default function IPGroupPage() {
                 )}
             </div>
 
-            {/* 底部分页 */}
+            {/* Paginación inferior */}
             {!isError && (
                 <div className="mt-4">
                     <DataTablePagination table={table} />
                 </div>
             )}
 
-            {/* IP组对话框 */}
+            {/* Diálogo de grupo de IPs */}
             <IPGroupDialog
                 open={ipGroupDialogOpen}
                 onOpenChange={setIPGroupDialogOpen}
@@ -252,7 +252,7 @@ export default function IPGroupPage() {
                 ipGroup={selectedIPGroup}
             />
 
-            {/* 删除确认对话框 */}
+            {/* Diálogo de confirmación de eliminación */}
             <DeleteIPGroupDialog
                 open={deleteDialogOpen}
                 onOpenChange={setDeleteDialogOpen}

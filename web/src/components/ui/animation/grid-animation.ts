@@ -1,6 +1,6 @@
 import { HTMLMotionProps } from "motion/react"
 
-// 布局动画配置 - 用于处理元素添加、删除和重排序的动画效果
+// Configuración de animación de layout - para animar adición, eliminación y reordenación de elementos
 export const layoutAnimationProps = {
     layout: true,
     initial: { opacity: 0, scale: 0.8 },
@@ -22,7 +22,7 @@ export const layoutAnimationProps = {
     }
 }
 
-// 保留网格项目的动画配置，因为它在SiteCard中使用
+// Conservar la configuración de animación de los elementos de la cuadrícula, usada en SiteCard
 export const gridItemAnimation: HTMLMotionProps<"div"> = {
     variants: {
         initial: {

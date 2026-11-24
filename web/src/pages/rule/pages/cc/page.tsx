@@ -12,7 +12,7 @@ export default function IpBlockPage() {
 
     return (
         <div className="flex flex-col h-full">
-            {/* 页面标题和配置按钮 - 固定高度 */}
+            {/* Título de página y botón de configuración - altura fija */}
             <div className="flex items-center justify-end pt-6 px-6 flex-shrink-0">
                 <AnimatedButton>
                     <Button
@@ -20,17 +20,17 @@ export default function IpBlockPage() {
                         className="flex items-center gap-2"
                     >
                         <Settings className="h-4 w-4" />
-                        {t('flowControl.configSettings', '流量控制配置')}
+                        {t('flowControl.configSettings', 'Configuración de control de flujo')}
                     </Button>
                 </AnimatedButton>
             </div>
 
-            {/* 封禁IP表格 - 弹性高度 */}
+            {/* Tabla de IPs bloqueadas - altura flexible */}
             <div className="flex-1 overflow-hidden">
                 <BlockedIPTable />
             </div>
 
-            {/* 配置对话框 */}
+            {/* Diálogo de configuración */}
             <FlowControlDialog
                 open={configDialogOpen}
                 onOpenChange={setConfigDialogOpen}

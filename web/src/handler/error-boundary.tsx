@@ -41,7 +41,7 @@ interface ErrorDisplayProps {
 export function ErrorDisplay({ error }: ErrorDisplayProps) {
     const { t } = useTranslation()
 
-    // 如果在路由中使用，尝试获取路由错误
+    // Si se usa en rutas, intentar obtener el error de ruta
     try {
         const routeError = useRouteError()
         if (isRouteErrorResponse(routeError)) {
@@ -61,9 +61,9 @@ export function ErrorDisplay({ error }: ErrorDisplayProps) {
                         >
                             <AlertCircle className="h-10 w-10 text-red-500 dark:text-red-400" />
                         </motion.div>
-                        <h1 className="text-3xl font-bold mb-3">{t("error.code", "错误")} {routeError.status}</h1>
+                        <h1 className="text-3xl font-bold mb-3">{t("error.code", "Error")} {routeError.status}</h1>
                         <p className="mb-4 text-muted-foreground text-lg">{routeError.statusText}</p>
-                        <p className="text-sm text-muted-foreground mb-6">{routeError.data?.message || t("error.unexpected", "发生了意外错误")}</p>
+                        <p className="text-sm text-muted-foreground mb-6">{routeError.data?.message || t("error.unexpected", "Se produjo un error inesperado")}</p>
 
                         <div className="flex flex-col sm:flex-row gap-3 justify-center">
                             <Button
@@ -72,14 +72,14 @@ export function ErrorDisplay({ error }: ErrorDisplayProps) {
                                 className="gap-2"
                             >
                                 <RefreshCw className="h-4 w-4" />
-                                {t("error.refresh", "刷新页面")}
+                                {t("error.refresh", "Recargar página")}
                             </Button>
                             <Button
                                 onClick={() => window.location.href = '/'}
                                 className="gap-2"
                             >
                                 <Home className="h-4 w-4" />
-                                {t("error.returnHome", "返回首页")}
+                                {t("error.returnHome", "Volver al inicio")}
                             </Button>
                         </div>
                     </motion.div>
@@ -91,7 +91,7 @@ export function ErrorDisplay({ error }: ErrorDisplayProps) {
             error = routeError
         }
     } catch {
-        // useRouteError 只能在路由上下文中使用
+        // useRouteError solo puede usarse dentro del contexto de rutas
     }
 
     return (
@@ -110,8 +110,8 @@ export function ErrorDisplay({ error }: ErrorDisplayProps) {
                 >
                     <AlertCircle className="h-10 w-10 text-red-500 dark:text-red-400" />
                 </motion.div>
-                <h1 className="text-3xl font-bold mb-3">{t("error.title", "发生了错误")}</h1>
-                <p className="mb-4 text-muted-foreground text-lg">{error?.message || t("error.appProblem", "应用程序遇到了意外问题")}</p>
+                <h1 className="text-3xl font-bold mb-3">{t("error.title", "Se produjo un error")}</h1>
+                <p className="mb-4 text-muted-foreground text-lg">{error?.message || t("error.appProblem", "La aplicación encontró un problema inesperado")}</p>
 
                 {error?.stack && (
                     <div className="mb-6 mx-auto max-w-md">
@@ -128,14 +128,14 @@ export function ErrorDisplay({ error }: ErrorDisplayProps) {
                         className="gap-2"
                     >
                         <RefreshCw className="h-4 w-4" />
-                        {t("error.refresh", "刷新页面")}
+                        {t("error.refresh", "Recargar página")}
                     </Button>
                     <Button
                         onClick={() => window.location.href = '/'}
                         className="gap-2"
                     >
                         <Home className="h-4 w-4" />
-                        {t("error.returnHome", "返回首页")}
+                        {t("error.returnHome", "Volver al inicio")}
                     </Button>
                 </div>
             </motion.div>
@@ -143,7 +143,7 @@ export function ErrorDisplay({ error }: ErrorDisplayProps) {
     )
 }
 
-// 用作路由错误元素的简单包装器
+// Wrapper simple usado como elemento de error de rutas
 export function RouteErrorBoundary() {
     return <ErrorDisplay />
 }

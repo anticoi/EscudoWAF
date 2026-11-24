@@ -1,4 +1,4 @@
-// WAF攻击轨迹数据类型 - 用于安全仪表板可视化
+// Tipo de datos de trayectoria de ataques WAF - para visualización del dashboard de seguridad
 export type WAFAttackTrajectory = {
     type: string
     order: number
@@ -12,22 +12,22 @@ export type WAFAttackTrajectory = {
     endLat: number
     endLng: number
     arcAlt: number
-    colorIndex: number // 攻击类型颜色索引
+    colorIndex: number // Índice de colores por tipo de ataque
 }
 
-// WAF攻击轨迹颜色配置 - 不同颜色代表不同类型的攻击
+// Configuración de colores de trayectorias de ataque WAF - cada color representa un tipo de ataque
 export const WAF_ATTACK_TRAJECTORY_COLORS = [
-    "#8ed4ff", // 浅蓝色 - 一般攻击
-    "#a071da", // 紫色 - 主题色攻击
-    "#ff6b6b", // 红色 - 高危攻击
-    "#4ecdc4", // 青色 - 中等攻击
-    "#45b7d1", // 蓝色 - 探测攻击
-    "#96ceb4", // 绿色 - 低级攻击
-    "#ffeaa7", // 黄色 - 扫描类攻击
-    "#fd79a8"  // 粉色 - 特殊攻击
+    "#8ed4ff", // Azul claro - ataque general
+    "#a071da", // Púrpura - ataque del color del tema
+    "#ff6b6b", // Rojo - ataque de alto riesgo
+    "#4ecdc4", // Cian - ataque medio
+    "#45b7d1", // Azul - ataque de sondeo
+    "#96ceb4", // Verde - ataque de bajo nivel
+    "#ffeaa7", // Amarillo - ataques de escaneo
+    "#fd79a8"  // Rosa - ataque especial
 ]
 
-// WAF防护中心坐标 (杭州)
+// Coordenadas del centro de protección WAF (Hangzhou)
 export const WAF_DEFENSE_CENTER_COORDS = {
     lat: 30.274084,
     lng: 120.155070

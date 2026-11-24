@@ -3,17 +3,17 @@ package daemon
 import (
 	"time"
 
-	"github.com/HUAHUAI23/RuiQi/server/model"
+	"github.com/anticoi/EscudoWAF/server/model"
 )
 
-// GetTestSites 返回用于开发/测试的模拟站点数据
+// GetTestSites devuelve datos de sitios simulados para desarrollo/pruebas
 func GetTestSites() []model.Site {
-	// 创建当前时间的引用，以确保所有时间戳的一致性
+	// Crear referencia de la hora actual para garantizar consistencia de marcas de tiempo
 	now := time.Now()
 
 	return []model.Site{
 		{
-			Name:         "测试站点-ip",
+			Name:         "sitio-prueba-ip",
 			Domain:       "10.214.210.183",
 			ListenPort:   8080,
 			EnableHTTPS:  false,
@@ -36,7 +36,7 @@ func GetTestSites() []model.Site {
 			},
 		},
 		{
-			Name:         "测试站点2-http",
+			Name:         "sitio-prueba2-http",
 			Domain:       "c.com",
 			ListenPort:   8080,
 			EnableHTTPS:  false,
@@ -55,7 +55,7 @@ func GetTestSites() []model.Site {
 			},
 		},
 		{
-			Name:         "测试站点3-https",
+			Name:         "sitio-prueba3-https",
 			Domain:       "a.com",
 			ListenPort:   9443,
 			EnableHTTPS:  true,
@@ -130,7 +130,7 @@ JtutDjT7wgLTacd+39nhwVKw
 			},
 		},
 		{
-			Name:         "测试站点4-https",
+			Name:         "sitio-prueba4-https",
 			Domain:       "b.com",
 			ListenPort:   9443,
 			EnableHTTPS:  true,
@@ -205,7 +205,7 @@ F4HspkmPawQNPqFCDqHcHaA=
 			},
 		},
 		{
-			Name:         "测试站点2-inactive",
+			Name:         "sitio-prueba2-inactivo",
 			Domain:       "d.com",
 			ListenPort:   8080,
 			EnableHTTPS:  false,

@@ -46,7 +46,7 @@ export function EditableField({ value, onChange, label }: EditableFieldProps) {
                 className="h-8"
               />
               <Button onClick={handleSave} className="h-8">
-                保存
+                Guardar
               </Button>
             </div>
           </div>

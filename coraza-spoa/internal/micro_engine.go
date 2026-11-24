@@ -10,16 +10,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/HUAHUAI23/RuiQi/pkg/model"
+	"github.com/anticoi/EscudoWAF/pkg/model"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-// 匹配方式
+// Modo de coincidencia
 type MatchType string
 
 const (
-	// IP匹配方式
+	// Modo de coincidencia de IP
 	MatchEqual        MatchType = "equal"
 	MatchNotEqual     MatchType = "not_equal"
 	MatchFuzzy        MatchType = "fuzzy"
@@ -28,7 +28,7 @@ const (
 	MatchInIPGroup    MatchType = "in_ipgroup"
 	MatchNotInIPGroup MatchType = "not_in_ipgroup"
 
-	// URL和Path匹配方式
+	// Modo de coincidencia de URL y Path
 	MatchInclude       MatchType = "include"
 	MatchContains      MatchType = "contains"
 	MatchNotContains   MatchType = "not_contains"
@@ -36,7 +36,7 @@ const (
 	MatchRegex         MatchType = "regex"
 )
 
-// 匹配目标类型
+// Tipo de objetivo de coincidencia
 type TargetType string
 
 const (
@@ -45,7 +45,7 @@ const (
 	TargetPath TargetType = "path"
 )
 
-// 逻辑操作符
+// Operador lógico
 type LogicalOperator string
 
 const (
@@ -53,12 +53,12 @@ const (
 	LogicalOR  LogicalOperator = "OR"
 )
 
-// Matcher接口定义了条件匹配的方法
+// La interfaz Matcher define los métodos de coincidencia de condiciones
 type Matcher interface {
 	Match(eng *RuleEngine, ip, url, path string) (bool, error)
 }
 
-// 条件类型
+// Tipo de condición
 type ConditionType string
 
 const (
@@ -66,7 +66,7 @@ const (
 	CompositeConditionType ConditionType = "composite"
 )
 
-// SimpleCondition 简单条件
+// SimpleCondition condición simple
 type SimpleCondition struct {
 	Type       ConditionType `json:"type" bson:"type"`
 	Target     TargetType    `json:"target" bson:"target"`
@@ -74,7 +74,7 @@ type SimpleCondition struct {
 	MatchValue string        `json:"match_value" bson:"match_value"`
 }
 
-// Match 实现Matcher接口
+// Match implementa la interfaz Matcher
 func (c *SimpleCondition) Match(eng *RuleEngine, ip, url, path string) (bool, error) {
 	switch c.Target {
 	case SourceIP:
@@ -84,24 +84,24 @@ func (c *SimpleCondition) Match(eng *RuleEngine, ip, url, path string) (bool, er
 	case TargetPath:
 		return eng.matchPath(c, path)
 	default:
-		return false, fmt.Errorf("不支持的目标类型: %s", c.Target)
+		return false, fmt.Errorf("Tipo de objetivo no soportado: %s", c.Target)
 	}
 }
 
-// CompositeCondition 复合条件
+// CompositeCondition condición compuesta
 type CompositeCondition struct {
 	Type       ConditionType   `json:"type" bson:"type"`
 	Operator   LogicalOperator `json:"operator" bson:"operator"`
 	Conditions []bson.Raw      `json:"conditions" bson:"conditions"`
 
-	// 运行时字段，不用于JSON/BSON
+	// Campo de tiempo de ejecución, no usado en JSON/BSON
 	parsedConditions []Matcher
 }
 
-// Match 实现Matcher接口
+// Match implementa la interfaz Matcher
 func (c *CompositeCondition) Match(eng *RuleEngine, ip, url, path string) (bool, error) {
 	if len(c.parsedConditions) == 0 {
-		return false, fmt.Errorf("复合条件未初始化")
+		return false, fmt.Errorf("Condición compuesta no inicializada")
 	}
 
 	var result bool
@@ -120,12 +120,12 @@ func (c *CompositeCondition) Match(eng *RuleEngine, ip, url, path string) (bool,
 		if c.Operator == LogicalAND {
 			result = result && match
 			if !result {
-				return false, nil // 短路
+				return false, nil // Cortocircuito
 			}
 		} else {
 			result = result || match
 			if result {
-				return true, nil // 短路
+				return true, nil // Cortocircuito
 			}
 		}
 	}
@@ -133,31 +133,31 @@ func (c *CompositeCondition) Match(eng *RuleEngine, ip, url, path string) (bool,
 	return result, nil
 }
 
-// ConditionFactory 条件工厂
+// ConditionFactory fábrica de condiciones
 type ConditionFactory struct{}
 
-// ParseCondition 解析条件
+// ParseCondition analiza una condición
 func (f *ConditionFactory) ParseCondition(data bson.Raw) (Matcher, error) {
 	var baseCondition struct {
 		Type ConditionType `json:"type" bson:"type"`
 	}
 
 	if err := bson.Unmarshal(data, &baseCondition); err != nil {
-		return nil, fmt.Errorf("解析条件类型失败: %v", err)
+		return nil, fmt.Errorf("Error al analizar el tipo de condición: %v", err)
 	}
 
 	switch baseCondition.Type {
 	case SimpleConditionType:
 		var condition SimpleCondition
 		if err := bson.Unmarshal(data, &condition); err != nil {
-			return nil, fmt.Errorf("解析简单条件失败: %v", err)
+			return nil, fmt.Errorf("Error al analizar la condición simple: %v", err)
 		}
 		return &condition, nil
 
 	case CompositeConditionType:
 		var condition CompositeCondition
 		if err := bson.Unmarshal(data, &condition); err != nil {
-			return nil, fmt.Errorf("解析复合条件失败: %v", err)
+			return nil, fmt.Errorf("Error al analizar la condición compuesta: %v", err)
 		}
 
 		condition.parsedConditions = make([]Matcher, 0, len(condition.Conditions))
@@ -172,43 +172,43 @@ func (f *ConditionFactory) ParseCondition(data bson.Raw) (Matcher, error) {
 		return &condition, nil
 
 	default:
-		return nil, fmt.Errorf("不支持的条件类型: %s", baseCondition.Type)
+		return nil, fmt.Errorf("Tipo de condición no soportado: %s", baseCondition.Type)
 	}
 }
 
-// Rule 规则 - 添加优先级和序列号字段
+// Rule regla - con campos de prioridad y número de serie añadidos
 type Rule struct {
-	// 嵌入MicroRule
+	// MicroRule embebida
 	model.MicroRule `bson:",inline" json:",inline"`
 
-	// 运行时字段，不用于JSON/BSON
+	// Campo de tiempo de ejecución, no usado en JSON/BSON
 	parsedCondition Matcher `bson:"-" json:"-"`
 	sequence        int     `bson:"-" json:"-"`
 }
 
-// MongoDB配置
+// Configuración de MongoDB
 type MongoDBConfig struct {
 	MongoClient       *mongo.Client
-	Database          string // 数据库名称
-	RuleCollection    string // 规则集合名称
-	IPGroupCollection string // IP组集合名称
+	Database          string // Nombre de la base de datos
+	RuleCollection    string // Nombre de la colección de reglas
+	IPGroupCollection string // Nombre de la colección de grupos de IPs
 }
 
-// RuleEngine 规则引擎
+// RuleEngine motor de reglas
 type RuleEngine struct {
-	Rules       []Rule                    `json:"rules"`     // 所有规则列表
-	IPGroups    map[string]*model.IPGroup `json:"ip_groups"` // IP组映射表
-	regexCache  map[string]*regexp.Regexp // 正则表达式缓存
-	factory     ConditionFactory          // 条件工厂
-	mongoConfig *MongoDBConfig            // MongoDB配置
+	Rules       []Rule                    `json:"rules"`     // Lista de todas las reglas
+	IPGroups    map[string]*model.IPGroup `json:"ip_groups"` // Tabla de mapeo de grupos de IPs
+	regexCache  map[string]*regexp.Regexp // Caché de expresiones regulares
+	factory     ConditionFactory          // Fábrica de condiciones
+	mongoConfig *MongoDBConfig            // Configuración de MongoDB
 }
 
-// NewRuleEngine 创建规则引擎
+// NewRuleEngine crea el motor de reglas
 func NewRuleEngine() *RuleEngine {
 	return &RuleEngine{
 		Rules:    make([]Rule, 0),
 		IPGroups: make(map[string]*model.IPGroup),
-		// TODO: 使用 LRU 优化，设置缓存过期时间，避免缓存过大
+		// TODO: optimizar con LRU, establecer expiración de caché para evitar que crezca demasiado
 		regexCache: make(map[string]*regexp.Regexp),
 		factory:    ConditionFactory{},
 	}
@@ -219,63 +219,63 @@ func (e *RuleEngine) InitMongoConfig(config *MongoDBConfig) error {
 	return nil
 }
 
-// LoadIPGroupsFromMongoDB 从MongoDB加载IP组
+// LoadIPGroupsFromMongoDB carga los grupos de IPs desde MongoDB
 func (e *RuleEngine) LoadIPGroupsFromMongoDB() error {
 	if e.mongoConfig.MongoClient == nil {
-		return fmt.Errorf("MongoDB客户端未初始化")
+		return fmt.Errorf("Cliente de MongoDB no inicializado")
 	}
 
-	// 获取集合
+	// Obtener la colección
 	collection := e.mongoConfig.MongoClient.
 		Database(e.mongoConfig.Database).
 		Collection(e.mongoConfig.IPGroupCollection)
 
-	// 创建上下文
+	// Crear el contexto
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	// 检查并创建默认IP组逻辑
+	// Lógica para comprobar y crear el grupo de IPs por defecto
 	defaultBlacklistCount, err := collection.CountDocuments(ctx, bson.D{{Key: "name", Value: "system_default_blacklist"}})
 	if err != nil {
-		return fmt.Errorf("检查默认黑名单是否存在失败: %v", err)
+		return fmt.Errorf("Error al comprobar si existe la lista negra por defecto: %v", err)
 	}
 
-	// 如果默认黑名单不存在，则创建
+	// Si la lista negra por defecto no existe, crearla
 	if defaultBlacklistCount == 0 {
-		// 创建默认黑名单组
+		// Crear el grupo de lista negra por defecto
 		defaultBlacklist := model.IPGroup{
 			Name:  "system_default_blacklist",
-			Items: []string{}, // 初始为空
+			Items: []string{}, // Inicialmente vacío
 		}
 
-		// 插入到数据库
+		// Insertar en la base de datos
 		_, err := collection.InsertOne(ctx, defaultBlacklist)
 		if err != nil {
-			return fmt.Errorf("创建默认IP黑名单组失败: %v", err)
+			return fmt.Errorf("Error al crear el grupo de lista negra de IPs por defecto: %v", err)
 		}
 	}
 
-	// 查询所有IP组
+	// Consultar todos los grupos de IPs
 	cursor, err := collection.Find(ctx, bson.D{})
 	if err != nil {
-		return fmt.Errorf("查询IP组失败: %v", err)
+		return fmt.Errorf("Error al consultar el grupo de IPs: %v", err)
 	}
 	defer cursor.Close(ctx)
 
-	// 解码IP组
+	// Decodificar el grupo de IPs
 	var ipGroups []model.IPGroup
 	if err = cursor.All(ctx, &ipGroups); err != nil {
-		return fmt.Errorf("解码IP组失败: %v", err)
+		return fmt.Errorf("Error al decodificar el grupo de IPs: %v", err)
 	}
 
-	// 初始化映射表
+	// Inicializar la tabla de mapeo
 	e.IPGroups = make(map[string]*model.IPGroup)
 
-	// 填充IP组映射
+	// Rellenar el mapa de grupos de IPs
 	for _, group := range ipGroups {
 		for _, item := range group.Items {
 			if !isValidIPOrCIDR(item) {
-				return fmt.Errorf("IP组 %s 中包含无效的IP或CIDR: %s", group.Name, item)
+				return fmt.Errorf("El grupo de IPs %s contiene una IP o CIDR no válida: %s", group.Name, item)
 			}
 		}
 		e.IPGroups[group.Name] = &group
@@ -284,30 +284,30 @@ func (e *RuleEngine) LoadIPGroupsFromMongoDB() error {
 	return nil
 }
 
-// LoadRulesFromMongoDB 从MongoDB加载规则
+// LoadRulesFromMongoDB carga las reglas desde MongoDB
 func (e *RuleEngine) LoadRulesFromMongoDB() error {
 	if e.mongoConfig.MongoClient == nil {
-		return fmt.Errorf("MongoDB客户端未初始化")
+		return fmt.Errorf("Cliente de MongoDB no inicializado")
 	}
 
-	// 获取集合
+	// Obtener la colección
 	collection := e.mongoConfig.MongoClient.
 		Database(e.mongoConfig.Database).
 		Collection(e.mongoConfig.RuleCollection)
 
-	// 创建上下文
+	// Crear el contexto
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	// 检查并创建默认规则逻辑
+	// Lógica para comprobar y crear la regla por defecto
 	defaultRuleCount, err := collection.CountDocuments(ctx, bson.D{{Key: "name", Value: "system_default_ip_block"}})
 	if err != nil {
-		return fmt.Errorf("检查默认规则是否存在失败: %v", err)
+		return fmt.Errorf("Error al comprobar si existe la regla por defecto: %v", err)
 	}
 
-	// 如果默认规则不存在，则创建
+	// Si la regla por defecto no existe, crearla
 	if defaultRuleCount == 0 {
-		// 创建默认规则条件
+		// Crear las condiciones de la regla por defecto
 		defaultCondition := SimpleCondition{
 			Type:       "simple",
 			Target:     "source_ip",
@@ -315,69 +315,69 @@ func (e *RuleEngine) LoadRulesFromMongoDB() error {
 			MatchValue: "system_default_blacklist",
 		}
 
-		// 将条件序列化为BSON
+		// Serializar las condiciones a BSON
 		conditionBytes, err := bson.Marshal(defaultCondition)
 		if err != nil {
-			return fmt.Errorf("序列化默认规则条件失败: %v", err)
+			return fmt.Errorf("Error al serializar las condiciones de la regla por defecto: %v", err)
 		}
 
-		// 创建默认规则
+		// Crear la regla por defecto
 		defaultRule := model.MicroRule{
 			Name:      "system_default_ip_block",
 			Type:      "blacklist",
 			Status:    "enabled",
-			Priority:  9999, // 最高优先级
+			Priority:  9999, // Prioridad más alta
 			Condition: conditionBytes,
 		}
 
-		// 插入到数据库
+		// Insertar en la base de datos
 		_, err = collection.InsertOne(ctx, defaultRule)
 		if err != nil {
-			return fmt.Errorf("创建默认规则失败: %v", err)
+			return fmt.Errorf("Error al crear la regla por defecto: %v", err)
 		}
 	}
 
-	// 查询所有规则
+	// Consultar todas las reglas
 	cursor, err := collection.Find(ctx, bson.D{})
 	if err != nil {
-		return fmt.Errorf("查询规则失败: %v", err)
+		return fmt.Errorf("Error al consultar la regla: %v", err)
 	}
 	defer cursor.Close(ctx)
 
-	// 解码规则
+	// Decodificar la regla
 	var rules []Rule
 	if err = cursor.All(ctx, &rules); err != nil {
-		return fmt.Errorf("解码规则失败: %v", err)
+		return fmt.Errorf("Error al decodificar la regla: %v", err)
 	}
 
-	// 设置序列号
+	// Establecer el número de secuencia
 	for i := range rules {
 		rules[i].sequence = i
 	}
 
-	// 解析每个规则的条件
+	// Analizar las condiciones de cada regla
 	for i := range rules {
 		rule := &rules[i]
 		parsedCondition, err := e.factory.ParseCondition(rule.Condition)
 		if err != nil {
-			return fmt.Errorf("解析规则 %s 的条件失败: %v", rule.ID, err)
+			return fmt.Errorf("Error al analizar las condiciones de la regla %s: %v", rule.ID, err)
 		}
 		rule.parsedCondition = parsedCondition
 	}
 
-	// 按照优先级排序，优先级相同时按照原始顺序排序
+	// Ordenar por prioridad; con igual prioridad mantener el orden original
 	sort.Slice(rules, func(i, j int) bool {
 		if rules[i].Priority != rules[j].Priority {
-			return rules[i].Priority > rules[j].Priority // 优先级高的排在前面
+			return rules[i].Priority > rules[j].Priority // Las de mayor prioridad van primero
 		}
-		return rules[i].sequence < rules[j].sequence // 优先级相同时按原始顺序
+		return rules[i].sequence < rules[j].sequence // Con igual prioridad, mantener el orden original
 	})
 
 	e.Rules = rules
 	return nil
 }
 
-// LoadAllFromMongoDB 从MongoDB加载所有规则和IP组
+// LoadAllFromMongoDB carga todas las reglas y grupos de IPs desde MongoDB
 func (e *RuleEngine) LoadAllFromMongoDB() error {
 	if err := e.LoadIPGroupsFromMongoDB(); err != nil {
 		return err
@@ -386,15 +386,15 @@ func (e *RuleEngine) LoadAllFromMongoDB() error {
 	return e.LoadRulesFromMongoDB()
 }
 
-// AddIPGroup 添加IP组
+// AddIPGroup añade un grupo de IPs
 func (e *RuleEngine) AddIPGroup(group model.IPGroup) error {
 	if _, exists := e.IPGroups[group.Name]; exists {
-		return fmt.Errorf("IP组 %s 已存在", group.Name)
+		return fmt.Errorf("El grupo de IPs %s ya existe", group.Name)
 	}
 
 	for _, item := range group.Items {
 		if !isValidIPOrCIDR(item) {
-			return fmt.Errorf("IP组 %s 中包含无效的IP或CIDR: %s", group.Name, item)
+			return fmt.Errorf("El grupo de IPs %s contiene una IP o CIDR no válida: %s", group.Name, item)
 		}
 	}
 
@@ -402,7 +402,7 @@ func (e *RuleEngine) AddIPGroup(group model.IPGroup) error {
 	return nil
 }
 
-// LoadRulesFromJSON 从JSON加载规则 - 修改加载逻辑，增加序列号处理
+// LoadRulesFromJSON carga reglas desde JSON - lógica de carga modificada, con manejo de número de serie
 // BUG type transform error bson raw and json raw
 func (e *RuleEngine) LoadRulesFromJSON(data []byte) error {
 	var rules []Rule
@@ -410,49 +410,49 @@ func (e *RuleEngine) LoadRulesFromJSON(data []byte) error {
 		return err
 	}
 
-	// 设置序列号 - 记录规则在原始配置中的顺序
+	// Establecer el número de secuencia - registra el orden de la regla en la configuración original
 	for i := range rules {
 		rules[i].sequence = i
 	}
 
-	// 解析每个规则的条件
+	// Analizar las condiciones de cada regla
 	for i := range rules {
 		rule := &rules[i]
 		parsedCondition, err := e.factory.ParseCondition(rule.Condition)
 		if err != nil {
-			return fmt.Errorf("解析规则 %s 的条件失败: %v", rule.ID, err)
+			return fmt.Errorf("Error al analizar las condiciones de la regla %s: %v", rule.ID, err)
 		}
 		rule.parsedCondition = parsedCondition
 	}
 
-	// 按照优先级排序，优先级相同时按照原始顺序排序
+	// Ordenar por prioridad; con igual prioridad mantener el orden original
 	sort.Slice(rules, func(i, j int) bool {
 		if rules[i].Priority != rules[j].Priority {
-			return rules[i].Priority > rules[j].Priority // 优先级高的排在前面
+			return rules[i].Priority > rules[j].Priority // Las de mayor prioridad van primero
 		}
-		return rules[i].sequence < rules[j].sequence // 优先级相同时按原始顺序
+		return rules[i].sequence < rules[j].sequence // Con igual prioridad, mantener el orden original
 	})
 
 	e.Rules = rules
 	return nil
 }
 
-// AddRule 添加单个规则
+// AddRule añade una regla
 func (e *RuleEngine) AddRule(rule Rule) error {
-	// 解析规则条件
+	// Analizar las condiciones de la regla
 	parsedCondition, err := e.factory.ParseCondition(rule.Condition)
 	if err != nil {
-		return fmt.Errorf("解析规则 %s 的条件失败: %v", rule.ID, err)
+		return fmt.Errorf("Error al analizar las condiciones de la regla %s: %v", rule.ID, err)
 	}
 	rule.parsedCondition = parsedCondition
 
-	// 设置规则序列号为当前规则列表长度
+	// Establecer el número de secuencia de la regla como la longitud actual de la lista de reglas
 	rule.sequence = len(e.Rules)
 
-	// 添加规则到列表
+	// Añadir la regla a la lista
 	e.Rules = append(e.Rules, rule)
 
-	// 重新排序规则
+	// Reordenar reglas
 	sort.Slice(e.Rules, func(i, j int) bool {
 		if e.Rules[i].Priority != e.Rules[j].Priority {
 			return e.Rules[i].Priority > e.Rules[j].Priority
@@ -463,75 +463,75 @@ func (e *RuleEngine) AddRule(rule Rule) error {
 	return nil
 }
 
-// MatchRequest 匹配请求
-// 参数：
-// - ip: 源IP地址
-// - url: 请求URL
-// - path: 请求路径
-// 返回值：
-// - shouldBlock: 是否应该拦截请求 (true表示拦截，false表示放行)
-// - ruleType: 匹配的规则类型
-// - rule: 匹配的规则
-// - error: 错误信息
+// MatchRequest petición de coincidencia
+// Parámetros:
+// - ip: dirección IP de origen
+// - url: URL de la petición
+// - path: ruta de la petición
+// Valor de retorno:
+// - shouldBlock: si se debe bloquear la petición (true bloquea, false permite)
+// - ruleType: tipo de la regla que coincidió
+// - rule: regla que coincidió
+// - error: información del error
 func (e *RuleEngine) MatchRequest(ip string, url string, path string) (shouldBlock bool, ruleType model.RuleType, rule *Rule, err error) {
-	// 验证IP地址格式
+	// Validar el formato de la dirección IP
 	if !isValidIP(ip) {
-		return false, "", nil, fmt.Errorf("无效的IP地址: %s", ip)
+		return false, "", nil, fmt.Errorf("Dirección IP no válida: %s", ip)
 	}
 
-	// 标记是否存在启用的白名单规则
+	// Marca si existen reglas de lista blanca habilitadas
 	hasWhitelistRule := false
 
-	// 遍历所有规则（已按优先级和序列号排序）
+	// Iterar sobre todas las reglas (ya ordenadas por prioridad y número de secuencia)
 	for _, r := range e.Rules {
-		// 检查是否存在启用的白名单规则
+		// Comprobar si existen reglas de lista blanca habilitadas
 		if r.Status == model.RuleEnabled && r.Type == model.WhitelistRule {
 			hasWhitelistRule = true
 		}
 
-		// 跳过禁用的规则
+		// Omitir reglas deshabilitadas
 		if r.Status == model.RuleDisabled {
 			continue
 		}
 
-		// 匹配规则条件
+		// Condiciones de coincidencia de la regla
 		match, err := r.parsedCondition.Match(e, ip, url, path)
 		if err != nil {
 			return false, "", nil, err
 		}
 
-		// 如果规则条件匹配
+		// Si las condiciones de la regla coinciden
 		if match {
-			// 根据规则类型确定是否需要拦截
+			// Determinar si se debe bloquear según el tipo de regla
 			switch r.Type {
 			case model.BlacklistRule:
-				// 黑名单规则匹配成功 -> 返回true(拦截)
+				// Regla de lista negra coincidente -> devolver true (bloquear)
 				return true, r.Type, &r, nil
 			case model.WhitelistRule:
-				// 白名单规则匹配成功 -> 返回false(放行)
+				// Regla de lista blanca coincidente -> devolver false (permitir)
 				return false, r.Type, &r, nil
 			default:
-				return false, "", nil, fmt.Errorf("未知的规则类型: %s", r.Type)
+				return false, "", nil, fmt.Errorf("Tipo de regla desconocido: %s", r.Type)
 			}
 		}
 	}
 
-	// 如果没有匹配任何规则，且存在白名单规则，则拦截
+	// Si no coincide ninguna regla y existen reglas de lista blanca, bloquear
 	if hasWhitelistRule {
-		// 存在白名单规则但未匹配任何规则 -> 拦截请求（安全默认值）
+		// Hay reglas de lista blanca pero ninguna coincidió -> bloquear la petición (valor seguro por defecto)
 		return true, "", nil, nil
 	}
 
-	// 如果没有匹配任何规则，且不存在白名单规则，则默认放行
+	// Si no coincide ninguna regla y no hay reglas de lista blanca, permitir por defecto
 	return false, "", nil, nil
 }
 
-// GetRules 获取当前规则列表
+// GetRules obtiene la lista de reglas actual
 func (e *RuleEngine) GetRules() []Rule {
 	return e.Rules
 }
 
-// matchIP 匹配IP条件
+// matchIP evalúa la condición de IP
 func (e *RuleEngine) matchIP(cond *SimpleCondition, ip string) (bool, error) {
 	switch cond.MatchType {
 	case MatchEqual:
@@ -551,11 +551,11 @@ func (e *RuleEngine) matchIP(cond *SimpleCondition, ip string) (bool, error) {
 		inGroup, err := e.isIPInGroup(ip, cond.MatchValue)
 		return !inGroup, err
 	default:
-		return false, fmt.Errorf("IP不支持匹配方式: %s", cond.MatchType)
+		return false, fmt.Errorf("Modo de coincidencia no soportado para IP: %s", cond.MatchType)
 	}
 }
 
-// matchURL 匹配URL条件
+// matchURL evalúa la condición de URL
 func (e *RuleEngine) matchURL(cond *SimpleCondition, url string) (bool, error) {
 	switch cond.MatchType {
 	case MatchEqual:
@@ -571,34 +571,34 @@ func (e *RuleEngine) matchURL(cond *SimpleCondition, url string) (bool, error) {
 	case MatchRegex:
 		return e.matchRegex(url, cond.MatchValue)
 	default:
-		return false, fmt.Errorf("URL不支持匹配方式: %s", cond.MatchType)
+		return false, fmt.Errorf("Modo de coincidencia no soportado para URL: %s", cond.MatchType)
 	}
 }
 
-// matchPath 匹配Path条件
+// matchPath evalúa la condición de Path
 func (e *RuleEngine) matchPath(cond *SimpleCondition, path string) (bool, error) {
 	return e.matchURL(cond, path)
 }
 
-// 以下是辅助函数
+// A continuación funciones auxiliares
 
-// isValidIP 检查IP是否有效
+// isValidIP comprueba si la IP es válida
 func isValidIP(ip string) bool {
 	return net.ParseIP(ip) != nil
 }
 
-// isValidCIDR 检查CIDR是否有效
+// isValidCIDR comprueba si el CIDR es válido
 func isValidCIDR(cidr string) bool {
 	_, _, err := net.ParseCIDR(cidr)
 	return err == nil
 }
 
-// isValidIPOrCIDR 检查是否为有效的IP或CIDR
+// isValidIPOrCIDR comprueba si es una IP o CIDR válida
 func isValidIPOrCIDR(s string) bool {
 	return isValidIP(s) || isValidCIDR(s)
 }
 
-// isValidIPPattern 检查IP模式是否有效
+// isValidIPPattern comprueba si el patrón de IP es válido
 func isValidIPPattern(pattern string) bool {
 	parts := strings.Split(pattern, ".")
 	if len(parts) != 4 {
@@ -625,28 +625,28 @@ func isValidIPPattern(pattern string) bool {
 	return true
 }
 
-// isIPInCIDR 检查IP是否在CIDR范围内
+// isIPInCIDR comprueba si la IP está dentro del rango CIDR
 func isIPInCIDR(ipStr, cidrStr string) (bool, error) {
 	ip := net.ParseIP(ipStr)
 	if ip == nil {
-		return false, fmt.Errorf("无效的IP地址: %s", ipStr)
+		return false, fmt.Errorf("Dirección IP no válida: %s", ipStr)
 	}
 
 	_, ipNet, err := net.ParseCIDR(cidrStr)
 	if err != nil {
-		return false, fmt.Errorf("无效的CIDR: %s", cidrStr)
+		return false, fmt.Errorf("CIDR no válido: %s", cidrStr)
 	}
 
 	return ipNet.Contains(ip), nil
 }
 
-// matchIPFuzzy 模糊匹配IP
+// matchIPFuzzy coincidencia difusa de IP
 func matchIPFuzzy(ip, pattern string) (bool, error) {
 	ipParts := strings.Split(ip, ".")
 	patternParts := strings.Split(pattern, ".")
 
 	if len(ipParts) != 4 || len(patternParts) != 4 {
-		return false, fmt.Errorf("IP格式错误")
+		return false, fmt.Errorf("Formato de IP incorrecto")
 	}
 
 	for i := 0; i < 4; i++ {
@@ -658,12 +658,12 @@ func matchIPFuzzy(ip, pattern string) (bool, error) {
 	return true, nil
 }
 
-// isIPInGroup 检查IP是否在IP组中
-// TODO: 避免使用线性遍历 O(N)，使用 基数树 (Radix Tree/Patricia Trie) 优化
+// isIPInGroup comprueba si la IP está en el grupo de IPs
+// TODO: evitar el recorrido lineal O(N), optimizar con árbol radix (Radix Tree/Patricia Trie)
 func (e *RuleEngine) isIPInGroup(ip, groupName string) (bool, error) {
 	group, exists := e.IPGroups[groupName]
 	if !exists {
-		return false, fmt.Errorf("IP组不存在: %s", groupName)
+		return false, fmt.Errorf("El grupo de IPs no existe: %s", groupName)
 	}
 
 	for _, item := range group.Items {
@@ -680,21 +680,21 @@ func (e *RuleEngine) isIPInGroup(ip, groupName string) (bool, error) {
 				return true, nil
 			}
 		} else {
-			return false, fmt.Errorf("IP组 %s 包含无效项: %s", groupName, item)
+			return false, fmt.Errorf("El grupo de IPs %s contiene elementos no válidos: %s", groupName, item)
 		}
 	}
 
 	return false, nil
 }
 
-// matchRegex 正则表达式匹配
+// matchRegex coincidencia por expresión regular
 func (e *RuleEngine) matchRegex(s, pattern string) (bool, error) {
 	re, exists := e.regexCache[pattern]
 	if !exists {
 		var err error
 		re, err = regexp.Compile(pattern)
 		if err != nil {
-			return false, fmt.Errorf("无效的正则表达式: %s", pattern)
+			return false, fmt.Errorf("Expresión regular no válida: %s", pattern)
 		}
 		e.regexCache[pattern] = re
 	}

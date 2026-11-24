@@ -8,7 +8,7 @@ import { ApiError } from '@/api/index'
 import { ConstantCategory, getConstant } from '@/constant'
 import { useTranslation } from 'react-i18next'
 
-// 获取配置查询hook
+// Hook de consulta de configuración
 export const useConfigQuery = () => {
     const query = useQuery({
         queryKey: ['config'],
@@ -23,7 +23,7 @@ export const useConfigQuery = () => {
     }
 }
 
-// 更新配置mutation hook
+// Hook de mutación de actualización de configuración
 export const useUpdateConfig = () => {
     const queryClient = useQueryClient()
     const { toast } = useToast()
@@ -34,18 +34,18 @@ export const useUpdateConfig = () => {
         mutationFn: (data: ConfigPatchRequest) => configApi.updateConfig(data),
         onSuccess: () => {
             toast({
-                title: t("globalSetting.config.updateSuccess", "更新成功"),
-                description: t("globalSetting.config.systemConfigUpdated", "系统配置已成功更新"),
+                title: t("globalSetting.config.updateSuccess", "Actualizado con éxito"),
+                description: t("globalSetting.config.systemConfigUpdated", "Configuración del sistema actualizada con éxito"),
                 duration: getConstant(ConstantCategory.FEATURE, 'TOAST_DURATION', 3000),
             })
             queryClient.invalidateQueries({ queryKey: ['config'] })
         },
         onError: (error: ApiError) => {
-            console.error('更新配置失败:', error)
+            console.error('Error al actualizar la configuración:', error)
             setError(error)
             toast({
-                title: t("globalSetting.config.updateFailed", "更新失败"),
-                description: error.message || t("globalSetting.config.updateError", "更新配置时出现错误"),
+                title: t("globalSetting.config.updateFailed", "Error de actualización"),
+                description: error.message || t("globalSetting.config.updateError", "Se produjo un error al actualizar la configuración"),
                 variant: "destructive",
                 duration: getConstant(ConstantCategory.FEATURE, 'TOAST_DURATION', 3000),
             })
@@ -60,24 +60,24 @@ export const useUpdateConfig = () => {
     }
 }
 
-// 获取引擎名称常量
+// Constante para obtener el nombre del motor
 export const getEngineNameConstant = (): string => {
     return getConstant(ConstantCategory.CONFIG, 'ENGINE_NAME', 'coraza')
 }
 
-// 更新配置中指定引擎的指令
+// Actualizar las directivas del motor especificado en la configuración
 export const updateEngineDirectives = (config: ConfigPatchRequest, directives: string): ConfigPatchRequest => {
     const engineName = getEngineNameConstant()
 
-    // 如果没有引擎配置或appConfig，直接返回原始配置
+    // Si no hay configuración de motor ni appConfig, devolver la configuración original
     if (!config.engine || !config.engine.appConfig) {
         return config
     }
 
-    // 查找特定引擎的配置项
+    // Buscar los elementos de configuración de un motor específico
     const engineAppConfig = config.engine.appConfig.find(app => app.name === engineName)
 
-    // 只有找到才更新，否则不做任何处理
+    // Solo actualizar si se encuentra, si no, no hacer nada
     if (engineAppConfig) {
         engineAppConfig.directives = directives
     }

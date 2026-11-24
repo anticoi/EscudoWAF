@@ -6,18 +6,18 @@ import {
     IPGroupUpdateRequest,
 } from '@/types/ip-group'
 
-// IP组API接口基础路径
+// Ruta base de la API de grupos de IPs
 const BASE_URL = '/ip-groups'
 
 /**
- * IP组相关API服务
+ * Servicios de API relacionados con grupos de IPs
  */
 export const ipGroupApi = {
     /**
-     * 获取IP组列表
-     * @param page 页码
-     * @param size 每页数量
-     * @returns IP组列表响应数据
+     * Obtener lista de grupos de IPs
+     * @param page número de página
+     * @param size cantidad por página
+     * @returns datos de respuesta de lista de grupos de IPs
      */
     getIPGroups: (page: number = 1, size: number = 10): Promise<IPGroupListResponse> => {
         return get<IPGroupListResponse>(BASE_URL, {
@@ -26,36 +26,36 @@ export const ipGroupApi = {
     },
 
     /**
-     * 创建新IP组
-     * @param ipGroup IP组创建请求数据
-     * @returns 创建后的IP组详情
+     * Crear nuevo grupo de IPs
+     * @param ipGroup datos de la petición de creación de grupo de IPs
+     * @returns detalles del grupo de IPs creado
      */
     createIPGroup: (ipGroup: IPGroupCreateRequest): Promise<IPGroup> => {
         return post<IPGroup>(BASE_URL, ipGroup)
     },
 
     /**
-     * 获取单个IP组详情
-     * @param id IP组ID
-     * @returns IP组详情
+     * Obtener detalles de un grupo de IPs
+     * @param id ID del grupo de IPs
+     * @returns detalles del grupo de IPs
      */
     getIPGroup: (id: string): Promise<IPGroup> => {
         return get<IPGroup>(`${BASE_URL}/${id}`)
     },
 
     /**
-     * 更新IP组
-     * @param id IP组ID
-     * @param ipGroup IP组更新请求数据
-     * @returns 更新后的IP组详情
+     * Actualizar grupo de IPs
+     * @param id ID del grupo de IPs
+     * @param ipGroup datos de la petición de actualización de grupo de IPs
+     * @returns detalles del grupo de IPs actualizado
      */
     updateIPGroup: (id: string, ipGroup: IPGroupUpdateRequest): Promise<IPGroup> => {
         return put<IPGroup>(`${BASE_URL}/${id}`, ipGroup)
     },
 
     /**
-     * 删除IP组
-     * @param id IP组ID
+     * Eliminar grupo de IPs
+     * @param id ID del grupo de IPs
      * @returns void
      */
     deleteIPGroup: (id: string): Promise<void> => {
@@ -63,8 +63,8 @@ export const ipGroupApi = {
     },
 
     /**
-     * 将IP添加到系统黑名单
-     * @param ip IP地址或CIDR
+     * Añadir la IP a la lista negra del sistema
+     * @param ip dirección IP o CIDR
      * @returns void
      */
     blockIP: (ip: string): Promise<void> => {

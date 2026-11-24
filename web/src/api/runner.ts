@@ -4,21 +4,21 @@ import { RunnerStatusResponse, RunnerControlRequest, RunnerControlResponse } fro
 
 const BASE_URL = '/runner'
 /**
- * 运行器相关API服务
+ * Servicios de API relacionados con el runner
  */
 export const runnerApi = {
     /**
-     * 获取运行器状态
-     * @returns 运行器状态信息
+     * Obtener el estado del runner
+     * @returns información del estado del runner
      */
     getStatus: (): Promise<RunnerStatusResponse> => {
         return get<RunnerStatusResponse>(`${BASE_URL}/status`)
     },
 
     /**
-     * 控制运行器（启动、停止、重启等）
-     * @param request 控制请求
-     * @returns 控制操作结果
+     * Controlar el runner (iniciar, detener, reiniciar, etc.)
+     * @param request petición de control
+     * @returns resultado de la operación de control
      */
     control: (request: RunnerControlRequest): Promise<RunnerControlResponse> => {
         return post<RunnerControlResponse>(`${BASE_URL}/control`, request)

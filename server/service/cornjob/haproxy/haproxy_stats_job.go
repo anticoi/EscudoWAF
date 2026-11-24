@@ -6,36 +6,36 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/service/daemon"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/service/daemon"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/rs/zerolog"
 )
 
-// StatsJob HAProxy统计数据定时任务
+// StatsJob tarea programada de estadísticas de HAProxy
 type StatsJob struct {
 	scheduler   gocron.Scheduler
 	aggregator  *StatsAggregator
 	logger      zerolog.Logger
-	realtimeJob gocron.Job // 实时统计任务
-	minuteJob   gocron.Job // 分钟统计任务
-	targetList  []string   // 监控的目标列表
-	isRunning   bool       // 是否正在运行
+	realtimeJob gocron.Job // Tarea de estadísticas en tiempo real
+	minuteJob   gocron.Job // Tarea de estadísticas por minuto
+	targetList  []string   // Lista de objetivos monitorizados
+	isRunning   bool       // Si está en ejecución
 }
 
-// NewStatsJob 创建新的统计数据定时任务
+// NewStatsJob crea una nueva tarea programada de estadísticas
 func NewStatsJob(runner daemon.ServiceRunner, targetList []string) (*StatsJob, error) {
 	logger := config.GetLogger().With().Str("component", "cronjob-haproxy-stats-job").Logger()
 	dbName := config.Global.DBConfig.Database
-	// 创建数据聚合器
+	// Crear el agregador de datos
 	aggregator, err := NewStatsAggregator(runner, dbName, targetList)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create stats aggregator: %w", err)
 	}
 
-	// 创建调度器，并设置时区
+	// Crear el planificador y establecer la zona horaria
 	scheduler, err := gocron.NewScheduler(
-		gocron.WithLocation(time.Local), // 在创建调度器时设置时区
+		gocron.WithLocation(time.Local), // Establecer la zona horaria al crear el planificador
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create scheduler: %w", err)
@@ -50,45 +50,45 @@ func NewStatsJob(runner daemon.ServiceRunner, targetList []string) (*StatsJob, e
 	}, nil
 }
 
-// UpdateTargetList 更新监控的目标列表
+// UpdateTargetList actualiza la lista de objetivos monitorizados
 func (j *StatsJob) UpdateTargetList(targetList []string) {
-	// 检查前后状态变化
+	// Comprobar cambios de estado anteriores y posteriores
 	hadNoTargets := len(j.targetList) == 0
 	willHaveNoTargets := len(targetList) == 0
 
-	// 保存旧目标数量用于日志
+	// Guardar la cantidad de objetivos anterior para el log
 	oldTargetCount := len(j.targetList)
 
 	j.targetList = targetList
 	j.aggregator.UpdateTargetList(targetList)
 
-	// 处理不同的状态转变
+	// Manejar las distintas transiciones de estado
 	if hadNoTargets && !willHaveNoTargets {
-		// 从无目标到有目标
+		// De sin objetivo a con objetivo
 		j.logger.Info().Strs("targets", targetList).Msg("First targets added, activating monitoring")
 	} else if !hadNoTargets && willHaveNoTargets {
-		// 从有目标到无目标
+		// De con objetivo a sin objetivo
 		j.logger.Warn().Int("previous_count", oldTargetCount).Msg("All targets removed, monitoring entering standby mode")
 	} else {
-		// 其他正常更新
+		// El resto se actualiza normalmente
 		j.logger.Info().
 			Int("count", len(targetList)).
 			Msg("Updated monitoring target list")
 	}
 }
 
-// Start 启动定时任务
+// Start inicia la tarea programada
 func (j *StatsJob) Start(ctx context.Context) error {
 	if j.isRunning {
 		return errors.New("job is already running")
 	}
 
-	// 初始化聚合器
+	// Inicializar el agregador
 	if err := j.aggregator.Start(ctx); err != nil {
 		return fmt.Errorf("failed to start aggregator: %w", err)
 	}
 
-	// 创建实时统计任务 (每5秒)
+	// Crear la tarea de estadísticas en tiempo real (cada 5 segundos)
 	realtimeJob, err := j.scheduler.NewJob(
 		gocron.DurationJob(
 			5*time.Second,
@@ -103,20 +103,20 @@ func (j *StatsJob) Start(ctx context.Context) error {
 		),
 	)
 	if err != nil {
-		// 如果创建Job失败，需要停止已经启动的聚合器
+		// Si falla la creación del Job, detener el agregador ya iniciado
 		stopCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		_ = j.aggregator.Stop(stopCtx) // 忽略停止错误，因为我们已经有了一个更重要的错误
+		_ = j.aggregator.Stop(stopCtx) // Ignorar errores de detención, ya tenemos un error más importante
 
 		return fmt.Errorf("failed to create realtime job: %w", err)
 	}
 	j.realtimeJob = realtimeJob
 
-	// 创建分钟统计任务
+	// Crear la tarea de estadísticas por minuto
 	minuteJob, err := j.scheduler.NewJob(
 		gocron.CronJob(
-			"0 * * * * *", // 每分钟的0秒执行
-			true,          // withSeconds 设置为 true
+			"0 * * * * *", // Ejecutar en el segundo 0 de cada minuto
+			true,          // withSeconds establecido en true
 		),
 		gocron.NewTask(
 			func(ctx context.Context) {
@@ -128,42 +128,42 @@ func (j *StatsJob) Start(ctx context.Context) error {
 		),
 	)
 	if err != nil {
-		// 如果创建Job失败，需要停止已经启动的聚合器和调度器
+		// Si falla la creación del Job, detener el agregador y el planificador ya iniciados
 		if err := j.scheduler.RemoveJob(realtimeJob.ID()); err != nil {
 			j.logger.Error().Err(err).Msg("Failed to remove realtime job")
 		}
 
 		stopCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		_ = j.aggregator.Stop(stopCtx) // 忽略停止错误
+		_ = j.aggregator.Stop(stopCtx) // Ignorar errores de detención
 
 		return fmt.Errorf("failed to create minute job: %w", err)
 	}
 	j.minuteJob = minuteJob
 
-	// 启动调度器
+	// Iniciar el planificador
 	j.scheduler.Start()
 	j.isRunning = true
 	j.logger.Info().Msg("HAProxy stats collection jobs started")
 	return nil
 }
 
-// Stop 停止定时任务
+// Stop detiene la tarea programada
 func (j *StatsJob) Stop(ctx context.Context) error {
 	if !j.isRunning {
-		return nil // 已经停止，不需要再做任何事
+		return nil // Ya está detenido, no hay nada más que hacer
 	}
 
 	j.isRunning = false
 	var errs []error
 
-	// 先停止调度器
+	// Detener primero el planificador
 	if err := j.scheduler.Shutdown(); err != nil {
 		j.logger.Error().Err(err).Msg("Failed to shutdown scheduler")
 		errs = append(errs, fmt.Errorf("scheduler shutdown error: %w", err))
 	}
 
-	// 然后停止聚合器
+	// Luego detener el agregador
 	if err := j.aggregator.Stop(ctx); err != nil {
 		j.logger.Error().Err(err).Msg("Failed to stop aggregator")
 		errs = append(errs, fmt.Errorf("aggregator stop error: %w", err))

@@ -7,10 +7,10 @@ import (
 	"slices"
 	"time"
 
-	mongodb "github.com/HUAHUAI23/RuiQi/pkg/database/mongo"
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/model"
-	"github.com/HUAHUAI23/RuiQi/server/service/daemon"
+	mongodb "github.com/anticoi/EscudoWAF/pkg/database/mongo"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/model"
+	"github.com/anticoi/EscudoWAF/server/service/daemon"
 	"github.com/haproxytech/client-native/v6/models"
 	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -18,29 +18,29 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
-// StatsData 结构用于记录最后一次的统计数据，用于计算差值
+// StatsData estructura que registra los últimos datos estadísticos para calcular diferencias
 type StatsData struct {
 	TargetName string
 	LastStats  model.HAProxyStats
 	LastTime   time.Time
-	ResetCount int // 用于跟踪重启次数
+	ResetCount int // Para rastrear el número de reinicios
 }
 
-// StatsAggregator HAProxy统计数据聚合器
+// StatsAggregator agregador de estadísticas de HAProxy
 type StatsAggregator struct {
 	runner          daemon.ServiceRunner
 	dbName          string
-	lastStats       map[string]*StatsData // 用backend名称做key
-	lastStatsLoaded bool                  // 标记是否已从数据库加载基准数据
-	targetFilter    map[string]bool       // 过滤的backend列表
+	lastStats       map[string]*StatsData // Usar el nombre del backend como clave
+	lastStatsLoaded bool                  // Marca si los datos base ya se cargaron de la base de datos
+	targetFilter    map[string]bool       // Lista de backends filtrada
 	log             zerolog.Logger
-	isRunning       bool // 表示聚合器是否在运行
+	isRunning       bool // Indica si el agregador está en ejecución
 }
 
-// NewStatsAggregator 创建新的数据聚合器
+// NewStatsAggregator crea un nuevo agregador de datos
 func NewStatsAggregator(runner daemon.ServiceRunner, dbName string, targetList []string) (*StatsAggregator, error) {
 	logger := config.GetLogger().With().Str("component", "cronjob-haproxy-stats-aggregator").Logger()
-	// 初始化targetFilter
+	// Inicializar targetFilter
 	targetFilter := make(map[string]bool)
 	for _, target := range targetList {
 		targetFilter[target] = true
@@ -56,7 +56,7 @@ func NewStatsAggregator(runner daemon.ServiceRunner, dbName string, targetList [
 		isRunning:       false,
 	}
 
-	// 确保必要的集合和索引存在
+	// Asegurar que existan las colecciones e índices necesarios
 	err := agg.ensureCollections()
 	if err != nil {
 		return nil, fmt.Errorf("failed to ensure collections: %w", err)
@@ -65,43 +65,43 @@ func NewStatsAggregator(runner daemon.ServiceRunner, dbName string, targetList [
 	return agg, nil
 }
 
-// UpdateTargetList 更新监控的后端列表
+// UpdateTargetList actualiza la lista de backends monitorizados
 func (a *StatsAggregator) UpdateTargetList(targetList []string) {
-	// 创建新的过滤器
+	// Crear nuevo filtro
 	newFilter := make(map[string]bool)
 	for _, target := range targetList {
 		newFilter[target] = true
 	}
 
-	// 检查状态变化
+	// Comprobar cambios de estado
 	hadNoTargets := len(a.targetFilter) == 0
 	willHaveNoTargets := len(newFilter) == 0
 	hasNewTargets := len(newFilter) > 0
 
-	// 查找不再监控的目标
+	// Buscar objetivos que ya no se monitorizan
 	for target := range a.targetFilter {
 		if !newFilter[target] {
 			a.log.Info().Str("target", target).Msg("Removing target from monitoring")
-			// 从内存中移除，但保留数据库中的基准线(以防后续重新添加)
+			// Eliminar de memoria, pero conservar la línea base en la base de datos (por si se vuelve a añadir)
 			delete(a.lastStats, target)
 		}
 	}
 
-	// 更新过滤器
+	// Actualizar el filtro
 	prevFilter := a.targetFilter
 	a.targetFilter = newFilter
 
-	// 处理从有目标到无目标的转变
+	// Manejar la transición de con objetivo a sin objetivo
 	if !hadNoTargets && willHaveNoTargets {
 		a.log.Warn().Int("previous_targets", len(prevFilter)).Msg("All targets removed, aggregator entering standby mode")
 
-		// 清空统计数据，减少内存占用
+		// Vaciar las estadísticas para reducir el uso de memoria
 		a.lastStats = make(map[string]*StatsData)
 
-		// 重置lastStatsLoaded状态，以便下次添加目标时能正确初始化
+		// Restablecer el estado lastStatsLoaded para inicializar correctamente al añadir el próximo objetivo
 		a.lastStatsLoaded = false
 
-		// 保存最终状态到数据库，标记完成
+		// Guardar el estado final en la base de datos y marcar como completado
 		if a.isRunning {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
@@ -111,52 +111,52 @@ func (a *StatsAggregator) UpdateTargetList(targetList []string) {
 			}
 		}
 	} else if hadNoTargets && hasNewTargets && a.isRunning {
-		// 如果从无目标状态变为有目标状态，需要初始化状态
+		// Si pasa de sin objetivo a con objetivo, inicializar el estado
 		a.log.Info().Msg("Targets added to previously empty target list, initializing stats collection")
 
-		// 创建上下文进行初始化
+		// Crear el contexto para la inicialización
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		// 尝试初始化统计数据
+		// Intentar inicializar los datos estadísticos
 		if err := a.initializeStats(ctx); err != nil {
 			a.log.Error().Err(err).Msg("Failed to initialize stats after targets were added")
 		}
 	} else {
-		// 记录新增的目标
+		// Registrar los objetivos añadidos
 		for target := range newFilter {
 			if !prevFilter[target] {
 				a.log.Info().Str("target", target).Msg("Adding new target to monitoring")
-				// 新增的目标会在下次数据采集时自动初始化
+				// Los nuevos objetivos se inicializan automáticamente en la próxima recopilación de datos
 			}
 		}
 	}
 }
 
-// ensureCollections 确保必要的集合和索引存在
+// ensureCollections garantiza que existan las colecciones e índices necesarios
 func (a *StatsAggregator) ensureCollections() error {
 	db, err := mongodb.GetDatabase(a.dbName)
 	if err != nil {
 		return fmt.Errorf("failed to get database: %w", err)
 	}
 
-	// 创建上下文
+	// Crear el contexto
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	// 获取所有集合名称
+	// Obtener los nombres de todas las colecciones
 	collections, err := db.ListCollectionNames(ctx, bson.D{})
 	if err != nil {
 		return fmt.Errorf("failed to list collections: %w", err)
 	}
 
-	// 定义需要检查的集合
+	// Definición de las colecciones a comprobar
 	var haproxyStatsBaseline model.HAProxyStatsBaseline
 	var haproxyMinuteStats model.HAProxyMinuteStats
 	baselineCollName := haproxyStatsBaseline.GetCollectionName()
 	minuteStatsCollName := haproxyMinuteStats.GetCollectionName()
 
-	// 检查时间序列集合是否存在
+	// Comprobar si existe la colección de series temporales
 	requiredCollections := []string{
 		baselineCollName,
 		minuteStatsCollName,
@@ -166,7 +166,7 @@ func (a *StatsAggregator) ensureCollections() error {
 		"req_rate",
 	}
 
-	// 使用 slices.Contains 检查所有必需的集合是否存在
+	// Usar slices.Contains para comprobar que existen todas las colecciones necesarias
 	allCollectionsExist := true
 	for _, collName := range requiredCollections {
 		if !slices.Contains(collections, collName) {
@@ -175,7 +175,7 @@ func (a *StatsAggregator) ensureCollections() error {
 		}
 	}
 
-	// 如果所有必需的集合都存在，则认为数据库已初始化
+	// Si existen todas las colecciones necesarias, la base de datos se considera inicializada
 	if allCollectionsExist {
 		a.log.Info().
 			Strs("requiredCollections", requiredCollections).
@@ -183,10 +183,10 @@ func (a *StatsAggregator) ensureCollections() error {
 		return nil
 	}
 
-	// 如果不是所有集合都存在，执行完整的初始化
+	// Si no existen todas las colecciones, ejecutar la inicialización completa
 	a.log.Info().Msg("Some required collections are missing, initializing database")
 
-	// 创建基准数据集合索引
+	// Crear índices de la colección de datos base
 	baselineColl := db.Collection(baselineCollName)
 	indexOpts := options.Index().SetUnique(true)
 	_, err = baselineColl.Indexes().CreateOne(ctx, mongo.IndexModel{
@@ -198,22 +198,22 @@ func (a *StatsAggregator) ensureCollections() error {
 	}
 	a.log.Info().Msg("Created baseline collection index")
 
-	// 创建分钟统计数据集合索引
+	// Crear índices de la colección de estadísticas por minuto
 	minuteStatsColl := db.Collection(minuteStatsCollName)
 	_, err = minuteStatsColl.Indexes().CreateMany(ctx, []mongo.IndexModel{
 		{
-			// 时间戳索引 - 支持时间范围查询
+			// Índice de marca de tiempo - soporta consultas por rango de tiempo
 			Keys: bson.D{{Key: "timestamp", Value: 1}},
 		},
 		{
-			// 主查询索引 - 按目标和时间查询的主要索引
+			// Índice principal de consulta - índice principal por destino y tiempo
 			Keys: bson.D{
 				{Key: "target_name", Value: 1},
 				{Key: "timestamp", Value: 1},
 			},
 		},
 		{
-			// 按小时聚合索引
+			// Índice de agregación por hora
 			Keys: bson.D{
 				{Key: "target_name", Value: 1},
 				{Key: "date", Value: 1},
@@ -221,7 +221,7 @@ func (a *StatsAggregator) ensureCollections() error {
 			},
 		},
 		{
-			// 按六小时组聚合索引
+			// Índice de agregación por grupos de seis horas
 			Keys: bson.D{
 				{Key: "target_name", Value: 1},
 				{Key: "date", Value: 1},
@@ -234,19 +234,19 @@ func (a *StatsAggregator) ensureCollections() error {
 	}
 	a.log.Info().Msg("Created minute stats collection indexes")
 
-	// 创建实时统计数据时间序列集合
+	// Crear la colección de series temporales de estadísticas en tiempo real
 	realtimeMetrics := []string{"conn_rate", "scur", "rate", "req_rate"}
 	for _, metric := range realtimeMetrics {
-		// 使用 slices.Contains 检查集合是否已存在
+		// Usar slices.Contains para comprobar si la colección ya existe
 		if !slices.Contains(collections, metric) {
-			// 创建时间序列集合
+			// Crear la colección de series temporales
 			timeSeriesOpts := options.TimeSeries().
 				SetTimeField("timestamp").
 				SetMetaField("metadata").
 				SetGranularity("seconds")
 			createOpts := options.CreateCollection().
 				SetTimeSeriesOptions(timeSeriesOpts).
-				SetExpireAfterSeconds(3600) // 设置1小时过期
+				SetExpireAfterSeconds(3600) // Establecer expiración de 1 hora
 			if err := db.CreateCollection(ctx, metric, createOpts); err != nil {
 				return fmt.Errorf("failed to create timeseries collection %s: %w", metric, err)
 			}
@@ -258,21 +258,21 @@ func (a *StatsAggregator) ensureCollections() error {
 	return nil
 }
 
-// Start 启动聚合器
+// Start inicia el agregador
 func (a *StatsAggregator) Start(ctx context.Context) error {
 	if a.isRunning {
 		return errors.New("aggregator is already running")
 	}
 	a.isRunning = true
 
-	// 使用带超时的上下文进行初始化操作
+	// Usar un contexto con timeout para las operaciones de inicialización
 	initCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	// 尝试从数据库加载基准数据
+	// Intentar cargar los datos base desde la base de datos
 	if err := a.loadLastStats(initCtx); err != nil {
 		a.log.Warn().Err(err).Msg("Failed to load lastStats, will initialize new baseline")
-		// 如果加载失败，初始化新基准
+		// Si falla la carga, inicializar una nueva línea base
 		if err := a.initializeStats(initCtx); err != nil {
 			a.isRunning = false
 			return fmt.Errorf("failed to initialize stats: %w", err)
@@ -280,7 +280,7 @@ func (a *StatsAggregator) Start(ctx context.Context) error {
 	} else {
 		a.log.Info().Msg("Successfully loaded lastStats data from database")
 		a.lastStatsLoaded = true
-		// 获取最新数据并检查HAProxy是否重启
+		// Obtener los datos más recientes y comprobar si HAProxy se reinició
 		if err := a.checkHAProxyResetOnStartup(initCtx); err != nil {
 			a.log.Warn().Err(err).Msg("Error checking HAProxy reset on startup, continuing anyway")
 		}
@@ -289,28 +289,28 @@ func (a *StatsAggregator) Start(ctx context.Context) error {
 	return nil
 }
 
-// Stop 停止聚合器
+// Stop detiene el agregador
 func (a *StatsAggregator) Stop(ctx context.Context) error {
 	if !a.isRunning {
-		return nil // 已经停止，不需要再做任何事
+		return nil // Ya está detenido, no hay nada más que hacer
 	}
 	a.isRunning = false
 
-	// 创建一个带超时的上下文
+	// Crear un contexto con timeout
 	saveCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	// 保存最后的状态
+	// Guardar el último estado
 	if err := a.saveLastStats(saveCtx); err != nil {
 		a.log.Warn().Err(err).Msg("Failed to save lastStats during shutdown")
-		// 不返回错误，继续关闭流程
+		// No devolver error, continuar con el cierre
 	}
 
 	a.log.Info().Msg("Aggregator successfully stopped")
 	return nil
 }
 
-// loadLastStats 从MongoDB加载lastStats基准数据
+// loadLastStats carga los datos base de lastStats desde MongoDB
 func (a *StatsAggregator) loadLastStats(ctx context.Context) error {
 	db, err := mongodb.GetDatabase(a.dbName)
 	if err != nil {
@@ -343,10 +343,10 @@ func (a *StatsAggregator) loadLastStats(ctx context.Context) error {
 			continue
 		}
 
-		// 加载到内存中
+		// Cargar en memoria
 		a.lastStats[targetName] = &StatsData{
 			TargetName: targetName,
-			LastStats:  doc.GetStats(), // 使用新方法获取统计数据
+			LastStats:  doc.GetStats(), // Usar el nuevo método para obtener estadísticas
 			LastTime:   doc.Timestamp,
 			ResetCount: int(doc.ResetCount),
 		}
@@ -361,7 +361,7 @@ func (a *StatsAggregator) loadLastStats(ctx context.Context) error {
 	return nil
 }
 
-// saveLastStats 将lastStats基准数据保存到MongoDB
+// saveLastStats guarda los datos base de lastStats en MongoDB
 func (a *StatsAggregator) saveLastStats(ctx context.Context) error {
 	db, err := mongodb.GetDatabase(a.dbName)
 	if err != nil {
@@ -373,16 +373,16 @@ func (a *StatsAggregator) saveLastStats(ctx context.Context) error {
 
 	var errs []error
 	for targetName, stats := range a.lastStats {
-		// 创建基准文档
+		// Crear el documento base
 		doc := model.HAProxyStatsBaseline{
 			TargetName: targetName,
 			Timestamp:  stats.LastTime,
 			ResetCount: int32(stats.ResetCount),
 		}
-		// 设置统计数据
+		// Establecer las estadísticas
 		doc.SetStats(stats.LastStats)
 
-		// 使用upsert操作保存
+		// Guardar con operación upsert
 		filter := bson.M{"target_name": targetName}
 		update := bson.M{"$set": doc}
 
@@ -401,7 +401,7 @@ func (a *StatsAggregator) saveLastStats(ctx context.Context) error {
 	return nil
 }
 
-// checkHAProxyResetOnStartup 启动时检查HAProxy是否重启
+// checkHAProxyResetOnStartup comprueba al inicio si HAProxy se reinició
 func (a *StatsAggregator) checkHAProxyResetOnStartup(ctx context.Context) error {
 	stats, err := a.runner.GetStats()
 	if err != nil {
@@ -411,14 +411,14 @@ func (a *StatsAggregator) checkHAProxyResetOnStartup(ctx context.Context) error 
 	resetDetected := false
 	newTargets := make(map[string]bool)
 
-	// 找出所有当前活跃的后端
+	// Encontrar todos los backends activos actuales
 	for _, stat := range stats.Stats {
 		if stat.Type == "frontend" {
 			newTargets[stat.Name] = true
 		}
 	}
 
-	// 检查当前监控的后端
+	// Comprobar los backends monitorizados actuales
 	for _, stat := range stats.Stats {
 		if stat.Type != "frontend" || !a.targetFilter[stat.Name] || stat.Stats == nil {
 			continue
@@ -428,7 +428,7 @@ func (a *StatsAggregator) checkHAProxyResetOnStartup(ctx context.Context) error 
 		lastStat, exists := a.lastStats[stat.Name]
 
 		if !exists {
-			// 新的后端，初始化
+			// Nuevo backend, inicializar
 			a.lastStats[stat.Name] = &StatsData{
 				TargetName: stat.Name,
 				LastStats:  currentStats,
@@ -439,7 +439,7 @@ func (a *StatsAggregator) checkHAProxyResetOnStartup(ctx context.Context) error 
 			continue
 		}
 
-		// 检测是否重启
+		// Detectar si se reinició
 		if model.DetectReset(lastStat.LastStats, currentStats) {
 			a.log.Warn().
 				Str("target", stat.Name).
@@ -448,7 +448,7 @@ func (a *StatsAggregator) checkHAProxyResetOnStartup(ctx context.Context) error 
 
 			resetDetected = true
 
-			// 保存零增量记录
+			// Guardar registro con incremento cero
 			err := a.saveMinuteMetrics(ctx, stat.Name, model.CreateZeroStats(), time.Now())
 
 			if err != nil {
@@ -458,14 +458,14 @@ func (a *StatsAggregator) checkHAProxyResetOnStartup(ctx context.Context) error 
 					Msg("Failed to save zero metrics for target after reset")
 			}
 
-			// 更新重启计数和基准
+			// Actualizar el contador de reinicios y la línea base
 			lastStat.ResetCount++
 			lastStat.LastStats = currentStats
 			lastStat.LastTime = time.Now()
 		}
 	}
 
-	// 检查不再存在的后端
+	// Comprobar backends que ya no existen
 	for targetName := range a.lastStats {
 		if a.targetFilter[targetName] && !newTargets[targetName] {
 			a.log.Warn().
@@ -476,7 +476,7 @@ func (a *StatsAggregator) checkHAProxyResetOnStartup(ctx context.Context) error 
 
 	if resetDetected {
 		a.log.Warn().Msg("HAProxy reset detected during startup, metrics will be adjusted")
-		// 保存重置后的状态
+		// Guardar el estado tras el reinicio
 		if err := a.saveLastStats(ctx); err != nil {
 			a.log.Error().Err(err).Msg("Failed to save lastStats after reset detection")
 			return fmt.Errorf("failed to save state after reset: %w", err)
@@ -488,7 +488,7 @@ func (a *StatsAggregator) checkHAProxyResetOnStartup(ctx context.Context) error 
 	return nil
 }
 
-// initializeStats 初始化统计数据
+// initializeStats inicializa los datos estadísticos
 func (a *StatsAggregator) initializeStats(ctx context.Context) error {
 	stats, err := a.runner.GetStats()
 	if err != nil {
@@ -496,7 +496,7 @@ func (a *StatsAggregator) initializeStats(ctx context.Context) error {
 	}
 
 	now := time.Now()
-	a.lastStats = make(map[string]*StatsData) // 清除现有数据
+	a.lastStats = make(map[string]*StatsData) // Borrar los datos existentes
 
 	for _, stat := range stats.Stats {
 		if stat.Type == "frontend" && a.targetFilter[stat.Name] && stat.Stats != nil {
@@ -511,13 +511,13 @@ func (a *StatsAggregator) initializeStats(ctx context.Context) error {
 		}
 	}
 
-	// 检查是否至少有一个目标
+	// Comprobar si hay al menos un objetivo
 	if len(a.lastStats) == 0 {
 		a.log.Warn().Msg("No valid targets found to initialize, aggregator will wait for targets to be added")
-		return nil // 返回nil而不是错误，允许服务启动但处于空闲状态
+		return nil // Devolver nil en lugar de error, permite iniciar el servicio en estado inactivo
 	}
 
-	// 保存初始基准到数据库
+	// Guardar la línea base inicial en la base de datos
 	if err := a.saveLastStats(ctx); err != nil {
 		a.log.Error().Err(err).Msg("Failed to save initial lastStats")
 		return fmt.Errorf("failed to save initial state: %w", err)
@@ -527,13 +527,13 @@ func (a *StatsAggregator) initializeStats(ctx context.Context) error {
 	return nil
 }
 
-// CollectRealtimeMetrics 收集实时指标
+// CollectRealtimeMetrics recopila métricas en tiempo real
 func (a *StatsAggregator) CollectRealtimeMetrics(ctx context.Context) error {
 	if !a.isRunning {
 		return errors.New("aggregator is not running")
 	}
 
-	// 如果没有目标，则跳过收集
+	// Si no hay objetivos, omitir la recopilación
 	if len(a.targetFilter) == 0 {
 		a.log.Info().Msg("Skipping realtime metrics collection: no targets configured")
 		return nil
@@ -547,20 +547,20 @@ func (a *StatsAggregator) CollectRealtimeMetrics(ctx context.Context) error {
 	return a.processRealtimeMetrics(ctx, stats, time.Now())
 }
 
-// processRealtimeMetrics 处理实时指标
+// processRealtimeMetrics procesa las métricas en tiempo real
 func (a *StatsAggregator) processRealtimeMetrics(ctx context.Context, stats models.NativeStats, t time.Time) error {
 	db, err := mongodb.GetDatabase(a.dbName)
 	if err != nil {
 		return fmt.Errorf("failed to get database: %w", err)
 	}
 
-	// 用于存储聚合数据
+	// Para almacenar datos agregados
 	totalConnRate := int64(0)
 	totalScur := int64(0)
 	totalRate := int64(0)
 	totalReqRate := int64(0)
 
-	// 准备保存到时间序列的文档
+	// Preparar el documento para guardar en series temporales
 	documents := map[string][]model.TimeSeriesMetric{
 		"conn_rate": {},
 		"scur":      {},
@@ -573,7 +573,7 @@ func (a *StatsAggregator) processRealtimeMetrics(ctx context.Context, stats mode
 			continue
 		}
 
-		// 收集各backend的实时指标
+		// Recopilar métricas en tiempo real de cada backend
 		if stat.Stats.ConnRate != nil {
 			totalConnRate += *stat.Stats.ConnRate
 			documents["conn_rate"] = append(documents["conn_rate"], model.TimeSeriesMetric{
@@ -611,7 +611,7 @@ func (a *StatsAggregator) processRealtimeMetrics(ctx context.Context, stats mode
 		}
 	}
 
-	// 添加所有backend的总计指标
+	// Añadir las métricas totales de todos los backends
 	documents["conn_rate"] = append(documents["conn_rate"], model.TimeSeriesMetric{
 		Timestamp: t,
 		Value:     totalConnRate,
@@ -636,13 +636,13 @@ func (a *StatsAggregator) processRealtimeMetrics(ctx context.Context, stats mode
 		Metadata:  model.TimeSeriesMeta{Target: "all"},
 	})
 
-	// 保存到MongoDB时间序列集合
+	// Guardar en la colección de series temporales de MongoDB
 	var errs []error
 	for metric, docs := range documents {
 		if len(docs) > 0 {
 			collection := db.Collection(metric)
 
-			// 转换为适合InsertMany的格式
+			// Convertir a formato apto para InsertMany
 			insertDocs := make([]interface{}, len(docs))
 			for i, doc := range docs {
 				insertDocs[i] = doc
@@ -662,13 +662,13 @@ func (a *StatsAggregator) processRealtimeMetrics(ctx context.Context, stats mode
 	return nil
 }
 
-// CollectMinuteMetrics 收集分钟级指标
+// CollectMinuteMetrics recopila métricas por minuto
 func (a *StatsAggregator) CollectMinuteMetrics(ctx context.Context) error {
 	if !a.isRunning {
 		return errors.New("aggregator is not running")
 	}
 
-	// 如果没有目标，则跳过收集
+	// Si no hay objetivos, omitir la recopilación
 	if len(a.targetFilter) == 0 {
 		a.log.Info().Msg("Skipping minute metrics collection: no targets configured")
 		return nil
@@ -685,24 +685,24 @@ func (a *StatsAggregator) CollectMinuteMetrics(ctx context.Context) error {
 		return fmt.Errorf("failed to process minute metrics: %w", err)
 	}
 
-	// 每处理完一个周期就保存基准数据，确保崩溃时最多丢失一个周期
+	// Guardar datos base tras cada ciclo, para perder como máximo un ciclo ante un fallo
 	saveCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
 	if err := a.saveLastStats(saveCtx); err != nil {
 		a.log.Error().Err(err).Msg("Failed to save lastStats after minute metrics")
-		// 不返回错误，继续执行
+		// No devolver error, continuar la ejecución
 	}
 
 	return nil
 }
 
-// processMinuteMetrics 处理分钟级指标
+// processMinuteMetrics procesa las métricas por minuto
 func (a *StatsAggregator) processMinuteMetrics(ctx context.Context, stats models.NativeStats, t time.Time) error {
-	// 用于聚合所有backend的总指标
+	// Para agregar las métricas totales de todos los backends
 	aggregateStats := model.HAProxyStats{}
 
-	// 创建当前活跃后端Map
+	// Crear el mapa de backends activos actual
 	activeTargets := make(map[string]bool)
 	for _, stat := range stats.Stats {
 		if stat.Type == "frontend" {
@@ -710,14 +710,14 @@ func (a *StatsAggregator) processMinuteMetrics(ctx context.Context, stats models
 		}
 	}
 
-	// 检测并记录监控列表中但不再活跃的后端
+	// Detectar y registrar backends en la lista de monitorización que ya no están activos
 	for target := range a.targetFilter {
 		if !activeTargets[target] {
 			a.log.Warn().Str("target", target).Msg("Target is in monitoring list but not active")
 		}
 	}
 
-	// 按每个backend处理
+	// Procesar por cada backend
 	var errs []error
 	for _, stat := range stats.Stats {
 		if stat.Type != "frontend" || !a.targetFilter[stat.Name] || stat.Stats == nil {
@@ -728,7 +728,7 @@ func (a *StatsAggregator) processMinuteMetrics(ctx context.Context, stats models
 		lastStat, exists := a.lastStats[stat.Name]
 
 		if !exists {
-			// 新的backend，初始化
+			// Nuevo backend, inicializar
 			a.lastStats[stat.Name] = &StatsData{
 				TargetName: stat.Name,
 				LastStats:  currentStats,
@@ -736,17 +736,17 @@ func (a *StatsAggregator) processMinuteMetrics(ctx context.Context, stats models
 				ResetCount: 0,
 			}
 			a.log.Info().Str("target", stat.Name).Msg("New target detected during metrics collection")
-			continue // 跳过计算差值，因为这是首次见到该backend
+			continue // Omitir el cálculo de diferencia, es la primera vez que se ve este backend
 		}
 
-		// 检测重启
+		// Detectar reinicio
 		if model.DetectReset(lastStat.LastStats, currentStats) {
 			a.log.Warn().
 				Str("target", stat.Name).
 				Int("reset_count", lastStat.ResetCount+1).
 				Msg("Detected HAProxy reset for target")
 
-			// 记录零增量而非跳过
+			// Registrar incremento cero en lugar de omitir
 			zeroMetrics := model.CreateZeroStats()
 
 			err := a.saveMinuteMetrics(ctx, stat.Name, zeroMetrics, t)
@@ -759,19 +759,19 @@ func (a *StatsAggregator) processMinuteMetrics(ctx context.Context, stats models
 				errs = append(errs, fmt.Errorf("failed to save zero metrics for %s: %w", stat.Name, err))
 			}
 
-			// 更新重启计数和基准
+			// Actualizar el contador de reinicios y la línea base
 			lastStat.ResetCount++
 			lastStat.LastStats = currentStats
 			lastStat.LastTime = t
 
-			// 也将零值添加到聚合统计中 - 零值对聚合无影响
+			// También añadir valores cero a las estadísticas agregadas - no afectan la agregación
 			continue
 		}
 
-		// 计算差值并保存
+		// Calcular la diferencia y guardar
 		deltas := model.CalculateStatsDelta(lastStat.LastStats, currentStats)
 
-		// 保存单个backend的差值
+		// Guardar la diferencia de un backend individual
 		err := a.saveMinuteMetrics(ctx, stat.Name, deltas, t)
 
 		if err != nil {
@@ -782,7 +782,7 @@ func (a *StatsAggregator) processMinuteMetrics(ctx context.Context, stats models
 			errs = append(errs, fmt.Errorf("failed to save metrics for %s: %w", stat.Name, err))
 		}
 
-		// 累加到聚合统计中
+		// Acumular en las estadísticas agregadas
 		aggregateStats.Bin += deltas.Bin
 		aggregateStats.Bout += deltas.Bout
 
@@ -801,23 +801,23 @@ func (a *StatsAggregator) processMinuteMetrics(ctx context.Context, stats models
 		aggregateStats.Econ += deltas.Econ
 		aggregateStats.Eresp += deltas.Eresp
 
-		// 对于最大值，我们改为使用所有后端中的总和
+		// Para valores máximos, usar la suma de todos los backends
 		aggregateStats.ReqRateMax += deltas.ReqRateMax
 		aggregateStats.ConnRateMax += deltas.ConnRateMax
 		aggregateStats.RateMax += deltas.RateMax
 		aggregateStats.Smax += deltas.Smax
 
-		// 对于总计值，使用所有后端的总和
+		// Para valores totales, usar la suma de todos los backends
 		aggregateStats.ConnTot += deltas.ConnTot
 		aggregateStats.Stot += deltas.Stot
 		aggregateStats.ReqTot += deltas.ReqTot
 
-		// 更新上一次的统计数据
+		// Actualizar los datos estadísticos anteriores
 		lastStat.LastStats = currentStats
 		lastStat.LastTime = t
 	}
 
-	// 保存所有backend的总计指标
+	// Guardar las métricas totales de todos los backends
 	err := a.saveMinuteMetrics(ctx, "all", aggregateStats, t)
 
 	if err != nil {
@@ -831,14 +831,14 @@ func (a *StatsAggregator) processMinuteMetrics(ctx context.Context, stats models
 	return nil
 }
 
-// saveMinuteMetrics 保存分钟级指标到MongoDB - 使用扁平化结构
+// saveMinuteMetrics guarda las métricas por minuto en MongoDB - usa estructura plana
 func (a *StatsAggregator) saveMinuteMetrics(ctx context.Context, targetName string, metrics model.HAProxyStats, timestamp time.Time) error {
 	db, err := mongodb.GetDatabase(a.dbName)
 	if err != nil {
 		return fmt.Errorf("failed to get database: %w", err)
 	}
 
-	// 创建扁平化的文档结构
+	// Crear la estructura de documento plana
 	minuteStats := model.HAProxyMinuteStats{
 		TargetName:   targetName,
 		Date:         timestamp.Format("2006-01-02"),
@@ -847,10 +847,10 @@ func (a *StatsAggregator) saveMinuteMetrics(ctx context.Context, targetName stri
 		Minute:       timestamp.Minute(),
 		Timestamp:    timestamp,
 	}
-	// 设置统计数据
+	// Establecer las estadísticas
 	minuteStats.SetStats(metrics)
 
-	// 插入到数据库集合
+	// Insertar en la colección de la base de datos
 	collection := db.Collection(minuteStats.GetCollectionName())
 	_, err = collection.InsertOne(ctx, minuteStats)
 	if err != nil {

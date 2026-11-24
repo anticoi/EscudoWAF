@@ -25,7 +25,7 @@ interface DataTableProps<TData, TValue> {
     showScrollShadows?: boolean
 }
 
-// 加载状态骨架屏组件
+// Componente skeleton de estado de carga
 const TableSkeleton = <TData, TValue>({
     columns,
     rows = 5
@@ -46,7 +46,7 @@ const TableSkeleton = <TData, TValue>({
     </>
 )
 
-// 中心加载动画组件
+// Componente de animación de carga centrado
 const CenteredLoader = <TData, TValue>({
     columns
 }: {
@@ -56,13 +56,13 @@ const CenteredLoader = <TData, TValue>({
         <TableCell colSpan={columns.length} className="h-24">
             <div className="flex items-center justify-center space-x-2">
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                <span className="text-sm text-muted-foreground">加载中...</span>
+                <span className="text-sm text-muted-foreground">Cargando...</span>
             </div>
         </TableCell>
     </TableRow>
 )
 
-// 无数据状态组件
+// Componente de estado sin datos
 const NoResults = <TData, TValue>({
     columns
 }: {
@@ -89,18 +89,18 @@ export function DataTable<TData, TValue>({
     animatedRows = false,
     showScrollShadows = true,
 }: DataTableProps<TData, TValue>) {
-    // 用于跟踪已渲染行的ref
+    // Ref para rastrear las filas renderizadas
     const rowsRef = useRef<HTMLElement[]>([])
     const [inViewRows, setInViewRows] = useState<Set<string>>(new Set())
 
-    // 提取复杂表达式为变量
+    // Extraer expresiones complejas a variables
     const tableRows = table.getRowModel().rows
 
-    // 监听滚动以检测哪些行在视口中
+    // Escuchar el scroll para detectar qué filas están en el viewport
     useEffect(() => {
         if (!animatedRows) return
 
-        // 仅在表格数据变化时清空引用数组，不重新分配
+        // Vaciar el array de referencias solo cuando cambian los datos de la tabla, sin reasignar
         if (rowsRef.current.length > tableRows.length) {
             rowsRef.current.length = tableRows.length
         }
@@ -123,7 +123,7 @@ export function DataTable<TData, TValue>({
             { threshold: 0.1 }
         )
 
-        // 直接观察现有行
+        // Observar directamente las filas existentes
         rowsRef.current.forEach(row => {
             if (row) observer.observe(row)
         })
@@ -133,10 +133,10 @@ export function DataTable<TData, TValue>({
         }
     }, [tableRows, animatedRows])
 
-    // 渲染表格主体内容
+    // Renderizar el contenido del cuerpo de la tabla
     const renderTableBody = () => {
         if (isLoading) {
-            // 根据 loadingStyle 选项决定使用哪种加载动画
+            // Según la opción loadingStyle, decidir qué animación de carga usar
             return loadingStyle === 'centered'
                 ? <CenteredLoader<TData, TValue> columns={columns} />
                 : <TableSkeleton<TData, TValue> columns={columns} rows={loadingRows} />
@@ -177,7 +177,7 @@ export function DataTable<TData, TValue>({
         })
     }
 
-    // 表头渲染函数
+    // Función de renderizado de cabecera
     const renderTableHeader = () => (
         <TableHeader className={fixedHeader ? "sticky top-0 z-10 bg-background border-b" : ""}>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -197,13 +197,13 @@ export function DataTable<TData, TValue>({
         </TableHeader>
     )
 
-    // 使用滚动容器
+    // Usar el contenedor de scroll
     const renderScrollableTable = () => (
         <TableScrollContainer showShadows={showScrollShadows} className="scrollbar-neon">
             <table className="w-full caption-bottom text-sm">
                 {renderTableHeader()}
                 <tbody className={cn(
-                    // 只有当isLoading为true且没有行数据时才移除最后一行的边框
+                    // Solo quitar el borde de la última fila cuando isLoading es true y no hay datos
                     (isLoading || !table.getRowModel().rows?.length) ? "[&_tr:last-child]:border-0" : ""
                 )}>
                     {renderTableBody()}
@@ -212,9 +212,9 @@ export function DataTable<TData, TValue>({
         </TableScrollContainer>
     )
 
-    // 根据样式选择和固定表头选项构建表格
+    // Construir la tabla según el estilo elegido y la opción de cabecera fija
     if (fixedHeader) {
-        // 使用固定表头的布局结构
+        // Usar estructura de layout con cabecera fija
         return (
             <div className={cn(
                 "w-full h-full relative",
@@ -225,7 +225,7 @@ export function DataTable<TData, TValue>({
         )
     }
 
-    // 原始表格布局（无固定表头）
+    // Layout de tabla original (sin cabecera fija)
     switch (style) {
         case 'simple':
             return (

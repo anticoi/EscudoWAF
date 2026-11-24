@@ -9,8 +9,8 @@ interface AttackIPListProps {
 }
 
 /**
- * 攻击IP列表组件
- * 显示24小时内的攻击IP信息
+ * Componente de lista de IPs atacantes
+ * Mostrar información de IPs atacantes de las últimas 24 horas
  */
 export const AttackIPList: React.FC<AttackIPListProps> = ({
     attackIPs,
@@ -18,7 +18,7 @@ export const AttackIPList: React.FC<AttackIPListProps> = ({
 }) => {
     const { t, i18n } = useTranslation()
 
-    // 格式化地理位置信息
+    // Formatear la información de geolocalización
     const formatLocation = (srcIpInfo: AttackEventAggregateResult['srcIpInfo']) => {
         if (!srcIpInfo) return t('attackDetail.noLocationInfo')
 

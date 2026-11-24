@@ -6,14 +6,14 @@ import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
 import { ProtectedRoute } from "@/feature/auth/components/ProtectedRoute"
 
-// 直接导入布局组件
+// Importar el componente de layout directamente
 import { RootLayout } from "@/components/layout/root-layout"
 import { MonitorLayOut } from "@/pages/monitor/layout"
 import { RulesLayOut } from "@/pages/rule/layout"
 import { SettingLayOut } from "@/pages/setting/layout"
 import { LogLayOut } from "@/pages/logs/layout"
 
-// 直接导入子组件
+// Importar subcomponentes directamente
 import GlobalSettingPage from "@/pages/setting/pages/global-setting/page"
 import CertificatesPage from "@/pages/setting/pages/certificate/page"
 import EventsPage from "@/pages/logs/pages/event/page"
@@ -26,18 +26,18 @@ import ViewerPage from "@/pages/monitor/pages/security-dashboard/page"
 import FlowControlPage from "@/pages/rule/pages/cc/page"
 import { LoadingFallback } from "@/components/common/loading-fallback"
 
-// 懒加载认证页面
+// Página de autenticación con carga diferida
 const LoginPage = lazy(() => import("@/pages/auth/login"))
 const ResetPasswordPage = lazy(() => import("@/pages/auth/reset-password"))
 
-// 懒加载组件包装器
+// Wrapper de componentes con carga diferida
 const lazyLoad = (Component: React.ComponentType) => (
     <Suspense fallback={<LoadingFallback />}>
         <Component />
     </Suspense>
 )
 
-// 面包屑项类型定义
+// Definición de tipos de elementos de migas de pan
 interface BreadcrumbItem {
     title: string
     path: string
@@ -49,7 +49,7 @@ interface BreadcrumbConfig {
     items: BreadcrumbItem[]
 }
 
-// 创建面包屑配置
+// Crear la configuración de breadcrumbs
 export function createBreadcrumbConfig(t: TFunction): Record<RoutePath, BreadcrumbConfig> {
     return {
         [ROUTES.LOGS]: {
@@ -86,13 +86,13 @@ export function createBreadcrumbConfig(t: TFunction): Record<RoutePath, Breadcru
     }
 }
 
-// 获取当前语言的面包屑配置
+// Obtener la configuración de migas de pan del idioma actual
 export function useBreadcrumbMap() {
     const { t } = useTranslation()
     return createBreadcrumbConfig(t)
 }
 
-// 生成子路由配置
+// Generar la configuración de subrutas
 function createChildRoutes(config: BreadcrumbConfig): RouteObject[] {
     return [
         {
@@ -106,11 +106,11 @@ function createChildRoutes(config: BreadcrumbConfig): RouteObject[] {
     ]
 }
 
-// 路由配置
+// Configuración de rutas
 export function useRoutes(): RouteObject[] {
     const breadcrumbMap = useBreadcrumbMap()
 
-    // 认证路由
+    // Rutas de autenticación
     const authRoutes: RouteObject[] = [
         { path: "/login", element: lazyLoad(LoginPage) },
         { path: "/reset-password", element: lazyLoad(ResetPasswordPage) }
@@ -121,7 +121,7 @@ export function useRoutes(): RouteObject[] {
         { path: "/security-dashboard", element: lazyLoad(ViewerPage) }
     ]
 
-    // 应用路由
+    // Rutas de la aplicación
     const appRoutes: RouteObject = {
         element: <ProtectedRoute />,
         children: [{
@@ -158,5 +158,5 @@ export function useRoutes(): RouteObject[] {
     return [...authRoutes, appRoutes, ...securityDashboardRoutes]
 }
 
-// 默认面包屑配置，用于类型推断
+// Configuración de migas de pan por defecto, para inferencia de tipos
 export const breadcrumbMap = createBreadcrumbConfig(((key: string) => key) as unknown as TFunction) as ReturnType<typeof createBreadcrumbConfig>

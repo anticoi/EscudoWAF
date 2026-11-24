@@ -1,38 +1,38 @@
 /**
- * IP组数据结构
+ * Estructura de datos del grupo de IPs
  */
 export interface IPGroup {
-    id: string             // IP组唯一标识符
-    name: string           // IP组名称
-    items: string[]        // IP地址或CIDR列表
+    id: string             // Identificador único del grupo de IPs
+    name: string           // Nombre del grupo de IPs
+    items: string[]        // Lista de direcciones IP o CIDR
 }
 
 /**
- * IP组创建请求
+ * Petición de creación de grupo de IPs
  */
 export interface IPGroupCreateRequest {
-    name: string           // IP组名称
-    items: string[]        // IP地址或CIDR列表
+    name: string           // Nombre del grupo de IPs
+    items: string[]        // Lista de direcciones IP o CIDR
 }
 
 /**
- * IP组更新请求
+ * Petición de actualización de grupo de IPs
  */
 export interface IPGroupUpdateRequest {
-    name?: string          // IP组名称
-    items?: string[]       // IP地址或CIDR列表
+    name?: string          // Nombre del grupo de IPs
+    items?: string[]       // Lista de direcciones IP o CIDR
 }
 
 /**
- * IP组列表响应
+ * Respuesta de lista de grupos de IPs
  */
 export interface IPGroupListResponse {
-    total: number          // 总数
-    items: IPGroup[]       // IP组列表
+    total: number          // Total
+    items: IPGroup[]       // Lista de grupos de IPs
 }
 
 /**
- * 用于表单的IP组数据
+ * Datos del grupo de IPs para el formulario
  */
 export interface IPGroupFormValues {
     name: string

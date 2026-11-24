@@ -9,7 +9,7 @@ import {
 import { flexRender, Table as TableType, ColumnDef } from "@tanstack/react-table"
 import { Loader2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
-import { cn } from "@/lib/utils" // 确保导入了工具函数，如果没有可以手动添加
+import { cn } from "@/lib/utils" // Asegurar que las funciones de utilidad estén importadas; si no, añadirlas manualmente
 
 interface DataTableProps<TData, TValue> {
     table: TableType<TData>
@@ -21,7 +21,7 @@ interface DataTableProps<TData, TValue> {
     fixedHeader?: boolean
 }
 
-// 加载状态骨架屏组件
+// Componente skeleton de estado de carga
 const TableSkeleton = <TData, TValue>({
     columns,
     rows = 5
@@ -42,7 +42,7 @@ const TableSkeleton = <TData, TValue>({
     </>
 )
 
-// 中心加载动画组件
+// Componente de animación de carga centrado
 const CenteredLoader = <TData, TValue>({
     columns
 }: {
@@ -52,13 +52,13 @@ const CenteredLoader = <TData, TValue>({
         <TableCell colSpan={columns.length} className="h-24">
             <div className="flex items-center justify-center space-x-2">
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                <span className="text-sm text-muted-foreground">加载中...</span>
+                <span className="text-sm text-muted-foreground">Cargando...</span>
             </div>
         </TableCell>
     </TableRow>
 )
 
-// 无数据状态组件
+// Componente de estado sin datos
 const NoResults = <TData, TValue>({
     columns
 }: {
@@ -83,10 +83,10 @@ export function DataTable<TData, TValue>({
     loadingStyle = 'centered',
     fixedHeader = false,
 }: DataTableProps<TData, TValue>) {
-    // 渲染表格主体内容
+    // Renderizar el contenido del cuerpo de la tabla
     const renderTableBody = () => {
         if (isLoading) {
-            // 根据 loadingStyle 选项决定使用哪种加载动画
+            // Según la opción loadingStyle, decidir qué animación de carga usar
             return loadingStyle === 'centered'
                 ? <CenteredLoader<TData, TValue> columns={columns} />
                 : <TableSkeleton<TData, TValue> columns={columns} rows={loadingRows} />
@@ -110,7 +110,7 @@ export function DataTable<TData, TValue>({
         ))
     }
 
-    // 表头渲染函数
+    // Función de renderizado de cabecera
     const renderTableHeader = () => (
         <TableHeader className={fixedHeader ? "sticky top-0 z-10 bg-background border-b" : ""}>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -130,9 +130,9 @@ export function DataTable<TData, TValue>({
         </TableHeader>
     )
 
-    // 根据样式选择和固定表头选项构建表格
+    // Construir la tabla según el estilo elegido y la opción de cabecera fija
     if (fixedHeader) {
-        // 使用固定表头的布局结构
+        // Usar estructura de layout con cabecera fija
         return (
             <div className={cn(
                 "w-full h-full relative",
@@ -142,7 +142,7 @@ export function DataTable<TData, TValue>({
                     <table className="w-full caption-bottom text-sm">
                         {renderTableHeader()}
                         <tbody className={cn(
-                            // 只有当isLoading为true且没有行数据时才移除最后一行的边框
+                            // Solo quitar el borde de la última fila cuando isLoading es true y no hay datos
                             (isLoading || !table.getRowModel().rows?.length) ? "[&_tr:last-child]:border-0" : ""
                         )}>
                             {renderTableBody()}
@@ -153,7 +153,7 @@ export function DataTable<TData, TValue>({
         )
     }
 
-    // 原始表格布局（无固定表头）
+    // Layout de tabla original (sin cabecera fija)
     switch (style) {
         case 'simple':
             return (

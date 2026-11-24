@@ -6,14 +6,14 @@ import (
 	"sync"
 	"time"
 
-	mongodb "github.com/HUAHUAI23/RuiQi/pkg/database/mongo"
+	mongodb "github.com/anticoi/EscudoWAF/pkg/database/mongo"
 	"github.com/haproxytech/client-native/v6/models"
 
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/model"
-	"github.com/HUAHUAI23/RuiQi/server/repository"
-	"github.com/HUAHUAI23/RuiQi/server/service/daemon/engine"
-	"github.com/HUAHUAI23/RuiQi/server/service/daemon/haproxy"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/model"
+	"github.com/anticoi/EscudoWAF/server/repository"
+	"github.com/anticoi/EscudoWAF/server/service/daemon/engine"
+	"github.com/anticoi/EscudoWAF/server/service/daemon/haproxy"
 	"github.com/rs/zerolog"
 )
 
@@ -35,7 +35,7 @@ type ServiceRunner interface {
 	GetStats() (models.NativeStats, error)
 }
 
-// ServiceRunner 负责管理和协调所有后台服务
+// ServiceRunner gestiona y coordina todos los servicios en segundo plano
 type ServiceRunnerImpl struct {
 	haproxyService haproxy.HAProxyService
 	engineService  engine.EngineService
@@ -43,19 +43,19 @@ type ServiceRunnerImpl struct {
 	cancel         context.CancelFunc
 	logger         *zerolog.Logger
 	errChan        chan error
-	haproxyDone    chan struct{} // 通知HAProxy服务已停止
-	engineDone     chan struct{} // 通知Engine服务已停止
+	haproxyDone    chan struct{} // Notificar que el servicio HAProxy se detuvo
+	engineDone     chan struct{} // Notificar que el servicio Engine se detuvo
 	state          ServiceState
 }
 
-// 单例模式实现
+// Implementación del patrón singleton
 var (
 	instance ServiceRunner
 	once     sync.Once
 	initErr  error
 )
 
-// GetRunnerService 获取ServiceRunner的单例实例
+// GetRunnerService obtiene la instancia singleton de ServiceRunner
 func GetRunnerService() (ServiceRunner, error) {
 	once.Do(func() {
 		instance, initErr = newServiceRunner()
@@ -63,22 +63,22 @@ func GetRunnerService() (ServiceRunner, error) {
 	return instance, initErr
 }
 
-// NewServiceRunner 创建一个新的服务运行器
+// NewServiceRunner crea un nuevo ejecutor de servicios
 func newServiceRunner() (ServiceRunner, error) {
 	logger := config.GetLogger().With().Str("component", "runner").Logger()
 
 	haproxyService, err := haproxy.NewHAProxyService("", "", nil)
 	if err != nil {
-		logger.Error().Err(err).Msg("初始化 HAProxy 服务失败")
-		return nil, fmt.Errorf("初始化 HAProxy 服务失败: %w", err)
+		logger.Error().Err(err).Msg("Error al inicializar el servicio HAProxy")
+		return nil, fmt.Errorf("Error al inicializar el servicio HAProxy: %w", err)
 	}
 
 	engineLogger := logger.With().Str("component", "engine").Logger()
-	// 创建 Engine 服务
+	// Crear el servicio Engine
 	engineService, err := engine.NewEngineService(engineLogger, config.Global.DBConfig.URI)
 	if err != nil {
-		logger.Error().Err(err).Msg("初始化 Engine 服务失败")
-		return nil, fmt.Errorf("初始化 Engine 服务失败: %w", err)
+		logger.Error().Err(err).Msg("Error al inicializar el servicio Engine")
+		return nil, fmt.Errorf("Error al inicializar el servicio Engine: %w", err)
 	}
 
 	return &ServiceRunnerImpl{
@@ -89,24 +89,24 @@ func newServiceRunner() (ServiceRunner, error) {
 	}, nil
 }
 
-// StartServices 启动所有服务
+// StartServices inicia todos los servicios
 func (r *ServiceRunnerImpl) StartServices() error {
-	// 检查服务是否已经在运行
+	// Comprobar si el servicio ya está en ejecución
 	if r.state == ServiceRunning {
-		return fmt.Errorf("服务已经在运行中")
+		return fmt.Errorf("El servicio ya está en ejecución")
 	}
 
-	// 创建新的上下文和取消函数
+	// Crear nuevo contexto y función de cancelación
 	r.ctx, r.cancel = context.WithCancel(context.Background())
 
-	// 创建新的通道
+	// Crear nuevo canal
 	r.errChan = make(chan error, 10)
 	r.haproxyDone = make(chan struct{})
 	r.engineDone = make(chan struct{})
 
-	// 启动HAProxy服务
+	// Iniciar el servicio HAProxy
 	go func() {
-		defer close(r.haproxyDone) // 服务停止时关闭通道
+		defer close(r.haproxyDone) // Cerrar el canal cuando el servicio se detiene
 
 		client, err := mongodb.Connect(config.Global.DBConfig.URI)
 		if err != nil {
@@ -115,262 +115,262 @@ func (r *ServiceRunnerImpl) StartServices() error {
 			return
 		}
 
-		// 获取数据库
+		// Obtener la base de datos
 		db := client.Database(config.Global.DBConfig.Database)
 
 		var site model.Site
 		siteList, err := repository.GetAllSites(r.ctx, db.Collection(site.GetCollectionName()))
 		if err != nil {
-			r.logger.Error().Err(err).Msg("获取站点列表失败")
+			r.logger.Error().Err(err).Msg("Error al obtener la lista de sitios")
 			r.errChan <- err
 			return
 		}
 
-		r.logger.Info().Msg("开始启动HAProxy服务...")
+		r.logger.Info().Msg("Iniciando el servicio HAProxy...")
 
 		if err = r.haproxyService.RemoveConfig(); err != nil {
-			r.logger.Error().Err(err).Msg("删除HAProxy配置失败")
+			r.logger.Error().Err(err).Msg("Error al eliminar la configuración de HAProxy")
 			r.errChan <- err
 			return
 		}
 
 		if err = r.haproxyService.InitSpoeConfig(); err != nil {
-			r.logger.Error().Err(err).Msg("初始化HAProxy SPOE配置失败")
+			r.logger.Error().Err(err).Msg("Error al inicializar la configuración SPOE de HAProxy")
 			r.errChan <- err
 			return
 		}
 
 		if err = r.haproxyService.InitHAProxyConfig(); err != nil {
-			r.logger.Error().Err(err).Msg("初始化HAProxy配置失败")
+			r.logger.Error().Err(err).Msg("Error al inicializar la configuración de HAProxy")
 			r.errChan <- err
 			return
 		}
 
 		if err = r.haproxyService.AddCorazaBackend(); err != nil {
-			r.logger.Error().Err(err).Msg("添加Coraza后端失败")
+			r.logger.Error().Err(err).Msg("Error al añadir el backend de Coraza")
 			r.errChan <- err
 			return
 		}
 
 		if err = r.haproxyService.CreateHAProxyCrtStore(); err != nil {
-			r.logger.Error().Err(err).Msg("创建HAProxy证书存储失败")
+			r.logger.Error().Err(err).Msg("Error al crear el almacén de certificados de HAProxy")
 			r.errChan <- err
 			return
 		}
 
 		for i, site := range siteList {
 			if err := r.haproxyService.AddSiteConfig(site); err != nil {
-				r.logger.Error().Err(err).Msgf("添加站点配置失败 %d", i)
-				// 继续处理其他站点，不返回错误
+				r.logger.Error().Err(err).Msgf("Error al añadir la configuración de sitio %d", i)
+				// Seguir procesando otros sitios, sin devolver error
 			}
 		}
 
 		if err := r.haproxyService.Start(); err != nil {
-			r.logger.Error().Err(err).Msg("HAProxy服务启动失败")
+			r.logger.Error().Err(err).Msg("Error al iniciar el servicio HAProxy")
 			r.errChan <- err
 			return
 		}
 
-		// 等待停止信号
+		// Esperar la señal de parada
 		<-r.ctx.Done()
-		r.logger.Info().Msg("收到停止信号，停止HAProxy服务")
+		r.logger.Info().Msg("Señal de parada recibida, deteniendo el servicio HAProxy")
 		if err := r.haproxyService.Stop(); err != nil {
-			r.logger.Error().Err(err).Msg("停止HAProxy服务失败")
+			r.logger.Error().Err(err).Msg("Error al detener el servicio HAProxy")
 			r.errChan <- err
 		}
 	}()
 
-	// 启动Engine服务
+	// Iniciar el servicio Engine
 	go func() {
-		defer close(r.engineDone) // 服务停止时关闭通道
+		defer close(r.engineDone) // Cerrar el canal cuando el servicio se detiene
 
-		r.logger.Info().Msg("启动Engine服务...")
+		r.logger.Info().Msg("Iniciando servicio Engine...")
 		if err := r.engineService.Start(); err != nil {
-			r.logger.Error().Err(err).Msg("Engine服务启动失败")
+			r.logger.Error().Err(err).Msg("Error al iniciar el servicio Engine")
 			r.errChan <- err
 			return
 		}
 
-		// 等待停止信号
+		// Esperar la señal de parada
 		<-r.ctx.Done()
-		r.logger.Info().Msg("收到停止信号，停止Engine服务")
+		r.logger.Info().Msg("Señal de parada recibida, deteniendo el servicio Engine")
 		if err := r.engineService.Stop(); err != nil {
-			r.logger.Error().Err(err).Msg("停止Engine服务失败")
+			r.logger.Error().Err(err).Msg("Error al detener el servicio Engine")
 			r.errChan <- err
 		}
 	}()
 
-	// 监听错误通道，如果有错误发生则返回第一个错误
+	// Escuchar el canal de errores y devolver el primer error si ocurre
 	select {
 	case err := <-r.errChan:
-		r.logger.Error().Err(err).Msg("服务启动过程中出现错误")
-		r.cancel() // 取消上下文，通知所有服务停止
+		r.logger.Error().Err(err).Msg("Error durante el inicio del servicio")
+		r.cancel() // Cancelar el contexto, notifica a todos los servicios que se detengan
 		r.state = ServiceError
 		return err
-	case <-time.After(2 * time.Second): // 给服务一些启动时间
-		r.logger.Info().Msg("所有服务已启动")
+	case <-time.After(2 * time.Second): // Dar algo de tiempo de arranque al servicio
+		r.logger.Info().Msg("Todos los servicios iniciados")
 		r.state = ServiceRunning
 		return nil
 	}
 }
 
-// StopServices 停止所有服务
+// StopServices detiene todos los servicios
 func (r *ServiceRunnerImpl) StopServices() error {
-	// 检查服务是否正在运行
+	// Comprobar si el servicio está en ejecución
 	if r.state != ServiceRunning {
-		return fmt.Errorf("服务未在运行中")
+		return fmt.Errorf("El servicio no está en ejecución")
 	}
 
-	r.logger.Info().Msg("开始停止所有服务...")
+	r.logger.Info().Msg("Deteniendo todos los servicios...")
 
-	// 1. 首先取消上下文，通知所有使用该上下文的操作
+	// 1. Primero cancelar el contexto para notificar a todas las operaciones que lo usan
 	if r.cancel != nil {
 		r.cancel()
 	}
 
-	// 2. 等待服务停止的通知信号
+	// 2. Esperar la señal de detención de los servicios
 	timeoutDuration := 15 * time.Second
 
-	// 监控 HAProxy 服务停止
+	// Monitorizar la detención del servicio HAProxy
 	haproxyOk := make(chan struct{})
 	go func() {
 		select {
 		case <-r.haproxyDone:
-			r.logger.Info().Msg("HAProxy服务已正常停止")
+			r.logger.Info().Msg("El servicio HAProxy se detuvo correctamente")
 		case <-time.After(timeoutDuration):
-			r.logger.Warn().Msg("HAProxy服务停止超时")
-			// 尝试强制停止
+			r.logger.Warn().Msg("Tiempo de espera agotado al detener el servicio HAProxy")
+			// Intentar detener forzosamente
 			if err := r.haproxyService.Stop(); err != nil {
-				r.logger.Error().Err(err).Msg("强制停止HAProxy服务失败")
+				r.logger.Error().Err(err).Msg("Error al forzar la detención del servicio HAProxy")
 			}
 		}
 		close(haproxyOk)
 	}()
 
-	// 监控 Engine 服务停止
+	// Monitorizar la detención del servicio Engine
 	engineOk := make(chan struct{})
 	go func() {
 		select {
 		case <-r.engineDone:
-			r.logger.Info().Msg("Engine服务已正常停止")
+			r.logger.Info().Msg("El servicio Engine se detuvo correctamente")
 		case <-time.After(timeoutDuration):
-			r.logger.Warn().Msg("Engine服务停止超时")
-			// 尝试强制停止
+			r.logger.Warn().Msg("Tiempo de espera agotado al detener el servicio Engine")
+			// Intentar detener forzosamente
 			if err := r.engineService.Stop(); err != nil {
-				r.logger.Error().Err(err).Msg("强制停止Engine服务失败")
+				r.logger.Error().Err(err).Msg("Error al forzar la detención del servicio Engine")
 			}
 		}
 		close(engineOk)
 	}()
 
-	// 等待所有服务停止
+	// Esperar a que todos los servicios se detengan
 	<-haproxyOk
 	<-engineOk
 
 	var stopErr error
 	select {
 	case err := <-r.errChan:
-		r.logger.Error().Err(err).Msg("服务停止过程中出现错误")
+		r.logger.Error().Err(err).Msg("Error durante la detención del servicio")
 		stopErr = err
 	default:
-		// 没有错误
+		// Sin errores
 	}
 
-	// 进行HAProxy服务重置
+	// Realizar el reinicio del servicio HAProxy
 	if err := r.haproxyService.Reset(); err != nil {
-		r.logger.Error().Err(err).Msg("重置HAProxy服务失败")
+		r.logger.Error().Err(err).Msg("Error al reiniciar el servicio HAProxy")
 		if stopErr == nil {
 			stopErr = err
 		}
 	}
 
-	// 清理资源
+	// Liberar recursos
 	r.ctx = nil
 	r.cancel = nil
 	r.errChan = nil
 	r.haproxyDone = nil
 	r.engineDone = nil
 
-	// 更新状态
+	// Actualizar el estado
 	r.state = ServiceStopped
 
 	if stopErr != nil {
 		return stopErr
 	}
 
-	r.logger.Info().Msg("所有服务已成功停止")
+	r.logger.Info().Msg("Todos los servicios detenidos correctamente")
 
 	return nil
 }
 
-// ForceStop 强制停止所有服务
+// ForceStop detiene forzosamente todos los servicios
 func (r *ServiceRunnerImpl) ForceStop() {
-	r.logger.Info().Msg("强制停止所有服务...")
+	r.logger.Info().Msg("Forzando la detención de todos los servicios...")
 
-	// 1. 首先取消上下文，通知所有使用该上下文的操作
+	// 1. Primero cancelar el contexto para notificar a todas las operaciones que lo usan
 	if r.cancel != nil {
 		r.cancel()
 	}
 
-	// 2. 直接停止各服务
+	// 2. Detener directamente cada servicio
 	if r.haproxyService != nil {
-		r.logger.Info().Msg("正在强制停止 HAProxy 服务...")
+		r.logger.Info().Msg("Forzando la detención del servicio HAProxy...")
 		if err := r.haproxyService.Stop(); err != nil {
-			r.logger.Error().Err(err).Msg("强制停止 HAProxy 服务出错")
+			r.logger.Error().Err(err).Msg("Error al forzar la detención del servicio HAProxy")
 		}
 	}
 
-	// 进行HAProxy服务重置
+	// Realizar el reinicio del servicio HAProxy
 	if err := r.haproxyService.Reset(); err != nil {
-		r.logger.Error().Err(err).Msg("重置HAProxy服务失败")
+		r.logger.Error().Err(err).Msg("Error al reiniciar el servicio HAProxy")
 	}
 
 	if r.engineService != nil {
-		r.logger.Info().Msg("正在强制停止 Engine 服务...")
+		r.logger.Info().Msg("Forzando la detención del servicio Engine...")
 		if err := r.engineService.Stop(); err != nil {
-			r.logger.Error().Err(err).Msg("强制停止 Engine 服务出错")
+			r.logger.Error().Err(err).Msg("Error al forzar la detención del servicio Engine")
 		}
 	}
 
-	// 清理资源
+	// Liberar recursos
 	r.ctx = nil
 	r.cancel = nil
 	r.errChan = nil
 	r.haproxyDone = nil
 	r.engineDone = nil
 
-	// 更新状态
+	// Actualizar el estado
 	r.state = ServiceStopped
 
-	r.logger.Info().Msg("所有服务已强制停止")
+	r.logger.Info().Msg("Todos los servicios detenidos forzosamente")
 }
 
-// Restart 重启所有服务
+// Restart reinicia todos los servicios
 func (r *ServiceRunnerImpl) Restart() error {
-	// 停止服务
+	// Detener servicio
 	if r.state == ServiceRunning {
 		if err := r.StopServices(); err != nil {
-			r.logger.Error().Err(err).Msg("重启时停止服务失败")
+			r.logger.Error().Err(err).Msg("Error al detener el servicio durante el reinicio")
 			return err
 		}
 	}
 
-	// 启动服务
+	// Iniciar el servicio
 	return r.StartServices()
 }
 
 func (r *ServiceRunnerImpl) HotReload() error {
-	// 检查服务是否正在运行
+	// Comprobar si el servicio está en ejecución
 	if r.state != ServiceRunning {
-		return fmt.Errorf("服务未在运行中，无法热重载")
+		return fmt.Errorf("El servicio no está en ejecución, no se puede recargar en caliente")
 	}
-	r.logger.Info().Msg("开始热重载...")
+	r.logger.Info().Msg("Iniciando recarga en caliente...")
 
 	// // reload haproxy config
 
-	// 进行HAProxy服务重置
+	// Realizar el reinicio del servicio HAProxy
 	if err := r.haproxyService.Reset(); err != nil {
-		r.logger.Error().Err(err).Msg("重置HAProxy服务失败")
+		r.logger.Error().Err(err).Msg("Error al reiniciar el servicio HAProxy")
 		return err
 	}
 
@@ -380,72 +380,72 @@ func (r *ServiceRunnerImpl) HotReload() error {
 		return err
 	}
 
-	// 获取数据库
+	// Obtener la base de datos
 	db := client.Database(config.Global.DBConfig.Database)
 
 	var site model.Site
 	siteList, err := repository.GetAllSites(r.ctx, db.Collection(site.GetCollectionName()))
 	if err != nil {
-		r.logger.Error().Err(err).Msg("热加载获取站点列表失败")
+		r.logger.Error().Err(err).Msg("Error al obtener la lista de sitios en la recarga en caliente")
 		return err
 	}
 
-	r.logger.Info().Msg("开始热加载HAProxy配置...")
+	r.logger.Info().Msg("Iniciando recarga en caliente de la configuración de HAProxy...")
 	if err = r.haproxyService.HotReloadRemoveConfig(); err != nil {
-		r.logger.Error().Err(err).Msg("热加载删除HAProxy配置失败")
+		r.logger.Error().Err(err).Msg("Error al eliminar la configuración de HAProxy en la recarga en caliente")
 		return err
 	}
 
 	if err = r.haproxyService.InitSpoeConfig(); err != nil {
-		r.logger.Error().Err(err).Msg("初始化HAProxy SPOE配置失败")
+		r.logger.Error().Err(err).Msg("Error al inicializar la configuración SPOE de HAProxy")
 		return err
 	}
 
 	if err = r.haproxyService.InitHAProxyConfig(); err != nil {
-		r.logger.Error().Err(err).Msg("初始化HAProxy配置失败")
+		r.logger.Error().Err(err).Msg("Error al inicializar la configuración de HAProxy")
 		return err
 	}
 
 	if err = r.haproxyService.AddCorazaBackend(); err != nil {
-		r.logger.Error().Err(err).Msg("添加Coraza后端失败")
+		r.logger.Error().Err(err).Msg("Error al añadir el backend de Coraza")
 		return err
 	}
 
 	if err = r.haproxyService.CreateHAProxyCrtStore(); err != nil {
-		r.logger.Error().Err(err).Msg("创建HAProxy证书存储失败")
+		r.logger.Error().Err(err).Msg("Error al crear el almacén de certificados de HAProxy")
 		return err
 	}
 
 	for i, site := range siteList {
 		if err := r.haproxyService.AddSiteConfig(site); err != nil {
-			r.logger.Error().Err(err).Msgf("添加站点配置失败 %d", i)
-			// 继续处理其他站点，不返回错误
+			r.logger.Error().Err(err).Msgf("Error al añadir la configuración de sitio %d", i)
+			// Seguir procesando otros sitios, sin devolver error
 		}
 	}
 
 	if err := r.haproxyService.Reload(); err != nil {
-		r.logger.Error().Err(err).Msg("热加载HAProxy配置失败")
+		r.logger.Error().Err(err).Msg("Error en la recarga en caliente de la configuración de HAProxy")
 		return err
 	}
 
 	// reload engine config
 
 	if err := r.engineService.Reload(); err != nil {
-		r.logger.Error().Err(err).Msg("热加载Engine配置失败")
+		r.logger.Error().Err(err).Msg("Error en la recarga en caliente de la configuración de Engine")
 		return err
 	}
 
-	r.logger.Info().Msg("热重载成功")
+	r.logger.Info().Msg("Recarga en caliente exitosa")
 
 	return nil
 }
 
-// GetState 获取当前服务状态
+// GetState obtiene el estado actual del servicio
 func (r *ServiceRunnerImpl) GetState() ServiceState {
 	return r.state
 }
 
-// GetStats 获取HAProxy的统计信息
+// GetStats obtiene la información estadística de HAProxy
 func (r *ServiceRunnerImpl) GetStats() (models.NativeStats, error) {
 	if r.haproxyService == nil {
 		return models.NativeStats{}, fmt.Errorf("haproxy service not initialized")

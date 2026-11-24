@@ -31,7 +31,7 @@ import { produce } from 'immer'
 import React from 'react'
 import { TFunction } from 'i18next'
 
-// 独立的倒计时 Hook - 仅在组件内部管理自己的倒计时状态
+// Hook de cuenta atrás independiente - gestiona su propio estado dentro del componente
 const useCountdown = (initialSeconds: number, isActive: boolean) => {
     const [seconds, setSeconds] = useState(initialSeconds)
 
@@ -52,7 +52,7 @@ const useCountdown = (initialSeconds: number, isActive: boolean) => {
         return () => clearInterval(timer)
     }, [isActive, seconds])
 
-    // 当初始值改变时重置（例如数据刷新）
+    // Reiniciar cuando cambia el valor inicial (p. ej. al refrescar datos)
     useEffect(() => {
         setSeconds(initialSeconds)
     }, [initialSeconds])
@@ -60,7 +60,7 @@ const useCountdown = (initialSeconds: number, isActive: boolean) => {
     return seconds
 }
 
-// 独立的倒计时显示组件 - 只有这个组件会每秒更新
+// Componente de cuenta atrás independiente - solo este componente se actualiza cada segundo
 const CountdownDisplay = React.memo(({
     remainingTTL,
     lastDataUpdateTime,
@@ -77,18 +77,18 @@ const CountdownDisplay = React.memo(({
     const currentRemaining = useCountdown(initialRemaining, isActive)
 
     const formatRemainingTime = useCallback((seconds: number) => {
-        if (seconds <= 0) return t('flowControl.expired', '已过期')
+        if (seconds <= 0) return t('flowControl.expired', 'Expirado')
 
         const hours = Math.floor(seconds / 3600)
         const minutes = Math.floor((seconds % 3600) / 60)
         const remainingSeconds = seconds % 60
 
         if (hours > 0) {
-            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')} ${t('flowControl.untilUnblock', '后解封')}`
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')} ${t('flowControl.untilUnblock', 'hasta el desbloqueo')}`
         } else if (minutes > 0) {
-            return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')} ${t('flowControl.untilUnblock', '后解封')}`
+            return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')} ${t('flowControl.untilUnblock', 'hasta el desbloqueo')}`
         } else {
-            return `00:${remainingSeconds.toString().padStart(2, '0')} ${t('flowControl.untilUnblock', '后解封')}`
+            return `00:${remainingSeconds.toString().padStart(2, '0')} ${t('flowControl.untilUnblock', 'hasta el desbloqueo')}`
         }
     }, [t])
 
@@ -103,7 +103,7 @@ const CountdownDisplay = React.memo(({
 
 CountdownDisplay.displayName = 'CountdownDisplay'
 
-// 优化后的状态单元格 - 不再依赖全局定时器
+// Celda de estado optimizada - ya no depende del temporizador global
 const StatusCell = memo(({
     remainingTTL,
     lastDataUpdateTime,
@@ -113,7 +113,7 @@ const StatusCell = memo(({
     lastDataUpdateTime: number
     t: TFunction
 }) => {
-    // 初始计算是否活跃
+    // Cálculo inicial de si está activo
     const timeSinceDataUpdate = Math.floor((Date.now() - lastDataUpdateTime) / 1000)
     const isInitiallyActive = remainingTTL - timeSinceDataUpdate > 0
 
@@ -121,8 +121,8 @@ const StatusCell = memo(({
         <div className="flex flex-col">
             <Badge variant={isInitiallyActive ? "destructive" : "secondary"}>
                 {isInitiallyActive
-                    ? t('flowControl.status.active', '生效中')
-                    : t('flowControl.status.expired', '已过期')
+                    ? t('flowControl.status.active', 'Activo')
+                    : t('flowControl.status.expired', 'Expirado')
                 }
             </Badge>
             {isInitiallyActive && (
@@ -138,11 +138,11 @@ const StatusCell = memo(({
 
 StatusCell.displayName = 'StatusCell'
 
-// 主组件 - 移除了全局定时器
+// Componente principal - se eliminó el temporizador global
 export function BlockedIPTable() {
     const { t } = useTranslation()
 
-    // 搜索和过滤状态
+    // Estado de búsqueda y filtrado
     const [filters, setFilters] = useState<BlockedIPListRequest>({
         page: 1,
         size: 20,
@@ -151,31 +151,31 @@ export function BlockedIPTable() {
         sortDir: 'desc'
     })
 
-    // IP输入的临时状态
+    // Estado temporal de la entrada de IP
     const [ipInputValue, setIpInputValue] = useState('')
     const [isRefreshAnimating, setIsRefreshAnimating] = useState(false)
     const [isFilterAnimating, setIsFilterAnimating] = useState(false)
 
-    // 记录数据最后更新时间
+    // Registrar la última actualización de datos
     const [lastDataUpdateTime, setLastDataUpdateTime] = useState(Date.now())
 
-    // 获取数据
+    // Obtener datos
     const { blockedIPs, isLoading, refetch } = useBlockedIPsQuery(filters)
     const { cleanupExpiredBlockedIPs, isLoading: isCleanupLoading } = useCleanupExpiredBlockedIPs()
 
-    // 当数据更新时，重置数据更新时间
+    // Al actualizarse los datos, restablecer la hora de actualización
     useEffect(() => {
         if (blockedIPs?.items) {
             setLastDataUpdateTime(Date.now())
         }
     }, [blockedIPs?.items])
 
-    // 缓存表格数据
+    // Cachear los datos de la tabla
     const tableData = useMemo(() => {
         return blockedIPs?.items || []
     }, [blockedIPs?.items])
 
-    // 触发过滤器动画
+    // Disparar la animación del filtro
     const triggerFilterAnimation = useCallback(() => {
         setIsFilterAnimating(true)
         setTimeout(() => {
@@ -183,7 +183,7 @@ export function BlockedIPTable() {
         }, 1000)
     }, [])
 
-    // 刷新数据
+    // Actualizar datos
     const handleRefresh = useCallback(() => {
         setIsRefreshAnimating(true)
         refetch()
@@ -192,24 +192,24 @@ export function BlockedIPTable() {
         }, 1000)
     }, [refetch])
 
-    // 更新过滤器
+    // Actualizar el filtro
     const updateFilters = useCallback((newFilters: Partial<BlockedIPListRequest>) => {
         setFilters(produce(draft => {
             Object.assign(draft, newFilters)
-            // 如果不是分页变化，重置到第一页
+            // Si no es un cambio de paginación, volver a la primera página
             if (!('page' in newFilters)) {
                 draft.page = 1
             }
         }))
-        // 如果更新了IP过滤条件，同步更新输入框的值
+        // Si se actualizó el filtro de IP, sincronizar el valor del cuadro de texto
         if ('ip' in newFilters) {
             setIpInputValue(newFilters.ip || '')
         }
-        // 触发过滤器动画
+        // Disparar la animación del filtro
         triggerFilterAnimation()
     }, [triggerFilterAnimation])
 
-    // 清除过滤器
+    // Limpiar el filtro
     const clearFilters = useCallback(() => {
         setFilters({
             page: 1,
@@ -219,47 +219,47 @@ export function BlockedIPTable() {
             sortDir: 'desc'
         })
         setIpInputValue('')
-        // 触发过滤器动画
+        // Disparar la animación del filtro
         triggerFilterAnimation()
     }, [triggerFilterAnimation])
 
-    // 格式化时间
+    // Formatear la hora
     const formatTime = useCallback((timeStr: string) => {
         return new Date(timeStr).toLocaleString()
     }, [])
 
-    // 获取原因描述
+    // Obtener la descripción del motivo
     const getReasonDescription = useCallback((reason: string) => {
         switch (reason) {
             case 'high_frequency_visit':
-                return t('flowControl.reason.highFrequencyVisit', '高频访问')
+                return t('flowControl.reason.highFrequencyVisit', 'Acceso de alta frecuencia')
             case 'high_frequency_attack':
-                return t('flowControl.reason.highFrequencyAttack', '高频攻击')
+                return t('flowControl.reason.highFrequencyAttack', 'Ataque de alta frecuencia')
             case 'high_frequency_error':
-                return t('flowControl.reason.highFrequencyError', '高频错误')
+                return t('flowControl.reason.highFrequencyError', 'Errores de alta frecuencia')
             default:
                 return reason
         }
     }, [t])
 
-    // 处理排序点击
+    // Manejar el clic de ordenación
     const handleSortClick = useCallback(() => {
         const newSortDir = filters.sortDir === 'desc' ? 'asc' : 'desc'
         updateFilters({ sortBy: 'blocked_at', sortDir: newSortDir })
     }, [filters.sortDir, updateFilters])
 
-    // 表格列定义 - 使用 useCallback 优化渲染函数
+    // Definición de columnas de tabla - usar useCallback para optimizar las funciones de renderizado
     const columns: ColumnDef<BlockedIPRecord>[] = useMemo(() => [
         {
             accessorKey: 'ip',
-            header: () => <div className="font-medium py-3.5 whitespace-nowrap dark:text-shadow-glow-white dark:text-white">{t('flowControl.table.ip', 'IP地址')}</div>,
+            header: () => <div className="font-medium py-3.5 whitespace-nowrap dark:text-shadow-glow-white dark:text-white">{t('flowControl.table.ip', 'Dirección IP')}</div>,
             cell: ({ row }) => (
                 <div className="font-mono dark:text-shadow-glow-white">{row.original.ip}</div>
             ),
         },
         {
             accessorKey: 'reason',
-            header: () => <div className="font-medium py-3.5 whitespace-nowrap dark:text-shadow-glow-white dark:text-white">{t('flowControl.table.reason', '封禁原因')}</div>,
+            header: () => <div className="font-medium py-3.5 whitespace-nowrap dark:text-shadow-glow-white dark:text-white">{t('flowControl.table.reason', 'Motivo del bloqueo')}</div>,
             cell: ({ row }) => (
                 <Badge variant="secondary" className="dark:text-shadow-glow-white">
                     {getReasonDescription(row.original.reason)}
@@ -268,7 +268,7 @@ export function BlockedIPTable() {
         },
         {
             accessorKey: 'requestUri',
-            header: () => <div className="font-medium py-3.5 whitespace-nowrap dark:text-shadow-glow-white dark:text-white">{t('flowControl.table.requestUri', '请求路径')}</div>,
+            header: () => <div className="font-medium py-3.5 whitespace-nowrap dark:text-shadow-glow-white dark:text-white">{t('flowControl.table.requestUri', 'Ruta de la petición')}</div>,
             cell: ({ row }) => (
                 <TooltipProvider>
                     <Tooltip>
@@ -288,9 +288,9 @@ export function BlockedIPTable() {
                 <div
                     className="font-medium py-3.5 whitespace-nowrap dark:text-shadow-glow-white dark:text-white cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50 px-2 -mx-2 rounded transition-colors flex items-center gap-1"
                     onClick={handleSortClick}
-                    title="点击排序"
+                    title="Pulsar para ordenar"
                 >
-                    {t('flowControl.table.blockedAt', '封禁时间')}
+                    {t('flowControl.table.blockedAt', 'Hora del bloqueo')}
                     {filters.sortBy === 'blocked_at' && (
                         filters.sortDir === 'desc' ?
                             <ChevronDown className="h-4 w-4" /> :
@@ -306,7 +306,7 @@ export function BlockedIPTable() {
         },
         {
             accessorKey: 'status',
-            header: () => <div className="font-medium py-3.5 whitespace-nowrap dark:text-shadow-glow-white dark:text-white">{t('flowControl.table.status', '状态')}</div>,
+            header: () => <div className="font-medium py-3.5 whitespace-nowrap dark:text-shadow-glow-white dark:text-white">{t('flowControl.table.status', 'Estado')}</div>,
             cell: ({ row }) => (
                 <StatusCell
                     remainingTTL={row.original.remainingTTL}
@@ -317,7 +317,7 @@ export function BlockedIPTable() {
         },
     ], [t, filters.sortBy, filters.sortDir, lastDataUpdateTime, formatTime, getReasonDescription, handleSortClick])
 
-    // 处理分页变化
+    // Manejar cambios de paginación
     const handlePaginationChange = useCallback((updater: Updater<PaginationState>) => {
         if (typeof updater === 'function') {
             const oldPagination = {
@@ -339,7 +339,7 @@ export function BlockedIPTable() {
         }
     }, [filters.page, filters.size])
 
-    // 初始化表格
+    // Inicializar la tabla
     const table = useReactTable({
         data: tableData,
         columns,
@@ -356,7 +356,7 @@ export function BlockedIPTable() {
         onPaginationChange: handlePaginationChange
     })
 
-    // 处理 IP 输入回车事件
+    // Manejar el evento Enter en la entrada de IP
     const handleIpInputKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             updateFilters({ ip: e.currentTarget.value || undefined })
@@ -365,12 +365,12 @@ export function BlockedIPTable() {
 
     return (
         <Card className="flex flex-col h-full p-0 border-none shadow-none">
-            {/* 头部筛选器和操作按钮 - 固定高度 */}
+            {/* Filtros de cabecera y botones de acción - altura fija */}
             <div className="p-6 flex-shrink-0">
-                {/* 标题和操作按钮 */}
+                {/* Título y botones de acción */}
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-semibold text-primary dark:text-white">
-                        {t('flowControl.blockIpList', '拦截ip列表')}
+                        {t('flowControl.blockIpList', 'Lista de IPs interceptadas')}
                     </h2>
                     <div className="flex gap-2">
                         <AnimatedButton>
@@ -383,7 +383,7 @@ export function BlockedIPTable() {
                                 <AnimatedIcon animationVariant="continuous-spin" isAnimating={isRefreshAnimating} className="h-4 w-4">
                                     <RefreshCcw className="h-4 w-4" />
                                 </AnimatedIcon>
-                                {t('flowControl.refresh', '刷新')}
+                                {t('flowControl.refresh', 'Actualizar')}
                             </Button>
                         </AnimatedButton>
                         <AnimatedButton>
@@ -396,28 +396,28 @@ export function BlockedIPTable() {
                             >
                                 <Trash2 className="h-4 w-4" />
                                 {isCleanupLoading
-                                    ? t('flowControl.cleaning', '清理中...')
-                                    : t('flowControl.cleanup', '清理过期记录')
+                                    ? t('flowControl.cleaning', 'Limpiando...')
+                                    : t('flowControl.cleanup', 'Limpiar registros expirados')
                                 }
                             </Button>
                         </AnimatedButton>
                     </div>
                 </div>
 
-                {/* 过滤器 */}
+                {/* Filtro */}
                 <div className="flex flex-wrap gap-3 p-4 bg-gray-50 dark:bg-gray-800/20 rounded-lg">
                     <div className="flex items-center gap-2 mr-2">
                         <AnimatedIcon animationVariant="continuous-pulse" isAnimating={isFilterAnimating} className="h-4 w-4">
                             <Filter className="h-4 w-4 text-muted-foreground" />
                         </AnimatedIcon>
                         <span className="text-sm font-medium dark:text-shadow-glow-white">
-                            {t('flowControl.filters', '过滤条件')}
+                            {t('flowControl.filters', 'Condiciones de filtrado')}
                         </span>
                     </div>
 
                     <div className="flex items-center gap-3 flex-wrap">
                         <Input
-                            placeholder={t('flowControl.filterByIP', '按IP地址过滤')}
+                            placeholder={t('flowControl.filterByIP', 'Filtrar por dirección IP')}
                             value={ipInputValue}
                             onChange={(e) => setIpInputValue(e.target.value)}
                             onKeyDown={handleIpInputKeyDown}
@@ -426,7 +426,7 @@ export function BlockedIPTable() {
 
                         <div className="flex items-center gap-2">
                             <span className="text-sm font-medium text-muted-foreground whitespace-nowrap dark:text-shadow-glow-white">
-                                {t('flowControl.table.reason', '封禁原因')}:
+                                {t('flowControl.table.reason', 'Motivo del bloqueo')}:
                             </span>
                             <Select
                                 value={filters.reason || 'all'}
@@ -446,7 +446,7 @@ export function BlockedIPTable() {
 
                         <div className="flex items-center gap-2">
                             <span className="text-sm font-medium text-muted-foreground whitespace-nowrap dark:text-shadow-glow-white">
-                                {t('flowControl.table.status', '状态')}:
+                                {t('flowControl.table.status', 'Estado')}:
                             </span>
                             <Select
                                 value={filters.status}
@@ -470,13 +470,13 @@ export function BlockedIPTable() {
                             className="flex items-center gap-2 dark:text-shadow-glow-white ml-2"
                         >
                             <X className="h-4 w-4" />
-                            {t('flowControl.clearFilters', '清除')}
+                            {t('flowControl.clearFilters', 'Borrar')}
                         </Button>
                     </div>
                 </div>
             </div>
 
-            {/* 表格区域 - 弹性高度，可滚动 */}
+            {/* Área de tabla - altura flexible, con scroll */}
             <div className="px-6 flex-1 overflow-auto">
                 <DataTable
                     loadingStyle="skeleton"
@@ -489,7 +489,7 @@ export function BlockedIPTable() {
                 />
             </div>
 
-            {/* 底部分页 - 固定高度 */}
+            {/* Paginación inferior - altura fija */}
             <div className="py-6 px-4 flex-shrink-0">
                 <DataTablePagination table={table} />
             </div>

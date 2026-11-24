@@ -7,26 +7,26 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/HUAHUAI23/RuiQi/pkg/model"
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/dto"
-	"github.com/HUAHUAI23/RuiQi/server/repository"
+	"github.com/anticoi/EscudoWAF/pkg/model"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/dto"
+	"github.com/anticoi/EscudoWAF/server/repository"
 	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 const (
-	SystemDefaultIPBlockRule = "system_default_ip_block" // 系统默认IP阻止规则名称
+	SystemDefaultIPBlockRule = "system_default_ip_block" // Nombre de la regla de bloqueo de IP por defecto del sistema
 )
 
 var (
-	ErrMicroRuleNotFound   = errors.New("微规则不存在")
-	ErrMicroRuleNameExists = errors.New("微规则名称已存在")
-	ErrSystemRuleNoMod     = errors.New("系统默认规则不允许修改")
-	ErrSystemRuleNoDelete  = errors.New("系统默认规则不允许删除")
+	ErrMicroRuleNotFound   = errors.New("La microrregla no existe")
+	ErrMicroRuleNameExists = errors.New("El nombre de la microrregla ya existe")
+	ErrSystemRuleNoMod     = errors.New("No se permite modificar las reglas por defecto del sistema")
+	ErrSystemRuleNoDelete  = errors.New("No se permite eliminar las reglas por defecto del sistema")
 )
 
-// MicroRuleService 微规则服务接口
+// MicroRuleService interfaz del servicio de microrreglas
 type MicroRuleService interface {
 	CreateMicroRule(ctx context.Context, req *dto.MicroRuleCreateRequest) (*model.MicroRule, error)
 	GetMicroRules(ctx context.Context, pageStr, sizeStr string) ([]model.MicroRule, int64, error)
@@ -35,13 +35,13 @@ type MicroRuleService interface {
 	DeleteMicroRule(ctx context.Context, id bson.ObjectID) error
 }
 
-// MicroRuleServiceImpl 微规则服务实现
+// MicroRuleServiceImpl implementación del servicio de microrreglas
 type MicroRuleServiceImpl struct {
 	ruleRepo repository.MicroRuleRepository
 	logger   zerolog.Logger
 }
 
-// NewMicroRuleService 创建微规则服务
+// NewMicroRuleService crea el servicio de microrreglas
 func NewMicroRuleService(ruleRepo repository.MicroRuleRepository) MicroRuleService {
 	logger := config.GetServiceLogger("microrule")
 	return &MicroRuleServiceImpl{
@@ -50,9 +50,9 @@ func NewMicroRuleService(ruleRepo repository.MicroRuleRepository) MicroRuleServi
 	}
 }
 
-// CreateMicroRule 创建微规则
+// CreateMicroRule Crear microrregla
 func (s *MicroRuleServiceImpl) CreateMicroRule(ctx context.Context, req *dto.MicroRuleCreateRequest) (*model.MicroRule, error) {
-	// 检查规则名称是否已存在
+	// Comprobar si el nombre de la regla ya existe
 	if req.Name != "" {
 		exists, err := s.ruleRepo.CheckMicroRuleNameExists(ctx, req.Name, bson.NilObjectID)
 		if err != nil {
@@ -63,27 +63,27 @@ func (s *MicroRuleServiceImpl) CreateMicroRule(ctx context.Context, req *dto.Mic
 		}
 	}
 
-	// 将JSON条件转换为BSON
+	// Convertir condiciones JSON a BSON
 	var condition bson.Raw
 	if len(req.Condition) > 0 {
-		// 使用JSON解析器将JSON解析为interface{}
+		// Usar el parser JSON para convertir JSON a interface{}
 		var anyValue interface{}
 		if err := json.Unmarshal(req.Condition, &anyValue); err != nil {
-			s.logger.Error().Err(err).Msg("解析JSON条件失败")
+			s.logger.Error().Err(err).Msg("Error al analizar las condiciones JSON")
 			return nil, err
 		}
 
-		// 将interface{}转换为BSON
+		// Convertir interface{} a BSON
 		bsonData, err := bson.Marshal(anyValue)
 		if err != nil {
-			s.logger.Error().Err(err).Msg("转换条件为BSON失败")
+			s.logger.Error().Err(err).Msg("Error al convertir la condición a BSON")
 			return nil, err
 		}
 
 		condition = bsonData
 	}
 
-	// 创建新微规则
+	// Crear nueva microrregla
 	rule := &model.MicroRule{
 		Name:      req.Name,
 		Type:      model.RuleType(req.Type),
@@ -92,18 +92,18 @@ func (s *MicroRuleServiceImpl) CreateMicroRule(ctx context.Context, req *dto.Mic
 		Condition: condition,
 	}
 
-	// 保存微规则
+	// Guardar microrregla
 	err := s.ruleRepo.CreateMicroRule(ctx, rule)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("创建微规则失败")
+		s.logger.Error().Err(err).Msg("Error al crear la microrregla")
 		return nil, err
 	}
 
-	s.logger.Info().Str("id", rule.ID.Hex()).Str("name", rule.Name).Msg("微规则创建成功")
+	s.logger.Info().Str("id", rule.ID.Hex()).Str("name", rule.Name).Msg("Microrregla creada con éxito")
 	return rule, nil
 }
 
-// GetMicroRules 获取微规则列表
+// GetMicroRules Obtener lista de microrreglas
 func (s *MicroRuleServiceImpl) GetMicroRules(ctx context.Context, pageStr, sizeStr string) ([]model.MicroRule, int64, error) {
 	page, err := strconv.ParseInt(pageStr, 10, 64)
 	if err != nil || page < 1 {
@@ -117,30 +117,30 @@ func (s *MicroRuleServiceImpl) GetMicroRules(ctx context.Context, pageStr, sizeS
 
 	rules, total, err := s.ruleRepo.GetMicroRules(ctx, page, size)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("获取微规则列表失败")
+		s.logger.Error().Err(err).Msg("Error al obtener la lista de microrreglas")
 		return nil, 0, err
 	}
 
 	return rules, total, nil
 }
 
-// GetMicroRuleByID 根据ID获取微规则
+// GetMicroRuleByID obtiene una microrregla por ID
 func (s *MicroRuleServiceImpl) GetMicroRuleByID(ctx context.Context, id bson.ObjectID) (*model.MicroRule, error) {
 	rule, err := s.ruleRepo.GetMicroRuleByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, repository.ErrRuleNotFound) {
 			return nil, ErrMicroRuleNotFound
 		}
-		s.logger.Error().Err(err).Str("id", id.Hex()).Msg("获取微规则失败")
+		s.logger.Error().Err(err).Str("id", id.Hex()).Msg("Error al obtener la microrregla")
 		return nil, err
 	}
 
 	return rule, nil
 }
 
-// UpdateMicroRule 更新微规则
+// UpdateMicroRule Actualizar microrregla
 func (s *MicroRuleServiceImpl) UpdateMicroRule(ctx context.Context, id bson.ObjectID, req *dto.MicroRuleUpdateRequest) (*model.MicroRule, error) {
-	// 获取现有微规则
+	// Obtener la microrregla existente
 	rule, err := s.ruleRepo.GetMicroRuleByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, repository.ErrRuleNotFound) {
@@ -149,13 +149,13 @@ func (s *MicroRuleServiceImpl) UpdateMicroRule(ctx context.Context, id bson.Obje
 		return nil, err
 	}
 
-	// 检查是否是系统默认规则
+	// Comprobar si es la regla por defecto del sistema
 	if rule.Name == SystemDefaultIPBlockRule {
-		s.logger.Warn().Str("id", id.Hex()).Msg("尝试修改系统默认规则")
+		s.logger.Warn().Str("id", id.Hex()).Msg("Se intentó modificar la regla por defecto del sistema")
 		return nil, ErrSystemRuleNoMod
 	}
 
-	// 检查规则名称是否已存在（如果要更新名称）
+	// Comprobar si el nombre de la regla ya existe (si se va a actualizar el nombre)
 	if req.Name != "" && req.Name != rule.Name {
 		exists, err := s.ruleRepo.CheckMicroRuleNameExists(ctx, req.Name, id)
 		if err != nil {
@@ -167,7 +167,7 @@ func (s *MicroRuleServiceImpl) UpdateMicroRule(ctx context.Context, id bson.Obje
 		rule.Name = req.Name
 	}
 
-	// 更新其他字段（只更新非空字段）
+	// Actualizar los demás campos (solo campos no vacíos)
 	if req.Type != "" {
 		rule.Type = model.RuleType(req.Type)
 	}
@@ -178,37 +178,37 @@ func (s *MicroRuleServiceImpl) UpdateMicroRule(ctx context.Context, id bson.Obje
 		rule.Priority = *req.Priority
 	}
 	if len(req.Condition) > 0 {
-		// 使用JSON解析器将JSON解析为interface{}
+		// Usar el parser JSON para convertir JSON a interface{}
 		var anyValue interface{}
 		if err := json.Unmarshal(req.Condition, &anyValue); err != nil {
-			s.logger.Error().Err(err).Msg("解析JSON条件失败")
+			s.logger.Error().Err(err).Msg("Error al analizar las condiciones JSON")
 			return nil, err
 		}
 
-		// 将interface{}转换为BSON
+		// Convertir interface{} a BSON
 		bsonData, err := bson.Marshal(anyValue)
 		if err != nil {
-			s.logger.Error().Err(err).Msg("转换条件为BSON失败")
+			s.logger.Error().Err(err).Msg("Error al convertir la condición a BSON")
 			return nil, err
 		}
 
 		rule.Condition = bsonData
 	}
 
-	// 保存更新
+	// Guardar actualización
 	err = s.ruleRepo.UpdateMicroRule(ctx, rule)
 	if err != nil {
-		s.logger.Error().Err(err).Str("id", id.Hex()).Msg("更新微规则失败")
+		s.logger.Error().Err(err).Str("id", id.Hex()).Msg("Error al actualizar la microrregla")
 		return nil, err
 	}
 
-	s.logger.Info().Str("id", id.Hex()).Str("name", rule.Name).Msg("微规则更新成功")
+	s.logger.Info().Str("id", id.Hex()).Str("name", rule.Name).Msg("Microrregla actualizada con éxito")
 	return rule, nil
 }
 
-// DeleteMicroRule 删除微规则
+// DeleteMicroRule Eliminar microrregla
 func (s *MicroRuleServiceImpl) DeleteMicroRule(ctx context.Context, id bson.ObjectID) error {
-	// 检查微规则是否存在
+	// Comprobar si la microrregla existe
 	rule, err := s.ruleRepo.GetMicroRuleByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, repository.ErrRuleNotFound) {
@@ -217,19 +217,19 @@ func (s *MicroRuleServiceImpl) DeleteMicroRule(ctx context.Context, id bson.Obje
 		return err
 	}
 
-	// 检查是否是系统默认规则
+	// Comprobar si es la regla por defecto del sistema
 	if rule.Name == SystemDefaultIPBlockRule {
-		s.logger.Warn().Str("id", id.Hex()).Msg("尝试删除系统默认规则")
+		s.logger.Warn().Str("id", id.Hex()).Msg("Se intentó eliminar la regla por defecto del sistema")
 		return ErrSystemRuleNoDelete
 	}
 
-	// 删除微规则
+	// Eliminar microrregla
 	err = s.ruleRepo.DeleteMicroRule(ctx, id)
 	if err != nil {
-		s.logger.Error().Err(err).Str("id", id.Hex()).Msg("删除微规则失败")
+		s.logger.Error().Err(err).Str("id", id.Hex()).Msg("Error al eliminar la microrregla")
 		return err
 	}
 
-	s.logger.Info().Str("id", id.Hex()).Msg("微规则删除成功")
+	s.logger.Info().Str("id", id.Hex()).Msg("Microrregla eliminada con éxito")
 	return nil
 }

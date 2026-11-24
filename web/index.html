@@ -6,32 +6,32 @@
 
         <link rel="icon" type="image/svg+xml" href="/logo.svg" />
 
-        <!-- 主题色定义 -->
+        <!-- Definición del color del tema -->
         <meta name="theme-color" content="#8a64d0" />
 
-        <!-- SEO元标签 -->
+        <!-- Metaetiquetas SEO -->
         <meta
             name="description"
-            content="RuiQi WAF - Web应用程序防火墙管理系统"
+            content="EscudoWAF - Sistema de gestión de firewall de aplicaciones web"
         />
         <meta
             name="keywords"
             content="WAF, web security, firewall, protection"
         />
 
-        <!-- 社交媒体分享信息 -->
-        <meta property="og:title" content="RuiQi WAF" />
-        <meta property="og:description" content="Web应用程序防火墙管理系统" />
+        <!-- Información para compartir en redes sociales -->
+        <meta property="og:title" content="EscudoWAF" />
+        <meta property="og:description" content="Sistema de gestión de firewall de aplicaciones web" />
         <meta property="og:image" content="/og-image.png" />
 
-        <!-- 安全设置 -->
+        <!-- Configuración de seguridad -->
         <meta http-equiv="X-Content-Type-Options" content="nosniff" />
 
-        <!-- 预加载关键资源 -->
+        <!-- Precargar recursos críticos -->
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-        <!-- 添加页面加载样式，避免初始白屏 -->
+        <!-- Estilos de carga de página para evitar pantalla blanca inicial -->
         <style>
             body,
             html {
@@ -56,7 +56,7 @@
                 z-index: 9999;
             }
 
-            /* 使用紫色渐变背景 */
+            /* Usar fondo degradado púrpura */
             .app-loading-background {
                 position: absolute;
                 inset: 0;
@@ -114,7 +114,7 @@
                 animation: preload-pulse-glow 4s ease-in-out infinite;
             }
 
-            /* 进度条容器 */
+            /* Contenedor de la barra de progreso */
             .app-loading-content {
                 position: relative;
                 z-index: 10;
@@ -155,7 +155,7 @@
                 animation: preload-pulse 2s infinite;
             }
 
-            /* 定义动画关键帧 */
+            /* Definir fotogramas clave de la animación */
             @keyframes preload-float {
                 0%,
                 100% {
@@ -215,12 +215,12 @@
             }
         </style>
 
-        <title>RuiQi WAF</title>
+        <title>EscudoWAF</title>
     </head>
 
     <body>
         <div id="root">
-            <!-- 应用加载前显示的加载指示器 -->
+            <!-- Indicador de carga mostrado antes de cargar la app -->
             <div class="app-loading">
                 <div class="app-loading-background"></div>
                 <div class="app-loading-blur-elements">
@@ -251,12 +251,12 @@
 
                 const timer = setInterval(() => {
                     // Slow down as it approaches 100%
-                    // 使用Math.floor确保结果是整数
+                    // Usar Math.floor para garantizar un resultado entero
                     const increment = Math.floor(
                         Math.max(1, 10 * (1 - progress / 100))
                     );
                     progress = Math.min(99, progress + increment);
-                    // 确保最终结果也是整数
+                    // Asegurar que el resultado final también sea entero
                     progress = Math.floor(progress);
 
                     // Update the DOM

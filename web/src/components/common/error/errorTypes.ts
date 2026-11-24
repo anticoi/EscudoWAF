@@ -1,6 +1,6 @@
 import { ApiError } from '@/api/index'
 
-// 错误类型枚举
+// Enumeración de tipos de error
 export const ErrorType = {
     NETWORK: 'network',
     TIMEOUT: 'timeout',
@@ -12,19 +12,19 @@ export const ErrorType = {
     UNKNOWN: 'unknown'
 } as const
 
-// 定义错误类型类型
+// Definición de tipos de error
 export type ErrorTypeValue = typeof ErrorType[keyof typeof ErrorType]
 
 /**
- * 根据错误对象确定错误类型
- * @param error - 错误对象
- * @returns 错误类型
+ * Determinar el tipo de error según el objeto de error
+ * @param error - objeto de error
+ * @returns tipo de error
  */
 export const getErrorType = (error: unknown): ErrorTypeValue => {
-    // 判断是否为ApiError
+    // Comprobar si es un ApiError
     const isApiError = error instanceof Error && error.name === 'ApiError'
 
-    // 如果是ApiError，使用code判断错误类型
+    // Si es ApiError, usar code para determinar el tipo de error
     if (isApiError && 'code' in error) {
         const apiError = error as ApiError
         const code = apiError.code
@@ -36,7 +36,7 @@ export const getErrorType = (error: unknown): ErrorTypeValue => {
         } else if (code === 408 || code === 504) {
             return ErrorType.TIMEOUT
         } else if (code >= 400 && code < 500) {
-            // 判断是否为验证错误
+            // Comprobar si es un error de validación
             if ('errorDetail' in apiError && apiError.errorDetail && typeof apiError.errorDetail === 'object') {
                 return ErrorType.VALIDATION
             }
@@ -45,11 +45,11 @@ export const getErrorType = (error: unknown): ErrorTypeValue => {
             return ErrorType.SERVER
         }
     } else if (error instanceof Error) {
-        // 非ApiError情况，尝试从消息判断
+        // En casos que no son ApiError, intentar deducirlo del mensaje
         const message = error.message.toLowerCase()
-        if (message.includes('network') || message.includes('连接') || message.includes('connection')) {
+        if (message.includes('network') || message.includes('Conexión') || message.includes('connection')) {
             return ErrorType.NETWORK
-        } else if (message.includes('timeout') || message.includes('超时')) {
+        } else if (message.includes('timeout') || message.includes('Tiempo de espera agotado')) {
             return ErrorType.TIMEOUT
         }
     }

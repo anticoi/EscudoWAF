@@ -7,19 +7,19 @@ import (
 	"strconv"
 	"time"
 
-	mongodb "github.com/HUAHUAI23/RuiQi/pkg/database/mongo"
-	"github.com/HUAHUAI23/RuiQi/pkg/model"
-	"github.com/HUAHUAI23/RuiQi/server/constant"
-	"github.com/HUAHUAI23/RuiQi/server/utils/jwt"
+	mongodb "github.com/anticoi/EscudoWAF/pkg/database/mongo"
+	"github.com/anticoi/EscudoWAF/pkg/model"
+	"github.com/anticoi/EscudoWAF/server/constant"
+	"github.com/anticoi/EscudoWAF/server/utils/jwt"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-// Global 全局配置实例
+// Global instancia de configuración global
 var Global Config
 
-// Config 保存应用程序配置
+// Config guarda la configuración de la aplicación
 type Config struct {
 	Bind         string
 	IsProduction bool
@@ -31,34 +31,34 @@ type Config struct {
 	JWT          JWTConfig
 }
 
-// DBConfig 数据库配置
+// DBConfig configuración de base de datos
 type DBConfig struct {
 	URI      string
 	Database string
 }
 
-// JWTConfig JWT配置
+// JWTConfig configuración JWT
 type JWTConfig struct {
 	Secret        string
 	ExpirationHrs int
 }
 
-// InitConfig 从环境变量初始化配置
+// InitConfig inicializa la configuración desde variables de entorno
 func InitConfig() error {
-	// 加载.env文件
+	// Cargar el archivo .env
 	err := godotenv.Load()
 	if err != nil {
-		// 如果.env文件不存在，只记录一个信息，不返回错误
+		// Si el archivo .env no existe, solo registrar información, sin devolver error
 		GlobalLogger.Info().Msg(".env file not found, using default environment variables")
 	}
 
-	// 设置默认值
+	// Establecer valores por defecto
 	Global = Config{
 		Bind:         "0.0.0.0:2333",
 		IsProduction: false,
 		IsK8s:        false,
-		DisableWeb:   false, // Web 功能默认开启
-		WebPath:      "",    // 使用嵌入的前端资源
+		DisableWeb:   false, // La función web está habilitada por defecto
+		WebPath:      "",    // Usar recursos de frontend embebidos
 		Log: LogConfig{
 			Level:  "info",
 			File:   "/dev/stdout",
@@ -74,7 +74,7 @@ func InitConfig() error {
 		},
 	}
 
-	// 从环境变量加载配置
+	// Cargar configuración desde variables de entorno
 	if env := os.Getenv("BIND"); env != "" {
 		Global.Bind = env
 	}
@@ -87,7 +87,7 @@ func InitConfig() error {
 		Global.IsK8s = env == "true"
 	}
 
-	// 日志配置
+	// Configuración de logs
 	if env := os.Getenv("LOG_LEVEL"); env != "" {
 		Global.Log.Level = env
 	}
@@ -98,7 +98,7 @@ func InitConfig() error {
 		Global.Log.Format = env
 	}
 
-	// 数据库配置
+	// Configuración de base de datos
 	if env := os.Getenv("DB_URI"); env != "" {
 		Global.DBConfig.URI = env
 	}
@@ -106,7 +106,7 @@ func InitConfig() error {
 		Global.DBConfig.Database = env
 	}
 
-	// JWT配置
+	// Configuración JWT
 	if env := os.Getenv("JWT_SECRET"); env != "" {
 		Global.JWT.Secret = env
 	}
@@ -116,7 +116,7 @@ func InitConfig() error {
 		}
 	}
 
-	// 前端配置
+	// Configuración del frontend
 	if env := os.Getenv("DISABLE_WEB"); env != "" {
 		Global.DisableWeb = env == "true"
 	}
@@ -124,13 +124,13 @@ func InitConfig() error {
 		Global.WebPath = env
 	}
 
-	// 初始化JWT
+	// Inicializar JWT
 	err = jwt.InitJWTSecret(Global.JWT.Secret)
 	if err != nil {
 		return fmt.Errorf("failed to initialize JWT: %w", err)
 	}
 
-	// 初始化logger
+	// Inicializar el logger
 	Logger, err = Global.Log.newLogger()
 	if err != nil {
 		return fmt.Errorf("failed to initialize logger: %w", err)
@@ -141,25 +141,25 @@ func InitConfig() error {
 }
 
 func GetAppConfig() (*model.Config, error) {
-	// 连接数据库
+	// Conectar a la base de datos
 	client, err := mongodb.Connect(Global.DBConfig.URI)
 	if err != nil {
 		return nil, err
 	}
 
 	var cfg model.Config
-	// 获取配置集合
+	// Obtener la colección de configuración
 	db := client.Database(Global.DBConfig.Database)
 	collection := db.Collection(cfg.GetCollectionName())
 
-	// 创建带超时的上下文
+	// Crear contexto con timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel() // 确保资源被释放
+	defer cancel() // Asegurar que los recursos se liberen
 
-	// 使用常量获取配置名称，如果不存在则使用默认值"AppConfig"
+	// Usar constante para el nombre de configuración; si no existe usar "AppConfig" por defecto
 	configName := constant.GetString("APP_CONFIG_NAME", "AppConfig")
 
-	// 查询指定名称的配置
+	// Consultar la configuración con el nombre indicado
 	err = collection.FindOne(
 		ctx,
 		bson.D{{Key: "name", Value: configName}},
@@ -167,9 +167,9 @@ func GetAppConfig() (*model.Config, error) {
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, fmt.Errorf("未找到配置记录")
+			return nil, fmt.Errorf("Registro de configuración no encontrado")
 		}
-		return nil, fmt.Errorf("获取配置失败: %w", err)
+		return nil, fmt.Errorf("Error al obtener la configuración: %w", err)
 	}
 	return &cfg, nil
 }

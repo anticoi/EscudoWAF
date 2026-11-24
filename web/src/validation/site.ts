@@ -1,19 +1,19 @@
 import * as z from 'zod'
 import { WAFMode } from '@/types/site'
 
-// 服务器验证模式
+// Modo de validación de servidor
 const serverSchema = z.object({
-    host: z.string().min(1, "主机地址不能为空"),
-    port: z.number().min(1, "端口必须大于0").max(65535, "端口不能超过65535"),
+    host: z.string().min(1, "La dirección del host no puede estar vacía"),
+    port: z.number().min(1, "El puerto debe ser mayor que 0").max(65535, "El puerto no puede superar 65535"),
     isSSL: z.boolean().default(false)
 })
 
-// 后端配置验证模式
+// Modo de validación de la configuración del backend
 const backendSchema = z.object({
-    servers: z.array(serverSchema).min(1, "至少需要一个服务器")
+    servers: z.array(serverSchema).min(1, "Se requiere al menos un servidor")
 })
 
-// 证书验证模式（可选）
+// Esquema de validación de certificado (opcional)
 const certificateSchema = z.object({
     certName: z.string().optional(),
     expireDate: z.string().optional(),
@@ -23,19 +23,19 @@ const certificateSchema = z.object({
     publicKey: z.string().optional()
 }).optional()
 
-// 站点表单验证模式
+// Esquema de validación del formulario de sitio
 export const siteFormSchema = z.object({
-    name: z.string().min(1, "站点名称不能为空"),
-    domain: z.string().min(1, "域名不能为空"),
-    listenPort: z.number().min(1, "监听端口必须大于0").max(65535, "监听端口不能超过65535"),
+    name: z.string().min(1, "El nombre del sitio no puede estar vacío"),
+    domain: z.string().min(1, "El dominio no puede estar vacío"),
+    listenPort: z.number().min(1, "El puerto de escucha debe ser mayor que 0").max(65535, "El puerto de escucha no puede superar 65535"),
     enableHTTPS: z.boolean().default(false),
     activeStatus: z.boolean().default(true),
     wafEnabled: z.boolean().default(false),
     wafMode: z.enum([WAFMode.Protection, WAFMode.Observation]).default(WAFMode.Observation),
     backend: backendSchema,
     certificate: certificateSchema,
-    certificateId: z.string().optional() // 用于选择已有证书
+    certificateId: z.string().optional() // Para seleccionar un certificado existente
 })
 
-// 站点更新表单验证模式
+// Esquema de validación del formulario de actualización de sitio
 export const siteUpdateFormSchema = siteFormSchema.partial() 

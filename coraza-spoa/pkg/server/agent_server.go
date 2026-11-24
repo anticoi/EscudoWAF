@@ -15,22 +15,22 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 
-	cfg "github.com/HUAHUAI23/RuiQi/coraza-spoa/config"
-	"github.com/HUAHUAI23/RuiQi/coraza-spoa/internal"
-	mongodb "github.com/HUAHUAI23/RuiQi/pkg/database/mongo"
-	"github.com/HUAHUAI23/RuiQi/pkg/model"
-	"github.com/HUAHUAI23/RuiQi/pkg/utils/network"
+	cfg "github.com/anticoi/EscudoWAF/coraza-spoa/config"
+	"github.com/anticoi/EscudoWAF/coraza-spoa/internal"
+	mongodb "github.com/anticoi/EscudoWAF/pkg/database/mongo"
+	"github.com/anticoi/EscudoWAF/pkg/model"
+	"github.com/anticoi/EscudoWAF/pkg/utils/network"
 )
 
 var globalLogger = zerolog.New(os.Stderr).With().Timestamp().Logger()
 
-// ServerState 表示服务器的运行状态
+// ServerState representa el estado de ejecución del servidor
 type ServerState int
 
 const (
-	ServerStopped ServerState = iota // 服务已停止
-	ServerRunning                    // 服务正在运行
-	ServerError                      // 服务出错
+	ServerStopped ServerState = iota // Servicio detenido
+	ServerRunning                    // Servicio en ejecución
+	ServerError                      // Error del servicio
 )
 
 type AgentServer interface {
@@ -45,7 +45,7 @@ type AgentServer interface {
 	GetLatestConfig() (*model.Config, error)
 }
 
-// AgentServer 管理Agent服务的生命周期
+// AgentServer gestiona el ciclo de vida del servicio Agent
 type AgentServerImpl struct {
 	mu           sync.Mutex
 	ctx          context.Context
@@ -73,13 +73,13 @@ func NewAgentServer(logger zerolog.Logger, mongoURI string) (AgentServer, error)
 	}, nil
 }
 
-// Start 启动服务
+// Start inicia el servicio
 func (s *AgentServerImpl) Start() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	if s.state == ServerRunning {
-		return errors.New("服务已经在运行中")
+		return errors.New("El servicio ya está en ejecución")
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -130,29 +130,29 @@ func (s *AgentServerImpl) Start() error {
 	// Convert model.AppConfig to internal.AppConfig and create applications
 	allApps := make(map[string]*internal.Application)
 	for _, appConfig := range appConfigs {
-		// 创建日志配置
+		// Crear la configuración de logs
 		logConfig := cfg.LogConfig{
 			Level:  appConfig.LogLevel,
 			File:   appConfig.LogFile,
 			Format: appConfig.LogFormat,
 		}
 
-		// 创建日志记录器
+		// Crear el logger
 		appLogger, err := logConfig.NewLogger()
 		if err != nil {
-			s.logger.Warn().Err(err).Str("app", appConfig.Name).Msg("使用默认日志记录器")
+			s.logger.Warn().Err(err).Str("app", appConfig.Name).Msg("Usar logger por defecto")
 			appLogger = globalLogger
 		}
 
-		// 创建内部 AppConfig
+		// Crear AppConfig interna
 		internalAppConfig := internal.AppConfig{
 			Directives:     appConfig.Directives,
-			ResponseCheck:  globalConfig.IsResponseCheck, // 使用全局响应检查设置
+			ResponseCheck:  globalConfig.IsResponseCheck, // Usar la configuración global de inspección de respuestas
 			Logger:         appLogger,
 			TransactionTTL: appConfig.TransactionTTL,
 		}
 
-		// 创建应用
+		// Crear la aplicación
 		application, err := internalAppConfig.NewApplicationWithContext(ctx, internal.ApplicationOptions{
 			MongoConfig:          mongoConfig,
 			GeoIPConfig:          &geoIPConfig,
@@ -171,38 +171,38 @@ func (s *AgentServerImpl) Start() error {
 	s.applications = allApps
 	s.network, s.address = network.NetworkAddressFromBind(globalConfig.Engine.Bind)
 
-	// 创建监听器
+	// Crear el listener
 	l, err := (&net.ListenConfig{}).Listen(s.ctx, s.network, s.address)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("创建套接字失败")
+		s.logger.Error().Err(err).Msg("Error al crear el socket")
 		s.state = ServerError
 		s.lastError = err
 		return err
 	}
 	s.listener = l
 
-	// 创建Agent实例
+	// Crear instancia de Agent
 	s.agent = &internal.Agent{
 		Context:      s.ctx,
 		Applications: s.applications,
 		Logger:       s.logger,
 	}
 
-	// 在后台goroutine中启动服务
+	// Iniciar el servicio en una goroutine en segundo plano
 	go func() {
-		s.logger.Info().Msg("启动 coraza-spoa 服务, 监听地址: " + s.address + " " + s.network)
+		s.logger.Info().Msg("Iniciando servicio coraza-spoa, dirección de escucha: " + s.address + " " + s.network)
 		err := s.agent.Serve(l)
 
-		// 只有当它不是正常关闭时才记录为错误
+		// Solo registrar como error si no fue un cierre normal
 		if err != nil && !errors.Is(err, net.ErrClosed) && !strings.Contains(err.Error(), "use of closed network connection") {
 			s.mu.Lock()
 			s.state = ServerError
 			s.lastError = err
 			s.mu.Unlock()
-			s.logger.Error().Err(err).Msg("监听器出错，非预期错误")
+			s.logger.Error().Err(err).Msg("Error del listener, error inesperado")
 		} else if err != nil {
-			// 预期错误 接受到 上下文取消时，s.agent.Serve(l) 会抛出前缀为 'accepting conn:' 的错误
-			s.logger.Info().Msg("监听器已正常关闭, 预期错误: " + err.Error())
+			// Error esperado: al cancelar el contexto, s.agent.Serve(l) lanza un error con prefijo 'accepting conn:'
+			s.logger.Info().Msg("El listener se cerró correctamente, error esperado: " + err.Error())
 		}
 	}()
 
@@ -210,25 +210,25 @@ func (s *AgentServerImpl) Start() error {
 	return nil
 }
 
-// Stop 停止服务
+// Stop detiene el servicio
 func (s *AgentServerImpl) Stop() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	if s.state == ServerStopped {
-		return errors.New("服务未运行")
+		return errors.New("Servicio no iniciado")
 	}
 
-	// 取消上下文
+	// Cancelar el contexto
 	if s.cancelFunc != nil {
 		s.cancelFunc()
 		s.cancelFunc = nil
 	}
 
-	// 关闭监听器
+	// Cerrar el listener
 	if s.listener != nil {
 		if err := s.listener.Close(); err != nil {
-			s.logger.Error().Err(err).Msg("关闭监听器失败")
+			s.logger.Error().Err(err).Msg("Error al cerrar el listener")
 			return err
 		}
 		s.listener = nil
@@ -239,19 +239,19 @@ func (s *AgentServerImpl) Stop() error {
 	s.ctx = nil
 
 	s.state = ServerStopped
-	s.logger.Info().Msg("服务已停止")
+	s.logger.Info().Msg("Servicio detenido")
 	return nil
 }
 
-// Restart 重启服务
+// Restart reinicia el servicio
 func (s *AgentServerImpl) Restart() error {
-	if err := s.Stop(); err != nil && !errors.Is(err, errors.New("服务未运行")) {
+	if err := s.Stop(); err != nil && !errors.Is(err, errors.New("Servicio no iniciado")) {
 		return err
 	}
 	return s.Start()
 }
 
-// UpdateApplications 更新应用配置 support hot reload
+// UpdateApplications actualiza la configuración de aplicaciones, soporta recarga en caliente
 func (s *AgentServerImpl) UpdateApplications() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -296,35 +296,35 @@ func (s *AgentServerImpl) UpdateApplications() error {
 		CityDBPath: globalConfig.Engine.CityDBPath,
 	}
 
-	// 从 Config 中提取 AppConfig 列表
+	// Extraer la lista de AppConfig desde Config
 	appConfigs := globalConfig.Engine.AppConfig
 
 	// Convert model.AppConfig to internal.AppConfig and create applications
 	allApps := make(map[string]*internal.Application)
 	for _, appConfig := range appConfigs {
-		// 创建日志配置
+		// Crear la configuración de logs
 		logConfig := cfg.LogConfig{
 			Level:  appConfig.LogLevel,
 			File:   appConfig.LogFile,
 			Format: appConfig.LogFormat,
 		}
 
-		// 创建日志记录器
+		// Crear el logger
 		appLogger, err := logConfig.NewLogger()
 		if err != nil {
-			s.logger.Warn().Err(err).Str("app", appConfig.Name).Msg("使用默认日志记录器")
+			s.logger.Warn().Err(err).Str("app", appConfig.Name).Msg("Usar logger por defecto")
 			appLogger = globalLogger
 		}
 
-		// 创建内部 AppConfig
+		// Crear AppConfig interna
 		internalAppConfig := internal.AppConfig{
 			Directives:     appConfig.Directives,
-			ResponseCheck:  globalConfig.IsResponseCheck, // 使用全局响应检查设置
+			ResponseCheck:  globalConfig.IsResponseCheck, // Usar la configuración global de inspección de respuestas
 			Logger:         appLogger,
 			TransactionTTL: appConfig.TransactionTTL,
 		}
 
-		// 创建应用
+		// Crear la aplicación
 		application, err := internalAppConfig.NewApplicationWithContext(s.ctx, internal.ApplicationOptions{
 			MongoConfig:          mongoConfig,
 			GeoIPConfig:          &geoIPConfig,
@@ -342,16 +342,16 @@ func (s *AgentServerImpl) UpdateApplications() error {
 
 	s.applications = allApps
 
-	// 如果服务正在运行，热更新Agent的应用
+	// Si el servicio está en ejecución, actualizar en caliente las aplicaciones del Agent
 	if s.state == ServerRunning && s.agent != nil && s.ctx != nil {
 		s.agent.ReplaceApplications(allApps)
-		s.logger.Info().Msg("应用配置已更新")
+		s.logger.Info().Msg("Configuración de aplicación actualizada")
 	}
 
 	return nil
 }
 
-// UpdateNetworkAddress 更新网络地址 not support hot reload
+// UpdateNetworkAddress actualiza la dirección de red, no soporta recarga en caliente
 func (s *AgentServerImpl) UpdateNetworkAddress(network, address string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -360,7 +360,7 @@ func (s *AgentServerImpl) UpdateNetworkAddress(network, address string) {
 	s.address = address
 }
 
-// UpdateLogger 更新日志记录器 support hot reload
+// UpdateLogger actualiza el logger, soporta recarga en caliente
 func (s *AgentServerImpl) UpdateLogger(logger zerolog.Logger) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -371,14 +371,14 @@ func (s *AgentServerImpl) UpdateLogger(logger zerolog.Logger) {
 	}
 }
 
-// GetState 获取当前服务状态
+// GetState obtiene el estado actual del servicio
 func (s *AgentServerImpl) GetState() ServerState {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return s.state
 }
 
-// GetLastError 获取最后一次错误
+// GetLastError obtiene el último error
 func (s *AgentServerImpl) GetLastError() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -389,31 +389,31 @@ func (s *AgentServerImpl) GetLatestConfig() (*model.Config, error) {
 	if s.mongoURI == "" {
 		return nil, errors.New("mongoURI is required")
 	}
-	// 连接数据库
+	// Conectar a la base de datos
 	client, err := mongodb.Connect(s.mongoURI)
 	if err != nil {
-		return nil, fmt.Errorf("连接数据库失败: %w", err)
+		return nil, fmt.Errorf("Error al conectar con la base de datos: %w", err)
 	}
 
 	var cfg model.Config
-	// 获取配置集合
+	// Obtener la colección de configuración
 	db := client.Database("waf")
 	collection := db.Collection(cfg.GetCollectionName())
 
-	// 创建带超时的上下文
+	// Crear contexto con timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel() // 确保资源被释放
+	defer cancel() // Asegurar que los recursos se liberen
 
-	// 查询指定名称的配置
+	// Consultar la configuración con el nombre indicado
 	err = collection.FindOne(
 		ctx,
 		bson.D{{Key: "name", Value: "AppConfig"}},
 	).Decode(&cfg)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, fmt.Errorf("未找到配置记录")
+			return nil, fmt.Errorf("Registro de configuración no encontrado")
 		}
-		return nil, fmt.Errorf("获取配置失败: %w", err)
+		return nil, fmt.Errorf("Error al obtener la configuración: %w", err)
 	}
 	return &cfg, nil
 }

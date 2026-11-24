@@ -1,4 +1,4 @@
-// 站点相关类型定义
+// Definiciones de tipos relacionados con sitios
 export interface Site {
     id: string
     name: string
@@ -38,7 +38,7 @@ export interface Certificate {
     publicKey: string
 }
 
-// 请求和响应类型
+// Tipos de petición y respuesta
 export interface SiteListResponse {
     items: Site[]
     total: number

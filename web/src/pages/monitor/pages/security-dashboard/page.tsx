@@ -1,8 +1,8 @@
 import { SecurityDashboardLayout } from "@/feature/security-dashboard"
 
 /**
- * 安全大屏页面
- * 使用SecurityDashboardLayout组件实现完整的大屏布局
+ * Página de pantalla grande de seguridad
+ * Usar el componente SecurityDashboardLayout para el layout de pantalla completa
  */
 const SecurityDashboard = () => {
     return <SecurityDashboardLayout />

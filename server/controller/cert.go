@@ -4,17 +4,17 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/dto"
-	"github.com/HUAHUAI23/RuiQi/server/model"
-	"github.com/HUAHUAI23/RuiQi/server/service"
-	"github.com/HUAHUAI23/RuiQi/server/utils/response"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/dto"
+	"github.com/anticoi/EscudoWAF/server/model"
+	"github.com/anticoi/EscudoWAF/server/service"
+	"github.com/anticoi/EscudoWAF/server/utils/response"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-// CertificateController 证书控制器接口
+// CertificateController interfaz del controlador de certificados
 type CertificateController interface {
 	CreateCertificate(ctx *gin.Context)
 	GetCertificates(ctx *gin.Context)
@@ -23,13 +23,13 @@ type CertificateController interface {
 	DeleteCertificate(ctx *gin.Context)
 }
 
-// CertificateControllerImpl 证书控制器实现
+// CertificateControllerImpl implementación del controlador de certificados
 type CertificateControllerImpl struct {
 	certService service.CertificateService
 	logger      zerolog.Logger
 }
 
-// NewCertificateController 创建证书控制器
+// NewCertificateController crea el controlador de certificados
 func NewCertificateController(certService service.CertificateService) CertificateController {
 	logger := config.GetControllerLogger("certificate")
 	return &CertificateControllerImpl{
@@ -38,46 +38,46 @@ func NewCertificateController(certService service.CertificateService) Certificat
 	}
 }
 
-// CreateCertificate 创建证书
+// CreateCertificate crea un certificado
 //
-//	@Summary		创建新证书
-//	@Description	创建一个新的SSL/TLS证书
-//	@Tags			证书管理
+//	@Summary		Crear nuevo certificado
+//	@Description	Crear un nuevo certificado SSL/TLS
+//	@Tags			Gestión de certificados
 //	@Accept			json
 //	@Produce		json
-//	@Param			certificate	body	dto.CertificateCreateRequest	true	"证书信息"
+//	@Param			certificate	body	dto.CertificateCreateRequest	true	"Información del certificado"
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponse{data=model.CertificateStore}	"证书创建成功"
-//	@Failure		400	{object}	model.ErrResponse									"请求参数错误"
-//	@Failure		401	{object}	model.ErrResponseDontShowError						"未授权访问"
-//	@Failure		403	{object}	model.ErrResponseDontShowError						"禁止访问"
-//	@Failure		409	{object}	model.ErrResponseDontShowError						"证书名称已存在"
-//	@Failure		500	{object}	model.ErrResponseDontShowError						"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponse{data=model.CertificateStore}	"Certificado creado con éxito"
+//	@Failure		400	{object}	model.ErrResponse									"Parámetros de la petición incorrectos"
+//	@Failure		401	{object}	model.ErrResponseDontShowError						"Acceso no autorizado"
+//	@Failure		403	{object}	model.ErrResponseDontShowError						"Acceso prohibido"
+//	@Failure		409	{object}	model.ErrResponseDontShowError						"El nombre del certificado ya existe"
+//	@Failure		500	{object}	model.ErrResponseDontShowError						"Error interno del servidor"
 //	@Router			/api/v1/certificates [post]
 func (c *CertificateControllerImpl) CreateCertificate(ctx *gin.Context) {
 	var req dto.CertificateCreateRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		c.logger.Warn().Err(err).Msg("请求参数绑定失败")
+		c.logger.Warn().Err(err).Msg("Error al vincular los parámetros de la petición")
 		response.BadRequest(ctx, err, true)
 		return
 	}
 
-	c.logger.Info().Str("name", req.Name).Msg("创建证书请求")
+	c.logger.Info().Str("name", req.Name).Msg("Petición de creación de certificado")
 	cert, err := c.certService.CreateCertificate(ctx, &req)
 	if err != nil {
 		if errors.Is(err, service.ErrCertificateNameExists) {
-			response.Error(ctx, model.NewAPIError(http.StatusConflict, "证书名称已存在", err), false)
+			response.Error(ctx, model.NewAPIError(http.StatusConflict, "El nombre del certificado ya existe", err), false)
 			return
 		} else if errors.Is(err, service.ErrInvalidCertificate) {
 			response.BadRequest(ctx, err, true)
 			return
 		}
-		c.logger.Error().Err(err).Msg("创建证书失败")
+		c.logger.Error().Err(err).Msg("Error al crear el certificado")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	// 转换为DTO响应
+	// Convertir a respuesta DTO
 	certResponse := model.CertificateStore{
 		ID:          cert.ID,
 		Name:        cert.Name,
@@ -92,63 +92,63 @@ func (c *CertificateControllerImpl) CreateCertificate(ctx *gin.Context) {
 		UpdatedAt:   cert.UpdatedAt,
 	}
 
-	c.logger.Info().Str("id", cert.ID.Hex()).Str("name", cert.Name).Msg("证书创建成功")
-	response.Success(ctx, "证书创建成功", certResponse)
+	c.logger.Info().Str("id", cert.ID.Hex()).Str("name", cert.Name).Msg("Certificado creado con éxito")
+	response.Success(ctx, "Certificado creado con éxito", certResponse)
 }
 
-// GetCertificates 获取证书列表
+// GetCertificates Obtener lista de certificados
 //
-//	@Summary		获取证书列表
-//	@Description	获取所有SSL/TLS证书列表，支持分页
-//	@Tags			证书管理
+//	@Summary		Obtener lista de certificados
+//	@Description	Obtener todos los certificados SSL/TLS, con paginación
+//	@Tags			Gestión de certificados
 //	@Produce		json
-//	@Param			page	query	int	false	"页码"	default(1)
-//	@Param			size	query	int	false	"每页数量"	default(10)
+//	@Param			page	query	int	false	"Número de página"	default(1)
+//	@Param			size	query	int	false	"Cantidad por página"	default(10)
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponse{data=dto.CertificateListResponse}	"获取证书列表成功"
-//	@Failure		401	{object}	model.ErrResponseDontShowError							"未授权访问"
-//	@Failure		500	{object}	model.ErrResponseDontShowError							"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponse{data=dto.CertificateListResponse}	"Lista de certificados obtenida con éxito"
+//	@Failure		401	{object}	model.ErrResponseDontShowError							"Acceso no autorizado"
+//	@Failure		500	{object}	model.ErrResponseDontShowError							"Error interno del servidor"
 //	@Router			/api/v1/certificates [get]
 func (c *CertificateControllerImpl) GetCertificates(ctx *gin.Context) {
 	page := ctx.DefaultQuery("page", "1")
 	size := ctx.DefaultQuery("size", "10")
 
-	c.logger.Info().Str("page", page).Str("size", size).Msg("获取证书列表请求")
+	c.logger.Info().Str("page", page).Str("size", size).Msg("Petición de lista de certificados")
 	certificates, total, err := c.certService.GetCertificates(ctx, page, size)
 	if err != nil {
-		c.logger.Error().Err(err).Msg("获取证书列表失败")
+		c.logger.Error().Err(err).Msg("Error al obtener la lista de certificados")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	c.logger.Info().Int64("total", total).Msg("获取证书列表成功")
-	response.Success(ctx, "获取证书列表成功", gin.H{
+	c.logger.Info().Int64("total", total).Msg("Lista de certificados obtenida con éxito")
+	response.Success(ctx, "Lista de certificados obtenida con éxito", gin.H{
 		"total": total,
 		"items": certificates,
 	})
 }
 
-// GetCertificateByID 获取单个证书
+// GetCertificateByID Obtener un certificado
 //
-//	@Summary		获取单个证书
-//	@Description	根据ID获取证书详情
-//	@Tags			证书管理
+//	@Summary		Obtener un certificado
+//	@Description	Obtener detalles del certificado por ID
+//	@Tags			Gestión de certificados
 //	@Produce		json
-//	@Param			id	path	string	true	"证书ID"
+//	@Param			id	path	string	true	"ID del certificado"
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponse{data=model.CertificateStore}	"获取证书详情成功"
-//	@Failure		401	{object}	model.ErrResponseDontShowError						"未授权访问"
-//	@Failure		404	{object}	model.ErrResponseDontShowError						"证书不存在"
-//	@Failure		500	{object}	model.ErrResponseDontShowError						"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponse{data=model.CertificateStore}	"Detalles del certificado obtenidos con éxito"
+//	@Failure		401	{object}	model.ErrResponseDontShowError						"Acceso no autorizado"
+//	@Failure		404	{object}	model.ErrResponseDontShowError						"El certificado no existe"
+//	@Failure		500	{object}	model.ErrResponseDontShowError						"Error interno del servidor"
 //	@Router			/api/v1/certificates/{id} [get]
 func (c *CertificateControllerImpl) GetCertificateByID(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	c.logger.Info().Str("id", id).Msg("获取证书详情请求")
+	c.logger.Info().Str("id", id).Msg("Petición de detalles del certificado")
 
 	objectID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
-		c.logger.Error().Err(err).Str("id", id).Msg("无效的ID格式")
+		c.logger.Error().Err(err).Str("id", id).Msg("Formato de ID no válido")
 		response.BadRequest(ctx, err, true)
 		return
 	}
@@ -158,12 +158,12 @@ func (c *CertificateControllerImpl) GetCertificateByID(ctx *gin.Context) {
 			response.NotFound(ctx, err)
 			return
 		}
-		c.logger.Error().Err(err).Str("id", id).Msg("获取证书详情失败")
+		c.logger.Error().Err(err).Str("id", id).Msg("Error al obtener los detalles del certificado")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	// 转换为DTO响应
+	// Convertir a respuesta DTO
 	certResponse := model.CertificateStore{
 		ID:          cert.ID,
 		Name:        cert.Name,
@@ -178,41 +178,41 @@ func (c *CertificateControllerImpl) GetCertificateByID(ctx *gin.Context) {
 		UpdatedAt:   cert.UpdatedAt,
 	}
 
-	c.logger.Info().Str("id", id).Str("name", cert.Name).Msg("获取证书详情成功")
-	response.Success(ctx, "获取证书详情成功", certResponse)
+	c.logger.Info().Str("id", id).Str("name", cert.Name).Msg("Detalles del certificado obtenidos con éxito")
+	response.Success(ctx, "Detalles del certificado obtenidos con éxito", certResponse)
 }
 
-// UpdateCertificate 更新证书
+// UpdateCertificate Actualizar certificado
 //
-//	@Summary		更新证书
-//	@Description	更新指定证书的信息
-//	@Tags			证书管理
+//	@Summary		Actualizar certificado
+//	@Description	Actualizar la información del certificado especificado
+//	@Tags			Gestión de certificados
 //	@Accept			json
 //	@Produce		json
-//	@Param			id			path	string							true	"证书ID"
-//	@Param			certificate	body	dto.CertificateUpdateRequest	true	"证书更新信息"
+//	@Param			id			path	string							true	"ID del certificado"
+//	@Param			certificate	body	dto.CertificateUpdateRequest	true	"Información de actualización del certificado"
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponse{data=model.CertificateStore}	"证书更新成功"
-//	@Failure		400	{object}	model.ErrResponse									"请求参数错误"
-//	@Failure		401	{object}	model.ErrResponseDontShowError						"未授权访问"
-//	@Failure		403	{object}	model.ErrResponseDontShowError						"禁止访问"
-//	@Failure		404	{object}	model.ErrResponseDontShowError						"证书不存在"
-//	@Failure		409	{object}	model.ErrResponseDontShowError						"证书名称已存在"
-//	@Failure		500	{object}	model.ErrResponseDontShowError						"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponse{data=model.CertificateStore}	"Certificado actualizado con éxito"
+//	@Failure		400	{object}	model.ErrResponse									"Parámetros de la petición incorrectos"
+//	@Failure		401	{object}	model.ErrResponseDontShowError						"Acceso no autorizado"
+//	@Failure		403	{object}	model.ErrResponseDontShowError						"Acceso prohibido"
+//	@Failure		404	{object}	model.ErrResponseDontShowError						"El certificado no existe"
+//	@Failure		409	{object}	model.ErrResponseDontShowError						"El nombre del certificado ya existe"
+//	@Failure		500	{object}	model.ErrResponseDontShowError						"Error interno del servidor"
 //	@Router			/api/v1/certificates/{id} [put]
 func (c *CertificateControllerImpl) UpdateCertificate(ctx *gin.Context) {
 	id := ctx.Param("id")
 	var req dto.CertificateUpdateRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		c.logger.Warn().Err(err).Str("id", id).Msg("请求参数绑定失败")
+		c.logger.Warn().Err(err).Str("id", id).Msg("Error al vincular los parámetros de la petición")
 		response.BadRequest(ctx, err, true)
 		return
 	}
 
-	c.logger.Info().Str("id", id).Msg("更新证书请求")
+	c.logger.Info().Str("id", id).Msg("Petición de actualización de certificado")
 	objectID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
-		c.logger.Error().Err(err).Str("id", id).Msg("无效的ID格式")
+		c.logger.Error().Err(err).Str("id", id).Msg("Formato de ID no válido")
 		response.BadRequest(ctx, err, true)
 		return
 	}
@@ -222,18 +222,18 @@ func (c *CertificateControllerImpl) UpdateCertificate(ctx *gin.Context) {
 			response.NotFound(ctx, err)
 			return
 		} else if errors.Is(err, service.ErrCertificateNameExists) {
-			response.Error(ctx, model.NewAPIError(http.StatusConflict, "证书名称已存在", err), false)
+			response.Error(ctx, model.NewAPIError(http.StatusConflict, "El nombre del certificado ya existe", err), false)
 			return
 		} else if errors.Is(err, service.ErrInvalidCertificate) {
 			response.BadRequest(ctx, err, true)
 			return
 		}
-		c.logger.Error().Err(err).Str("id", id).Msg("更新证书失败")
+		c.logger.Error().Err(err).Str("id", id).Msg("Error al actualizar el certificado")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	// 转换为DTO响应
+	// Convertir a respuesta DTO
 	certResponse := model.CertificateStore{
 		ID:          cert.ID,
 		Name:        cert.Name,
@@ -248,33 +248,33 @@ func (c *CertificateControllerImpl) UpdateCertificate(ctx *gin.Context) {
 		UpdatedAt:   cert.UpdatedAt,
 	}
 
-	c.logger.Info().Str("id", id).Str("name", cert.Name).Msg("证书更新成功")
-	response.Success(ctx, "证书更新成功", certResponse)
+	c.logger.Info().Str("id", id).Str("name", cert.Name).Msg("Certificado actualizado con éxito")
+	response.Success(ctx, "Certificado actualizado con éxito", certResponse)
 }
 
 // ... existing code ...
 
-// DeleteCertificate 删除证书
+// DeleteCertificate Eliminar certificado
 //
-//	@Summary		删除证书
-//	@Description	删除指定的SSL/TLS证书
-//	@Tags			证书管理
+//	@Summary		Eliminar certificado
+//	@Description	Eliminar el certificado SSL/TLS especificado
+//	@Tags			Gestión de certificados
 //	@Produce		json
-//	@Param			id	path	string	true	"证书ID"
+//	@Param			id	path	string	true	"ID del certificado"
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponseNoData		"证书删除成功"
-//	@Failure		401	{object}	model.ErrResponseDontShowError	"未授权访问"
-//	@Failure		403	{object}	model.ErrResponseDontShowError	"禁止访问"
-//	@Failure		404	{object}	model.ErrResponseDontShowError	"证书不存在"
-//	@Failure		500	{object}	model.ErrResponseDontShowError	"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponseNoData		"Certificado eliminado con éxito"
+//	@Failure		401	{object}	model.ErrResponseDontShowError	"Acceso no autorizado"
+//	@Failure		403	{object}	model.ErrResponseDontShowError	"Acceso prohibido"
+//	@Failure		404	{object}	model.ErrResponseDontShowError	"El certificado no existe"
+//	@Failure		500	{object}	model.ErrResponseDontShowError	"Error interno del servidor"
 //	@Router			/api/v1/certificates/{id} [delete]
 func (c *CertificateControllerImpl) DeleteCertificate(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	c.logger.Info().Str("id", id).Msg("删除证书请求")
+	c.logger.Info().Str("id", id).Msg("Petición de eliminación de certificado")
 	objectID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
-		c.logger.Error().Err(err).Str("id", id).Msg("无效的ID格式")
+		c.logger.Error().Err(err).Str("id", id).Msg("Formato de ID no válido")
 		response.BadRequest(ctx, err, true)
 		return
 	}
@@ -284,11 +284,11 @@ func (c *CertificateControllerImpl) DeleteCertificate(ctx *gin.Context) {
 			response.NotFound(ctx, err)
 			return
 		}
-		c.logger.Error().Err(err).Str("id", id).Msg("删除证书失败")
+		c.logger.Error().Err(err).Str("id", id).Msg("Error al eliminar el certificado")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	c.logger.Info().Str("id", id).Msg("证书删除成功")
-	response.Success(ctx, "证书删除成功", nil)
+	c.logger.Info().Str("id", id).Msg("Certificado eliminado con éxito")
+	response.Success(ctx, "Certificado eliminado con éxito", nil)
 }

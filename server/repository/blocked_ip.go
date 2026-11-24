@@ -5,9 +5,9 @@ import (
 	"errors"
 	"time"
 
-	"github.com/HUAHUAI23/RuiQi/pkg/model"
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/dto"
+	"github.com/anticoi/EscudoWAF/pkg/model"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/dto"
 	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -15,10 +15,10 @@ import (
 )
 
 var (
-	ErrBlockedIPNotFound = errors.New("封禁IP记录不存在")
+	ErrBlockedIPNotFound = errors.New("El registro de IP bloqueada no existe")
 )
 
-// BlockedIPRepository 封禁IP仓库接口
+// BlockedIPRepository interfaz del repositorio de IPs bloqueadas
 type BlockedIPRepository interface {
 	GetBlockedIPs(ctx context.Context, req *dto.BlockedIPListRequest) ([]model.BlockedIPRecord, int64, error)
 	GetBlockedIPStats(ctx context.Context) (*dto.BlockedIPStatsResponse, error)
@@ -26,39 +26,39 @@ type BlockedIPRepository interface {
 	DeleteExpiredBlockedIPs(ctx context.Context) (int64, error)
 }
 
-// MongoBlockedIPRepository MongoDB实现的封禁IP仓库
+// MongoBlockedIPRepository repositorio de IPs bloqueadas implementado en MongoDB
 type MongoBlockedIPRepository struct {
 	collection *mongo.Collection
 	logger     zerolog.Logger
 }
 
-// NewBlockedIPRepository 创建封禁IP仓库
+// NewBlockedIPRepository crea el repositorio de IPs bloqueadas
 func NewBlockedIPRepository(db *mongo.Database) BlockedIPRepository {
 	var blockedIP model.BlockedIPRecord
 	collection := db.Collection(blockedIP.GetCollectionName())
 	logger := config.GetRepositoryLogger("blocked_ip")
 
-	// 创建索引
+	// Crear índices
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// IP地址索引
+	// Índice de direcciones IP
 	_, err := collection.Indexes().CreateOne(ctx, mongo.IndexModel{
 		Keys: bson.D{{Key: "ip", Value: 1}},
 	})
 	if err != nil {
-		logger.Error().Err(err).Msg("创建IP地址索引失败")
+		logger.Error().Err(err).Msg("Error al crear el índice de direcciones IP")
 	}
 
-	// 封禁时间索引（用于过期清理）
+	// Índice de tiempo de bloqueo (para limpieza de expirados)
 	_, err = collection.Indexes().CreateOne(ctx, mongo.IndexModel{
 		Keys: bson.D{{Key: "blocked_until", Value: 1}},
 	})
 	if err != nil {
-		logger.Error().Err(err).Msg("创建封禁时间索引失败")
+		logger.Error().Err(err).Msg("Error al crear el índice de tiempo de bloqueo")
 	}
 
-	// 复合索引：封禁原因和时间
+	// Índice compuesto: motivo y hora de bloqueo
 	_, err = collection.Indexes().CreateOne(ctx, mongo.IndexModel{
 		Keys: bson.D{
 			{Key: "reason", Value: 1},
@@ -66,7 +66,7 @@ func NewBlockedIPRepository(db *mongo.Database) BlockedIPRepository {
 		},
 	})
 	if err != nil {
-		logger.Error().Err(err).Msg("创建复合索引失败")
+		logger.Error().Err(err).Msg("Error al crear el índice compuesto")
 	}
 
 	return &MongoBlockedIPRepository{
@@ -75,12 +75,12 @@ func NewBlockedIPRepository(db *mongo.Database) BlockedIPRepository {
 	}
 }
 
-// GetBlockedIPs 获取封禁IP列表
+// GetBlockedIPs Obtener lista de IPs bloqueadas
 func (r *MongoBlockedIPRepository) GetBlockedIPs(ctx context.Context, req *dto.BlockedIPListRequest) ([]model.BlockedIPRecord, int64, error) {
-	// 构建查询过滤器
+	// Construir el filtro de consulta
 	filter := r.buildFilter(req)
 
-	// 计算分页
+	// Calcular la paginación
 	page := req.Page
 	if page < 1 {
 		page = 1
@@ -93,41 +93,41 @@ func (r *MongoBlockedIPRepository) GetBlockedIPs(ctx context.Context, req *dto.B
 	}
 	skip := int64((page - 1) * size)
 
-	// 构建排序
+	// Construir la ordenación
 	sort := r.buildSort(req)
 
-	// 设置查询选项
+	// Establecer las opciones de consulta
 	findOptions := options.Find().
 		SetSkip(skip).
 		SetLimit(int64(size)).
 		SetSort(sort)
 
-	// 执行查询
+	// Ejecutar la consulta
 	cursor, err := r.collection.Find(ctx, filter, findOptions)
 	if err != nil {
-		r.logger.Error().Err(err).Msg("查询封禁IP列表时出错")
+		r.logger.Error().Err(err).Msg("Error al consultar la lista de IPs bloqueadas")
 		return nil, 0, err
 	}
 	defer cursor.Close(ctx)
 
-	// 解析结果
+	// Resultado del análisis
 	var records []model.BlockedIPRecord
 	if err = cursor.All(ctx, &records); err != nil {
-		r.logger.Error().Err(err).Msg("解析封禁IP列表时出错")
+		r.logger.Error().Err(err).Msg("Error al analizar la lista de IPs bloqueadas")
 		return nil, 0, err
 	}
 
-	// 获取总数
+	// Obtener el total
 	total, err := r.collection.CountDocuments(ctx, filter)
 	if err != nil {
-		r.logger.Error().Err(err).Msg("获取封禁IP总数时出错")
+		r.logger.Error().Err(err).Msg("Error al obtener el total de IPs bloqueadas")
 		return nil, 0, err
 	}
 
 	return records, total, nil
 }
 
-// GetBlockedIPStats 获取封禁IP统计信息
+// GetBlockedIPStats Obtener estadísticas de IPs bloqueadas
 func (r *MongoBlockedIPRepository) GetBlockedIPStats(ctx context.Context) (*dto.BlockedIPStatsResponse, error) {
 	now := time.Now()
 
@@ -135,25 +135,25 @@ func (r *MongoBlockedIPRepository) GetBlockedIPStats(ctx context.Context) (*dto.
 		ReasonStats: make(map[string]int64),
 	}
 
-	// 获取总封禁数量
+	// Obtener la cantidad total de bloqueos
 	total, err := r.collection.CountDocuments(ctx, bson.D{})
 	if err != nil {
-		r.logger.Error().Err(err).Msg("获取总封禁数量失败")
+		r.logger.Error().Err(err).Msg("Error al obtener el total de bloqueos")
 		return nil, err
 	}
 	stats.TotalBlocked = total
 
-	// 获取当前生效的封禁数量
+	// Obtener la cantidad de bloqueos actualmente activos
 	activeFilter := bson.D{{Key: "blocked_until", Value: bson.D{{Key: "$gt", Value: now}}}}
 	active, err := r.collection.CountDocuments(ctx, activeFilter)
 	if err != nil {
-		r.logger.Error().Err(err).Msg("获取生效封禁数量失败")
+		r.logger.Error().Err(err).Msg("Error al obtener la cantidad de bloqueos activos")
 		return nil, err
 	}
 	stats.ActiveBlocked = active
 	stats.ExpiredBlocked = total - active
 
-	// 按原因统计
+	// Estadísticas por motivo
 	reasonPipeline := mongo.Pipeline{
 		{{Key: "$group", Value: bson.D{
 			{Key: "_id", Value: "$reason"},
@@ -163,7 +163,7 @@ func (r *MongoBlockedIPRepository) GetBlockedIPStats(ctx context.Context) (*dto.
 
 	cursor, err := r.collection.Aggregate(ctx, reasonPipeline)
 	if err != nil {
-		r.logger.Error().Err(err).Msg("按原因统计失败")
+		r.logger.Error().Err(err).Msg("Error en las estadísticas por motivo")
 		return nil, err
 	}
 	defer cursor.Close(ctx)
@@ -174,18 +174,18 @@ func (r *MongoBlockedIPRepository) GetBlockedIPStats(ctx context.Context) (*dto.
 			Count int64  `bson:"count"`
 		}
 		if err := cursor.Decode(&result); err != nil {
-			r.logger.Error().Err(err).Msg("解析原因统计结果失败")
+			r.logger.Error().Err(err).Msg("Error al analizar el resultado de estadísticas por motivo")
 			continue
 		}
 		stats.ReasonStats[result.ID] = result.Count
 	}
 
-	// 最近24小时按小时统计
+	// Estadísticas por hora de las últimas 24 horas
 	last24Hours := now.Add(-24 * time.Hour)
 	hourlyStats, err := r.getHourlyStats(ctx, last24Hours, now)
 	if err != nil {
-		r.logger.Error().Err(err).Msg("获取小时统计失败")
-		// 不返回错误，只记录日志
+		r.logger.Error().Err(err).Msg("Error al obtener las estadísticas por hora")
+		// No devolver error, solo registrar en el log
 	} else {
 		stats.Last24HourStats = hourlyStats
 	}
@@ -193,46 +193,46 @@ func (r *MongoBlockedIPRepository) GetBlockedIPStats(ctx context.Context) (*dto.
 	return stats, nil
 }
 
-// CreateBlockedIP 创建封禁IP记录
+// CreateBlockedIP crea un registro de IP bloqueada
 func (r *MongoBlockedIPRepository) CreateBlockedIP(ctx context.Context, record *model.BlockedIPRecord) error {
 	_, err := r.collection.InsertOne(ctx, record)
 	if err != nil {
-		r.logger.Error().Err(err).Str("ip", record.IP).Msg("插入封禁IP记录时出错")
+		r.logger.Error().Err(err).Str("ip", record.IP).Msg("Error al insertar el registro de IP bloqueada")
 		return err
 	}
 	return nil
 }
 
-// DeleteExpiredBlockedIPs 删除过期的封禁IP记录
+// DeleteExpiredBlockedIPs elimina registros de IPs bloqueadas expirados
 func (r *MongoBlockedIPRepository) DeleteExpiredBlockedIPs(ctx context.Context) (int64, error) {
 	now := time.Now()
 	filter := bson.D{{Key: "blocked_until", Value: bson.D{{Key: "$lt", Value: now}}}}
 
 	result, err := r.collection.DeleteMany(ctx, filter)
 	if err != nil {
-		r.logger.Error().Err(err).Msg("删除过期封禁IP记录时出错")
+		r.logger.Error().Err(err).Msg("Error al eliminar registros de IPs bloqueadas expirados")
 		return 0, err
 	}
 
-	r.logger.Info().Int64("count", result.DeletedCount).Msg("已删除过期封禁IP记录")
+	r.logger.Info().Int64("count", result.DeletedCount).Msg("Registros de IPs bloqueadas expirados eliminados")
 	return result.DeletedCount, nil
 }
 
-// buildFilter 构建查询过滤器
+// buildFilter construye el filtro de consulta
 func (r *MongoBlockedIPRepository) buildFilter(req *dto.BlockedIPListRequest) bson.D {
 	filter := bson.D{}
 
-	// IP地址过滤
+	// Filtrado por dirección IP
 	if req.IP != "" {
 		filter = append(filter, bson.E{Key: "ip", Value: bson.D{{Key: "$regex", Value: req.IP}, {Key: "$options", Value: "i"}}})
 	}
 
-	// 封禁原因过滤
+	// Filtro por motivo de bloqueo
 	if req.Reason != "" {
 		filter = append(filter, bson.E{Key: "reason", Value: req.Reason})
 	}
 
-	// 状态过滤
+	// Filtro de estado
 	now := time.Now()
 	switch req.Status {
 	case "active":
@@ -240,38 +240,38 @@ func (r *MongoBlockedIPRepository) buildFilter(req *dto.BlockedIPListRequest) bs
 	case "expired":
 		filter = append(filter, bson.E{Key: "blocked_until", Value: bson.D{{Key: "$lte", Value: now}}})
 	case "all", "":
-		// 不添加时间过滤
+		// No añadir filtro de tiempo
 	}
 
 	return filter
 }
 
-// buildSort 构建排序
+// buildSort construye la ordenación
 func (r *MongoBlockedIPRepository) buildSort(req *dto.BlockedIPListRequest) bson.D {
 	sortBy := req.SortBy
 	if sortBy == "" {
 		sortBy = "blocked_at"
 	}
 
-	sortDir := 1 // 升序
+	sortDir := 1 // Ascendente
 	if req.SortDir == "desc" {
-		sortDir = -1 // 降序
+		sortDir = -1 // Orden descendente
 	}
 
 	return bson.D{{Key: sortBy, Value: sortDir}}
 }
 
-// getHourlyStats 获取按小时的统计数据
+// getHourlyStats obtiene las estadísticas por hora
 func (r *MongoBlockedIPRepository) getHourlyStats(ctx context.Context, start, end time.Time) ([]dto.BlockedIPHourlyStats, error) {
 	pipeline := mongo.Pipeline{
-		// 过滤时间范围
+		// Filtrar por rango de tiempo
 		{{Key: "$match", Value: bson.D{
 			{Key: "blocked_at", Value: bson.D{
 				{Key: "$gte", Value: start},
 				{Key: "$lt", Value: end},
 			}},
 		}}},
-		// 按小时分组
+		// Agrupar por hora
 		{{Key: "$group", Value: bson.D{
 			{Key: "_id", Value: bson.D{
 				{Key: "$dateToString", Value: bson.D{
@@ -281,7 +281,7 @@ func (r *MongoBlockedIPRepository) getHourlyStats(ctx context.Context, start, en
 			}},
 			{Key: "count", Value: bson.D{{Key: "$sum", Value: 1}}},
 		}}},
-		// 排序
+		// Ordenar
 		{{Key: "$sort", Value: bson.D{{Key: "_id", Value: 1}}}},
 	}
 
@@ -298,7 +298,7 @@ func (r *MongoBlockedIPRepository) getHourlyStats(ctx context.Context, start, en
 			Count int64  `bson:"count"`
 		}
 		if err := cursor.Decode(&result); err != nil {
-			r.logger.Error().Err(err).Msg("解析小时统计结果失败")
+			r.logger.Error().Err(err).Msg("Error al analizar el resultado de estadísticas por hora")
 			continue
 		}
 

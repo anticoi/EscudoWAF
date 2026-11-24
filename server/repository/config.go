@@ -6,31 +6,31 @@ import (
 	"errors"
 	"time"
 
-	"github.com/HUAHUAI23/RuiQi/pkg/model"
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/constant"
+	"github.com/anticoi/EscudoWAF/pkg/model"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/constant"
 	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 var (
-	ErrConfigNotFound = errors.New("配置不存在")
+	ErrConfigNotFound = errors.New("La configuración no existe")
 )
 
-// ConfigRepository 配置仓库接口
+// ConfigRepository interfaz del repositorio de configuración
 type ConfigRepository interface {
 	GetConfig(ctx context.Context) (*model.Config, error)
 	UpdateConfig(ctx context.Context, config *model.Config) error
 }
 
-// MongoConfigRepository MongoDB实现的配置仓库
+// MongoConfigRepository repositorio de configuración implementado en MongoDB
 type MongoConfigRepository struct {
 	collection *mongo.Collection
 	logger     zerolog.Logger
 }
 
-// NewConfigRepository 创建配置仓库
+// NewConfigRepository crea el repositorio de configuración
 func NewConfigRepository(db *mongo.Database) ConfigRepository {
 	var cfg model.Config
 	collection := db.Collection(cfg.GetCollectionName())
@@ -42,14 +42,14 @@ func NewConfigRepository(db *mongo.Database) ConfigRepository {
 	}
 }
 
-// GetConfig 获取配置
+// GetConfig obtiene la configuración
 func (r *MongoConfigRepository) GetConfig(ctx context.Context) (*model.Config, error) {
 	var cfg model.Config
 
-	// 使用常量获取配置名称，如果不存在则使用默认值"AppConfig"
+	// Usar constante para el nombre de configuración; si no existe usar "AppConfig" por defecto
 	configName := constant.GetString("APP_CONFIG_NAME", "AppConfig")
 
-	// 使用名称查询配置
+	// Consultar la configuración por nombre
 	err := r.collection.FindOne(
 		ctx,
 		bson.D{{Key: "name", Value: configName}},
@@ -59,25 +59,25 @@ func (r *MongoConfigRepository) GetConfig(ctx context.Context) (*model.Config, e
 		if err == mongo.ErrNoDocuments {
 			return nil, ErrConfigNotFound
 		}
-		r.logger.Error().Err(err).Msg("查询配置时出错")
+		r.logger.Error().Err(err).Msg("Error al consultar la configuración")
 		return nil, err
 	}
 
 	return &cfg, nil
 }
 
-// UpdateConfig 更新配置
+// UpdateConfig actualiza la configuración
 func (r *MongoConfigRepository) UpdateConfig(ctx context.Context, config *model.Config) error {
-	// 更新时间
+	// Hora de actualización
 	config.UpdatedAt = time.Now()
 
-	// 使用名称查找并更新配置
+	// Buscar por nombre y actualizar la configuración
 	filter := bson.D{{Key: "name", Value: config.Name}}
 	update := bson.D{{Key: "$set", Value: config}}
 
 	result, err := r.collection.UpdateOne(ctx, filter, update)
 	if err != nil {
-		r.logger.Error().Err(err).Msg("更新配置时出错")
+		r.logger.Error().Err(err).Msg("Error al actualizar la configuración")
 		return err
 	}
 

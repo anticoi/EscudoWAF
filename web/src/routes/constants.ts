@@ -10,5 +10,5 @@ export const ROUTES = {
 export type RouteKey = keyof typeof ROUTES
 export type RoutePath = typeof ROUTES[RouteKey]
 
-// 辅助函数，用于类型安全地获取路由
+// Función auxiliar para obtener rutas de forma segura en tipos
 export const getRoute = (key: RouteKey): RoutePath => ROUTES[key] 

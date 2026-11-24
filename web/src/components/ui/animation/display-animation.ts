@@ -1,6 +1,6 @@
 import { HTMLMotionProps } from "motion/react"
 
-// 淡入淡出动画
+// Animación de fundido
 export const fadeAnimation: HTMLMotionProps<"div"> = {
     initial: "hidden",
     animate: "visible",
@@ -37,7 +37,7 @@ export const fadeAnimation: HTMLMotionProps<"div"> = {
     }
 }
 
-// 滑动动画
+// Animación de deslizamiento
 export const slideAnimation: HTMLMotionProps<"div"> = {
     initial: "hidden",
     animate: "visible",
@@ -74,7 +74,7 @@ export const slideAnimation: HTMLMotionProps<"div"> = {
     }
 }
 
-// 缩放动画
+// Animación de escala
 export const scaleAnimation: HTMLMotionProps<"div"> = {
     initial: "hidden",
     animate: "visible",

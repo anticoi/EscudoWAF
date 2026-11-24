@@ -5,24 +5,24 @@ import (
 	"errors"
 	"time"
 
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/dto"
-	"github.com/HUAHUAI23/RuiQi/server/model"
-	"github.com/HUAHUAI23/RuiQi/server/repository"
-	"github.com/HUAHUAI23/RuiQi/server/utils/jwt"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/dto"
+	"github.com/anticoi/EscudoWAF/server/model"
+	"github.com/anticoi/EscudoWAF/server/repository"
+	"github.com/anticoi/EscudoWAF/server/utils/jwt"
 	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-// 定义错误
+// Definición de errores
 var (
-	ErrUserNotFound     = errors.New("用户不存在")
-	ErrInvalidPassword  = errors.New("密码错误")
-	ErrUserAlreadyExist = errors.New("用户已存在")
-	ErrForbidden        = errors.New("没有权限")
+	ErrUserNotFound     = errors.New("El usuario no existe")
+	ErrInvalidPassword  = errors.New("Contraseña incorrecta")
+	ErrUserAlreadyExist = errors.New("El usuario ya existe")
+	ErrForbidden        = errors.New("Sin permisos")
 )
 
-// AuthService 认证服务接口
+// AuthService interfaz del servicio de autenticación
 type AuthService interface {
 	Login(ctx context.Context, req dto.UserLoginRequest) (string, *model.User, error)
 	ResetPassword(ctx context.Context, userID bson.ObjectID, req dto.UserPasswordResetRequest) error
@@ -30,14 +30,14 @@ type AuthService interface {
 	GetUsers(ctx context.Context) ([]*model.User, error)
 }
 
-// AuthServiceImpl 认证服务实现
+// AuthServiceImpl implementación del servicio de autenticación
 type AuthServiceImpl struct {
 	userRepo repository.UserRepository
 	roleRepo repository.RoleRepository
 	logger   zerolog.Logger
 }
 
-// NewAuthService 创建认证服务
+// NewAuthService crea el servicio de autenticación
 func NewAuthService(userRepo repository.UserRepository, roleRepo repository.RoleRepository) AuthService {
 	return &AuthServiceImpl{
 		userRepo: userRepo,
@@ -46,9 +46,9 @@ func NewAuthService(userRepo repository.UserRepository, roleRepo repository.Role
 	}
 }
 
-// Login 用户登录
+// Login Inicio de sesión
 func (s *AuthServiceImpl) Login(ctx context.Context, req dto.UserLoginRequest) (string, *model.User, error) {
-	// 查找用户
+	// Buscar usuario
 	user, err := s.userRepo.FindByUsername(ctx, req.Username)
 	if err != nil {
 		return "", nil, err
@@ -57,18 +57,18 @@ func (s *AuthServiceImpl) Login(ctx context.Context, req dto.UserLoginRequest) (
 		return "", nil, ErrUserNotFound
 	}
 
-	// 验证密码
+	// Validar la contraseña
 	if !user.CheckPassword(req.Password) {
 		return "", nil, ErrInvalidPassword
 	}
 
-	// 更新最后登录时间
+	// Actualizar la hora del último inicio de sesión
 	err = s.userRepo.UpdateLastLogin(ctx, user.ID)
 	if err != nil {
-		s.logger.Warn().Err(err).Str("userId", user.ID.Hex()).Msg("更新登录时间失败")
+		s.logger.Warn().Err(err).Str("userId", user.ID.Hex()).Msg("Error al actualizar la hora de inicio de sesión")
 	}
 
-	// 生成令牌
+	// Generar el token
 	token, err := jwt.GenerateToken(*user, 24*time.Hour)
 	if err != nil {
 		return "", nil, err
@@ -77,9 +77,9 @@ func (s *AuthServiceImpl) Login(ctx context.Context, req dto.UserLoginRequest) (
 	return token, user, nil
 }
 
-// ResetPassword 重置密码
+// ResetPassword Restablecer contraseña
 func (s *AuthServiceImpl) ResetPassword(ctx context.Context, userID bson.ObjectID, req dto.UserPasswordResetRequest) error {
-	// 查找用户
+	// Buscar usuario
 	user, err := s.userRepo.FindByID(ctx, userID)
 	if err != nil {
 		return err
@@ -88,28 +88,28 @@ func (s *AuthServiceImpl) ResetPassword(ctx context.Context, userID bson.ObjectI
 		return ErrUserNotFound
 	}
 
-	// 验证旧密码
+	// Validar la contraseña anterior
 	if !user.CheckPassword(req.OldPassword) {
 		return ErrInvalidPassword
 	}
 
-	// 更新密码
+	// Actualizar la contraseña
 	user.Password = req.NewPassword
 	if err := user.HashPassword(); err != nil {
 		return err
 	}
 
-	// 标记密码已重置
+	// Marcar la contraseña como restablecida
 	user.NeedReset = false
 	user.UpdatedAt = time.Now()
 
-	// 保存用户
+	// Guardar usuario
 	return s.userRepo.Update(ctx, user)
 }
 
-// CreateUser 创建用户（仅管理员可用）
+// CreateUser crea un usuario (solo administradores)
 func (s *AuthServiceImpl) CreateUser(ctx context.Context, adminID bson.ObjectID, req dto.UserCreateRequest) (*model.User, error) {
-	// 验证管理员权限
+	// Validar los permisos de administrador
 	admin, err := s.userRepo.FindByID(ctx, adminID)
 	if err != nil {
 		return nil, err
@@ -118,7 +118,7 @@ func (s *AuthServiceImpl) CreateUser(ctx context.Context, adminID bson.ObjectID,
 		return nil, ErrForbidden
 	}
 
-	// 检查用户是否已存在
+	// Comprobar si el usuario ya existe
 	existingUser, err := s.userRepo.FindByUsername(ctx, req.Username)
 	if err != nil {
 		return nil, err
@@ -127,34 +127,34 @@ func (s *AuthServiceImpl) CreateUser(ctx context.Context, adminID bson.ObjectID,
 		return nil, ErrUserAlreadyExist
 	}
 
-	// 创建新用户
+	// Crear nuevo usuario
 	user := &model.User{
 		Username:  req.Username,
 		Password:  req.Password,
 		Role:      req.Role,
-		NeedReset: true, // 新用户需要重置密码
+		NeedReset: true, // El nuevo usuario debe restablecer la contraseña
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
 
-	// 哈希密码
+	// Generar hash de la contraseña
 	if err := user.HashPassword(); err != nil {
 		return nil, err
 	}
 
-	// 保存用户
+	// Guardar usuario
 	if err := s.userRepo.Create(ctx, user); err != nil {
 		return nil, err
 	}
 
-	// 不返回密码
+	// No devolver la contraseña
 	user.Password = ""
 	return user, nil
 }
 
-// GetUsers 获取所有用户（仅管理员可用）
+// GetUsers obtiene todos los usuarios (solo administradores)
 func (s *AuthServiceImpl) GetUsers(ctx context.Context) ([]*model.User, error) {
-	// 实现获取所有用户的逻辑
-	// 这需要在 UserRepository 中添加 FindAll 方法
+	// Implementar la lógica de obtener todos los usuarios
+	// Esto requiere añadir un método FindAll a UserRepository
 	return s.userRepo.FindAll(ctx)
 }

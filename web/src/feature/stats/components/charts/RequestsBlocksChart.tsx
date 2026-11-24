@@ -15,10 +15,10 @@ export function RequestsBlocksChart({ timeRange }: RequestsBlocksChartProps) {
     const { data, isLoading } = useCombinedTimeSeriesData(timeRange)
     const { theme } = useTheme()
 
-    // 判断是否为暗色模式
+    // Comprobar si es modo oscuro
     const isDarkMode = theme === 'dark'
 
-    // 格式化时间
+    // Formatear la hora
     const formatTime = (timestamp: string) => {
         const date = new Date(timestamp)
 
@@ -34,20 +34,20 @@ export function RequestsBlocksChart({ timeRange }: RequestsBlocksChartProps) {
         }
     }
 
-    // 使用项目的紫色主题
-    const THEME_PRIMARY = '#9d76db'         // 主色紫 (157, 118, 219)
-    // const THEME_SECONDARY = '#a346ff'       // 更鲜艳的紫色
-    const THEME_ERROR = '#f43f5e'           // 错误红色
+    // Usar el tema púrpura del proyecto
+    const THEME_PRIMARY = '#9d76db'         // Color principal púrpura (157, 118, 219)
+    // const THEME_SECONDARY = '#a346ff'       // púrpura más vibrante
+    const THEME_ERROR = '#f43f5e'           // Rojo de error
 
-    // 暗色模式下加强色彩亮度和辉光效果
-    const THEME_PRIMARY_DARK = '#b394e9'    // 更亮的紫色
-    const THEME_ERROR_DARK = '#fb6d88'      // 更亮的红色
+    // En modo oscuro, intensificar el brillo del color y el efecto de resplandor
+    const THEME_PRIMARY_DARK = '#b394e9'    // Púrpura más brillante
+    const THEME_ERROR_DARK = '#fb6d88'      // Rojo más brillante
 
-    // 获取当前主题下的颜色
+    // Obtener los colores del tema actual
     const primaryColor = isDarkMode ? THEME_PRIMARY_DARK : THEME_PRIMARY
     const errorColor = isDarkMode ? THEME_ERROR_DARK : THEME_ERROR
 
-    // 图表配置
+    // Configuración del gráfico
     const chartOptions: echarts.EChartsOption = {
         tooltip: {
             trigger: 'axis',

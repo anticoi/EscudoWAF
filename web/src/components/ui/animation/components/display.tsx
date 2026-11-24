@@ -19,7 +19,7 @@ export function Display({
     initial = false,
     mode = "sync"
 }: DisplayProps) {
-    // 根据动画类型选择适当的动画属性
+    // Elegir las propiedades de animación adecuadas según el tipo
     const getAnimationProps = () => {
         switch (animationType) {
             case "slide":

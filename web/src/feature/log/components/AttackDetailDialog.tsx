@@ -66,10 +66,10 @@ export function AttackDetailDialog({ open, onOpenChange, data }: AttackDetailDia
 
     if (!data) return null
 
-    // 构建curl命令
+    // Construir el comando curl
     const curlCommand = `curl -X GET "${data.target}"`
 
-    // 为了演示，假设规则ID > 1000 的是高危规则
+    // Para la demo, suponer que las reglas con ID > 1000 son de alto riesgo
     const isHighRisk = data.ruleId > 1000
 
     return (
@@ -102,7 +102,7 @@ export function AttackDetailDialog({ open, onOpenChange, data }: AttackDetailDia
 
                                 <ScrollArea scrollbarVariant="none" className="px-4 py-2 h-[calc(90vh-6rem)] transition-colors duration-200">
                                     <div className="space-y-2 p-0 max-w-full max-h-full">
-                                        {/* 攻击概述卡片 */}
+                                        {/* Tarjeta de resumen del ataque */}
                                         <motion.div {...dialogContentItemAnimation}>
                                             <Card className="p-6 bg-card border-none shadow-none rounded-sm bg-gradient-to-r from-purple-50 to-white dark:from-purple-950/20 dark:to-accent/50 dark:card-neon">
                                                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-card-foreground dark:text-slate-200 dark:text-shadow-glow-white">
@@ -172,7 +172,7 @@ export function AttackDetailDialog({ open, onOpenChange, data }: AttackDetailDia
                                             </Card>
                                         </motion.div>
 
-                                        {/* 载荷信息 */}
+                                        {/* Información de la carga */}
                                         <motion.div {...dialogContentItemAnimation}>
                                             <Card className="p-6 bg-card border-none shadow-none dark:bg-accent/20 dark:card-neon">
                                                 <h3 className="text-lg font-semibold mb-4 text-card-foreground dark:text-slate-200 dark:text-shadow-glow-white">
@@ -196,10 +196,10 @@ export function AttackDetailDialog({ open, onOpenChange, data }: AttackDetailDia
                                             </Card>
                                         </motion.div>
 
-                                        {/* 来源和目标信息 */}
+                                        {/* Información de origen y destino */}
                                         <motion.div {...dialogContentItemAnimation}>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                {/* 攻击来源 */}
+                                                {/* Origen del ataque */}
                                                 <Card className="p-6 bg-card border-none shadow-none bg-gradient-to-r from-purple-100 to-white dark:from-purple-900/20 dark:to-accent/40 rounded-sm dark:card-neon">
                                                     <h3 className="text-lg font-semibold mb-4 text-card-foreground dark:text-slate-200 dark:text-shadow-glow-white">
                                                         {t("attackDetail.attackSource")}
@@ -260,7 +260,7 @@ export function AttackDetailDialog({ open, onOpenChange, data }: AttackDetailDia
                                                     </div>
                                                 </Card>
 
-                                                {/* 目标信息 */}
+                                                {/* Información del destino */}
                                                 <Card className="p-6 bg-card border-none shadow-none bg-gradient-to-r from-purple-100 to-white dark:from-purple-900/20 dark:to-accent/40 rounded-sm dark:card-neon">
                                                     <h3 className="text-lg font-semibold mb-4 text-card-foreground dark:text-slate-200 dark:text-shadow-glow-white">
                                                         {t("attackDetail.targetInfo")}
@@ -279,7 +279,7 @@ export function AttackDetailDialog({ open, onOpenChange, data }: AttackDetailDia
                                             </div>
                                         </motion.div>
 
-                                        {/* 请求详情选项卡 */}
+                                        {/* Pestaña de detalles de la petición */}
                                         <motion.div {...dialogContentItemAnimation}>
                                             <Card className="p-6 bg-card border-none shadow-none rounded-sm dark:bg-accent/20 dark:card-neon">
                                                 <Tabs defaultValue="request" className="w-full" onValueChange={(value) => setActiveTab(value)}>

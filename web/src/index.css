@@ -13,7 +13,7 @@
         --popover: 0 0% 100%;
         --popover-foreground: 222.2 84% 4.9%;
 
-        /* 保持紫色主题 */
+        /* Mantener el tema púrpura */
         --primary: 267 59% 62%;
         --primary-rgb: 157, 118, 219;
         /* RGB equivalent for text-shadow */
@@ -35,19 +35,19 @@
         --input: 214.3 31.8% 91.4%;
         --ring: 267 59% 62%;
 
-        /* 图表颜色 */
+        /* Colores del gráfico */
         --chart-1: 267 59% 62%;
         --chart-2: 262 83% 58%;
         --chart-3: 231 48% 48%;
         --chart-4: 199 89% 48%;
         --chart-5: 168 83% 41%;
 
-        /* 滚动条颜色 */
+        /* Color de la barra de desplazamiento */
         --scrollbar-track: 210 40% 96.1%;
         --scrollbar-thumb: 215 20% 75%;
         --scrollbar-thumb-hover: 215 20% 65%;
 
-        /* 侧边栏渐变颜色 */
+        /* Color degradado de la barra lateral */
         --sidebar-gradient-start: 267 59% 65% / 0.95;
         --sidebar-gradient-middle: 267 53% 60% / 0.9;
         --sidebar-gradient-end: 267 46% 57% / 0.95;
@@ -68,12 +68,12 @@
         --popover: 242 53% 10%;
         --popover-foreground: 210 40% 98%;
 
-        /* 优化紫色主题 */
+        /* Tema púrpura optimizado */
         --primary: 267 59% 62%;
         --primary-rgb: 157, 118, 219;
         /* RGB equivalent for text-shadow */
         --primary-foreground: 210 40% 98%;
-        /* 改为浅色以提高对比度 */
+        /* Cambiar a color claro para mejorar el contraste */
 
         --secondary: 217.2 32.6% 17.5%;
         --secondary-foreground: 210 40% 98%;
@@ -81,34 +81,34 @@
         --muted: 217.2 32.6% 17.5%;
         --muted-foreground: 215 20.2% 65.1%;
 
-        /* 优化暗色模式下的强调色 */
+        /* Color de acento optimizado en modo oscuro */
         --accent: 267 59% 25%;
-        /* 更深的紫色作为背景 */
+        /* Púrpura más oscuro como fondo */
         --accent-foreground: 267 59% 85%;
-        /* 更亮的紫色作为前景 */
+        /* Púrpura más brillante como color de primer plano */
 
         --destructive: 0 62.8% 30.6%;
         --destructive-foreground: 0 85.7% 97.3%;
-        /* 提高对比度 */
+        /* Aumentar el contraste */
 
         --border: 217.2 32.6% 17.5%;
         --input: 217.2 32.6% 17.5%;
         --ring: 267 59% 70%;
-        /* 更亮的紫色环 */
+        /* Anillo púrpura más brillante */
 
-        /* 优化深色模式图表颜色 */
+        /* Colores de gráficos optimizados en modo oscuro */
         --chart-1: 267 70% 70%;
         --chart-2: 262 83% 65%;
         --chart-3: 231 60% 60%;
         --chart-4: 199 89% 65%;
         --chart-5: 168 83% 60%;
 
-        /* 优化深色模式滚动条颜色 */
+        /* Color de barra de desplazamiento optimizado en modo oscuro */
         --scrollbar-track: 222.2 36% 10%;
         --scrollbar-thumb: 267 30% 40%;
         --scrollbar-thumb-hover: 267 40% 50%;
 
-        /* 优化深色模式侧边栏渐变颜色 */
+        /* Color de degradado de la barra lateral optimizado en modo oscuro */
         --sidebar-gradient-start: 267 52% 50% / 0.95;
         --sidebar-gradient-middle: 267 46% 45% / 0.9;
         --sidebar-gradient-end: 267 40% 40% / 0.95;
@@ -125,7 +125,7 @@
     }
 }
 
-/* 滚动区域无滚动条样式 */
+/* Estilo de área de scroll sin barra de desplazamiento */
 .scrollbar-none {
     scrollbar-width: none;
     /* Firefox */
@@ -139,7 +139,7 @@
     height: 0;
 }
 
-/* 自定义滚动条 */
+/* Barra de desplazamiento personalizada */
 .scrollbar-custom {
     scrollbar-width: thin;
     /* Firefox */
@@ -147,7 +147,7 @@
     /* Firefox */
 }
 
-/* Webkit浏览器 (Chrome, Safari) 的滚动条样式 */
+/* Estilos de barra de desplazamiento para navegadores Webkit (Chrome, Safari) */
 .scrollbar-custom::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -167,7 +167,7 @@
     background: hsl(var(--scrollbar-thumb-hover));
 }
 
-/* 霓虹灯滚动条 - 亮色模式 */
+/* Barra de desplazamiento neón - modo claro */
 .scrollbar-neon {
     scrollbar-width: thin;
     /* Firefox */
@@ -199,7 +199,7 @@
         0 0 24px rgba(var(--primary-rgb), 50%);
 }
 
-/* 霓虹灯滚动条 - 暗色模式 */
+/* Barra de desplazamiento neón - modo oscuro */
 .dark .scrollbar-neon::-webkit-scrollbar-thumb {
     background: hsl(var(--primary) / 80%);
     box-shadow: 0 0 10px rgba(var(--primary-rgb), 70%),
@@ -214,7 +214,7 @@
         0 0 45px rgba(var(--primary-rgb), 30%);
 }
 
-/* 侧边栏渐变背景 */
+/* Fondo degradado de la barra lateral */
 .bg-sidebar-gradient {
     background: linear-gradient(
         135deg,
@@ -224,7 +224,7 @@
     );
 }
 
-/* 侧边栏霓虹灯效果 sidebar 边缘 - 暗色模式 */
+/* Efecto neón en el borde de la sidebar - modo oscuro */
 .dark .sidebar-neon-edge {
     box-shadow: 0 0 20px rgba(var(--primary-rgb), 0.3),
         0 0 40px rgba(var(--primary-rgb), 0.1);
@@ -247,7 +247,7 @@
     animation: aurora 10s ease infinite;
 }
 
-/* 侧边栏霓虹灯渐变背景 - 暗色模式 */
+/* Fondo degradado neón de la sidebar - modo oscuro */
 .dark .bg-sidebar-gradient {
     background: linear-gradient(
         135deg,
@@ -263,7 +263,7 @@
     border-right: 1px solid rgba(var(--primary-rgb), 0.4);
 }
 
-/* 添加光斑效果 */
+/* Añadir efecto de destello de luz */
 .dark .bg-sidebar-gradient::before {
     content: "";
     position: absolute;
@@ -286,7 +286,7 @@
     animation: pulse-glow 8s ease-in-out infinite;
 }
 
-/* 添加微光点效果 */
+/* Añadir efecto de puntos de luz */
 .dark .bg-sidebar-gradient::after {
     content: "";
     position: absolute;
@@ -320,27 +320,27 @@
     animation: gradient-shift 10s ease infinite;
 }
 
-/* 暗色模式下表格行悬停霓虹灯效果 */
+/* Efecto neón al pasar el cursor sobre filas de tabla en modo oscuro */
 .dark .table-row-hover:hover {
     background: rgba(var(--primary-rgb), 0.15);
     box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.2);
 }
 
-/* 暗色模式下徽章霓虹灯效果 */
+/* Efecto neón de insignias en modo oscuro */
 .dark .badge-neon {
     border: 1px solid rgba(var(--primary-rgb), 0.5);
     box-shadow: 0 0 5px rgba(var(--primary-rgb), 0.3);
     text-shadow: 0 0 3px rgba(var(--primary-rgb), 0.5);
 }
 
-/* 暗色模式下开关霓虹灯效果 */
+/* Efecto neón del interruptor en modo oscuro */
 .dark .switch-neon[data-state="checked"] {
     background-color: hsl(var(--primary));
     box-shadow: 0 0 8px rgba(var(--primary-rgb), 0.7),
         0 0 15px rgba(var(--primary-rgb), 0.4);
 }
 
-/* 暗色模式下的输入框霓虹灯效果 */
+/* Efecto neón de campos de entrada en modo oscuro */
 .dark .input-neon {
     border-color: rgba(var(--primary-rgb), 0.3);
     box-shadow: 0 0 5px rgba(var(--primary-rgb), 0.2);
@@ -354,9 +354,9 @@
         0 0 15px rgba(var(--primary-rgb), 0.1);
 }
 
-/* 霓虹灯组件在深色模式中 */
+/* Componentes neón en modo oscuro */
 .dark {
-    /* 标题霓虹灯效果 */
+    /* Efecto neón del título */
     h1,
     h2,
     h3,
@@ -366,12 +366,12 @@
         @apply text-shadow-glow-white;
     }
 
-    /* 卡片霓虹灯边框 */
+    /* Borde neón de tarjetas */
     .card-neon {
         @apply border-neon-pulse;
     }
 
-    /* 重要按钮霓虹灯效果 */
+    /* Efecto neón de botones importantes */
     .button-neon {
         @apply border-neon-strong;
         transition: all 0.3s ease;
@@ -382,18 +382,18 @@
         transform: translateY(-2px);
     }
 
-    /* 图标霓虹灯效果 */
+    /* Efecto neón del icono */
     .icon-neon {
         filter: drop-shadow(0 0 3px rgba(var(--primary-rgb), 0.5))
             drop-shadow(0 0 5px rgba(var(--primary-rgb), 0.3));
     }
 
-    /* 强调文本霓虹灯效果 */
+    /* Efecto neón de texto de énfasis */
     .text-emphasis {
         @apply text-neon-flicker;
     }
 
-    /* 面板霓虹灯边缘 */
+    /* Borde neón del panel */
     .panel-neon {
         @apply border-neon-flow;
         box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.2),

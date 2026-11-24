@@ -20,7 +20,7 @@ interface CertificateDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     mode: 'create' | 'update'
-    certificate?: Certificate | null // 仅在编辑模式下需要
+    certificate?: Certificate | null // Solo necesario en modo edición
 }
 
 export function CertificateDialog({
@@ -31,13 +31,13 @@ export function CertificateDialog({
 }: CertificateDialogProps) {
     const { t } = useTranslation()
 
-    // 根据模式确定标题和描述
+    // Determinar el título y la descripción según el modo
     const title = mode === 'create' ? t("certificate.dialog.createTitle") : t("certificate.dialog.updateTitle")
     const description = mode === 'create'
         ? t("certificate.dialog.createDescription")
         : t("certificate.dialog.updateDescription")
 
-    // 根据模式准备表单默认值
+    // Preparar valores por defecto del formulario según el modo
     const defaultValues = mode === 'update' && certificate
         ? {
             name: certificate.name,

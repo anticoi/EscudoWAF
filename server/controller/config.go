@@ -4,28 +4,28 @@ package controller
 import (
 	"errors"
 
-	"github.com/HUAHUAI23/RuiQi/pkg/model"
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/dto"
-	"github.com/HUAHUAI23/RuiQi/server/service"
-	"github.com/HUAHUAI23/RuiQi/server/utils/response"
+	"github.com/anticoi/EscudoWAF/pkg/model"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/dto"
+	"github.com/anticoi/EscudoWAF/server/service"
+	"github.com/anticoi/EscudoWAF/server/utils/response"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 )
 
-// ConfigController 配置控制器接口
+// ConfigController interfaz del controlador de configuración
 type ConfigController interface {
 	GetConfig(ctx *gin.Context)
 	PatchConfig(ctx *gin.Context)
 }
 
-// ConfigControllerImpl 配置控制器实现
+// ConfigControllerImpl implementación del controlador de configuración
 type ConfigControllerImpl struct {
 	configService service.ConfigService
 	logger        zerolog.Logger
 }
 
-// NewConfigController 创建配置控制器
+// NewConfigController crea el controlador de configuración
 func NewConfigController(configService service.ConfigService) ConfigController {
 	logger := config.GetControllerLogger("config")
 	return &ConfigControllerImpl{
@@ -34,18 +34,18 @@ func NewConfigController(configService service.ConfigService) ConfigController {
 	}
 }
 
-// GetConfig 获取配置
+// GetConfig obtiene la configuración
 //
-//	@Summary		获取系统配置
-//	@Description	获取当前系统配置信息
-//	@Tags			配置管理
+//	@Summary		Obtener la configuración del sistema
+//	@Description	Obtener la configuración actual del sistema
+//	@Tags			Gestión de configuración
 //	@Produce		json
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponse{data=dto.ConfigResponse}	"获取配置成功"
-//	@Failure		401	{object}	model.ErrResponseDontShowError					"未授权访问"
-//	@Failure		403	{object}	model.ErrResponseDontShowError					"禁止访问"
-//	@Failure		404	{object}	model.ErrResponseDontShowError					"配置不存在"
-//	@Failure		500	{object}	model.ErrResponseDontShowError					"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponse{data=dto.ConfigResponse}	"Configuración obtenida con éxito"
+//	@Failure		401	{object}	model.ErrResponseDontShowError					"Acceso no autorizado"
+//	@Failure		403	{object}	model.ErrResponseDontShowError					"Acceso prohibido"
+//	@Failure		404	{object}	model.ErrResponseDontShowError					"La configuración no existe"
+//	@Failure		500	{object}	model.ErrResponseDontShowError					"Error interno del servidor"
 //	@Router			/api/v1/config [get]
 func (c *ConfigControllerImpl) GetConfig(ctx *gin.Context) {
 	cfg, err := c.configService.GetConfig(ctx)
@@ -54,37 +54,37 @@ func (c *ConfigControllerImpl) GetConfig(ctx *gin.Context) {
 			response.NotFound(ctx, err)
 			return
 		}
-		c.logger.Error().Err(err).Msg("获取配置失败")
+		c.logger.Error().Err(err).Msg("Error al obtener la configuración")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	// 转换为DTO响应
+	// Convertir a respuesta DTO
 	configResponse := mapConfigToDTO(cfg)
 
-	response.Success(ctx, "获取配置成功", configResponse)
+	response.Success(ctx, "Configuración obtenida con éxito", configResponse)
 }
 
-// PatchConfig 补丁更新配置
+// PatchConfig actualización parcial de configuración
 //
-//	@Summary		更新系统配置
-//	@Description	使用补丁方式更新系统配置
-//	@Tags			配置管理
+//	@Summary		Actualizar la configuración del sistema
+//	@Description	Actualizar la configuración del sistema mediante PATCH
+//	@Tags			Gestión de configuración
 //	@Accept			json
 //	@Produce		json
-//	@Param			config	body	dto.ConfigPatchRequest	true	"配置更新信息"
+//	@Param			config	body	dto.ConfigPatchRequest	true	"Información de actualización de la configuración"
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponse{data=dto.ConfigResponse}	"配置更新成功"
-//	@Failure		400	{object}	model.ErrResponse								"请求参数错误"
-//	@Failure		401	{object}	model.ErrResponseDontShowError					"未授权访问"
-//	@Failure		403	{object}	model.ErrResponseDontShowError					"禁止访问"
-//	@Failure		404	{object}	model.ErrResponseDontShowError					"配置不存在"
-//	@Failure		500	{object}	model.ErrResponseDontShowError					"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponse{data=dto.ConfigResponse}	"Configuración actualizada con éxito"
+//	@Failure		400	{object}	model.ErrResponse								"Parámetros de la petición incorrectos"
+//	@Failure		401	{object}	model.ErrResponseDontShowError					"Acceso no autorizado"
+//	@Failure		403	{object}	model.ErrResponseDontShowError					"Acceso prohibido"
+//	@Failure		404	{object}	model.ErrResponseDontShowError					"La configuración no existe"
+//	@Failure		500	{object}	model.ErrResponseDontShowError					"Error interno del servidor"
 //	@Router			/api/v1/config [patch]
 func (c *ConfigControllerImpl) PatchConfig(ctx *gin.Context) {
 	var req dto.ConfigPatchRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		c.logger.Warn().Err(err).Msg("请求参数绑定失败")
+		c.logger.Warn().Err(err).Msg("Error al vincular los parámetros de la petición")
 		response.BadRequest(ctx, err, true)
 		return
 	}
@@ -95,20 +95,20 @@ func (c *ConfigControllerImpl) PatchConfig(ctx *gin.Context) {
 			response.NotFound(ctx, err)
 			return
 		}
-		c.logger.Error().Err(err).Msg("更新配置失败")
+		c.logger.Error().Err(err).Msg("Error al actualizar la configuración")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	// 转换为DTO响应
+	// Convertir a respuesta DTO
 	configResponse := mapConfigToDTO(cfg)
 
-	response.Success(ctx, "配置更新成功", configResponse)
+	response.Success(ctx, "Configuración actualizada con éxito", configResponse)
 }
 
-// mapConfigToDTO 将模型转换为DTO
+// mapConfigToDTO convierte el modelo a DTO
 func mapConfigToDTO(cfg *model.Config) dto.ConfigResponse {
-	// 将配置模型转换为响应DTO
+	// Convertir el modelo de configuración a DTO de respuesta
 	engineDTO := dto.EngineDTO{
 		Bind:            cfg.Engine.Bind,
 		UseBuiltinRules: cfg.Engine.UseBuiltinRules,
@@ -143,7 +143,7 @@ func mapConfigToDTO(cfg *model.Config) dto.ConfigResponse {
 		},
 	}
 
-	// 转换应用配置
+	// Convertir la configuración de la aplicación
 	for i, app := range cfg.Engine.AppConfig {
 		engineDTO.AppConfig[i] = dto.AppConfigDTO{
 			Name:           app.Name,
@@ -155,7 +155,7 @@ func mapConfigToDTO(cfg *model.Config) dto.ConfigResponse {
 		}
 	}
 
-	// 转换Haproxy配置
+	// Convertir la configuración de Haproxy
 	haproxyDTO := dto.HaproxyDTO{
 		ConfigBaseDir: cfg.Haproxy.ConfigBaseDir,
 		HaproxyBin:    cfg.Haproxy.HaproxyBin,

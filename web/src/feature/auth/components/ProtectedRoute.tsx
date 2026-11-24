@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useNavigate, useLocation, Outlet } from 'react-router' // 修改导入路径
+import { useNavigate, useLocation, Outlet } from 'react-router' // Modificar las rutas de importación
 import useAuthStore from '@/store/auth'
 
 export function ProtectedRoute() {

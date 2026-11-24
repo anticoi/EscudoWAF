@@ -9,10 +9,10 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "https://github.com/HUAHUAI23/RuiQi",
+        "termsOfService": "https://github.com/anticoi/EscudoWAF",
         "contact": {
             "name": "API Support",
-            "url": "https://github.com/HUAHUAI23/RuiQi",
+            "url": "https://github.com/anticoi/EscudoWAF",
             "email": "huahua1319873800@outlook.com"
         },
         "license": {
@@ -31,7 +31,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "执行启动、停止、重启、强制停止或热重载操作",
+                "description": "Ejecutar operación de inicio, parada, reinicio, parada forzada o recarga en caliente",
                 "consumes": [
                     "application/json"
                 ],
@@ -39,12 +39,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "运行器管理"
+                    "Gestión del runner"
                 ],
-                "summary": "控制后台运行器",
+                "summary": "Controlar el runner en segundo plano",
                 "parameters": [
                     {
-                        "description": "运行器控制请求",
+                        "description": "Petición de control del runner",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -55,7 +55,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "操作成功",
+                        "description": "Operación exitosa",
                         "schema": {
                             "allOf": [
                                 {
@@ -73,13 +73,13 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Parámetros de la petición incorrectos",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -94,17 +94,17 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "获取WAF后台运行器的运行状态",
+                "description": "Obtener el estado de ejecución del runner del WAF",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "运行器管理"
+                    "Gestión del runner"
                 ],
-                "summary": "获取后台运行器状态",
+                "summary": "Obtener el estado del runner en segundo plano",
                 "responses": {
                     "200": {
-                        "description": "获取运行器状态成功",
+                        "description": "Estado del runner obtenido con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -122,7 +122,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -137,20 +137,20 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "获取被封禁的IP地址列表，支持分页、过滤和排序",
+                "description": "Obtener la lista de IPs bloqueadas, con paginación, filtrado y ordenación",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "封禁IP管理"
+                    "Gestión de IPs bloqueadas"
                 ],
-                "summary": "获取封禁IP列表",
+                "summary": "Obtener lista de IPs bloqueadas",
                 "parameters": [
                     {
                         "minimum": 1,
                         "type": "integer",
                         "default": 1,
-                        "description": "页码，从1开始",
+                        "description": "Número de página, comenzando en 1",
                         "name": "page",
                         "in": "query"
                     },
@@ -159,21 +159,21 @@ const docTemplate = `{
                         "minimum": 1,
                         "type": "integer",
                         "default": 10,
-                        "description": "每页数量，最大100",
+                        "description": "Cantidad por página, máximo 100",
                         "name": "size",
                         "in": "query"
                     },
                     {
                         "type": "string",
                         "example": "192.168.1.1",
-                        "description": "IP地址过滤，支持模糊匹配",
+                        "description": "Filtrar por dirección IP, admite coincidencia difusa",
                         "name": "ip",
                         "in": "query"
                     },
                     {
                         "type": "string",
                         "example": "high_frequency_attack",
-                        "description": "封禁原因过滤",
+                        "description": "Filtrar por motivo de bloqueo",
                         "name": "reason",
                         "in": "query"
                     },
@@ -185,7 +185,7 @@ const docTemplate = `{
                         ],
                         "type": "string",
                         "default": "all",
-                        "description": "状态过滤：active-生效中，expired-已过期，all-全部",
+                        "description": "Filtro de estado: active - activo, expired - expirado, all - todos",
                         "name": "status",
                         "in": "query"
                     },
@@ -197,7 +197,7 @@ const docTemplate = `{
                         ],
                         "type": "string",
                         "default": "blocked_at",
-                        "description": "排序字段",
+                        "description": "Campo de ordenación",
                         "name": "sortBy",
                         "in": "query"
                     },
@@ -208,14 +208,14 @@ const docTemplate = `{
                         ],
                         "type": "string",
                         "default": "desc",
-                        "description": "排序方向：asc-升序，desc-降序",
+                        "description": "Dirección de ordenación: asc - ascendente, desc - descendente",
                         "name": "sortDir",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "获取封禁IP列表成功",
+                        "description": "Lista de IPs bloqueadas obtenida con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -233,25 +233,25 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Parámetros de la petición incorrectos",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "403": {
-                        "description": "禁止访问",
+                        "description": "Acceso prohibido",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -266,17 +266,17 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "删除已过期的封禁IP记录，释放存储空间",
+                "description": "Eliminar registros de IPs bloqueadas expirados para liberar espacio",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "封禁IP管理"
+                    "Gestión de IPs bloqueadas"
                 ],
-                "summary": "清理过期的封禁IP记录",
+                "summary": "Limpiar registros de IPs bloqueadas expirados",
                 "responses": {
                     "200": {
-                        "description": "清理完成",
+                        "description": "Limpieza completada",
                         "schema": {
                             "allOf": [
                                 {
@@ -294,19 +294,19 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "403": {
-                        "description": "禁止访问",
+                        "description": "Acceso prohibido",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -321,17 +321,17 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "获取封禁IP的统计信息，包括总数、生效数、过期数、按原因统计和按小时统计",
+                "description": "Obtener estadísticas de IPs bloqueadas: total, activas, expiradas, por motivo y por hora",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "封禁IP管理"
+                    "Gestión de IPs bloqueadas"
                 ],
-                "summary": "获取封禁IP统计信息",
+                "summary": "Obtener estadísticas de IPs bloqueadas",
                 "responses": {
                     "200": {
-                        "description": "获取统计信息成功",
+                        "description": "Información estadística obtenida con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -349,19 +349,19 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "403": {
-                        "description": "禁止访问",
+                        "description": "Acceso prohibido",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -376,33 +376,33 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "获取所有SSL/TLS证书列表，支持分页",
+                "description": "Obtener todos los certificados SSL/TLS, con paginación",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "证书管理"
+                    "Gestión de certificados"
                 ],
-                "summary": "获取证书列表",
+                "summary": "Obtener lista de certificados",
                 "parameters": [
                     {
                         "type": "integer",
                         "default": 1,
-                        "description": "页码",
+                        "description": "Número de página",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
                         "default": 10,
-                        "description": "每页数量",
+                        "description": "Cantidad por página",
                         "name": "size",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "获取证书列表成功",
+                        "description": "Lista de certificados obtenida con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -420,13 +420,13 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -439,7 +439,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "创建一个新的SSL/TLS证书",
+                "description": "Crear un nuevo certificado SSL/TLS",
                 "consumes": [
                     "application/json"
                 ],
@@ -447,12 +447,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "证书管理"
+                    "Gestión de certificados"
                 ],
-                "summary": "创建新证书",
+                "summary": "Crear nuevo certificado",
                 "parameters": [
                     {
-                        "description": "证书信息",
+                        "description": "Información del certificado",
                         "name": "certificate",
                         "in": "body",
                         "required": true,
@@ -463,7 +463,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "证书创建成功",
+                        "description": "Certificado creado con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -481,31 +481,31 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Parámetros de la petición incorrectos",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "403": {
-                        "description": "禁止访问",
+                        "description": "Acceso prohibido",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "409": {
-                        "description": "证书名称已存在",
+                        "description": "El nombre del certificado ya existe",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -520,18 +520,18 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "根据ID获取证书详情",
+                "description": "Obtener detalles del certificado por ID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "证书管理"
+                    "Gestión de certificados"
                 ],
-                "summary": "获取单个证书",
+                "summary": "Obtener un certificado",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "证书ID",
+                        "description": "ID del certificado",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -539,7 +539,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "获取证书详情成功",
+                        "description": "Detalles del certificado obtenidos con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -557,19 +557,19 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "404": {
-                        "description": "证书不存在",
+                        "description": "El certificado no existe",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -582,7 +582,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "更新指定证书的信息",
+                "description": "Actualizar la información del certificado especificado",
                 "consumes": [
                     "application/json"
                 ],
@@ -590,19 +590,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "证书管理"
+                    "Gestión de certificados"
                 ],
-                "summary": "更新证书",
+                "summary": "Actualizar certificado",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "证书ID",
+                        "description": "ID del certificado",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "证书更新信息",
+                        "description": "Información de actualización del certificado",
                         "name": "certificate",
                         "in": "body",
                         "required": true,
@@ -613,7 +613,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "证书更新成功",
+                        "description": "Certificado actualizado con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -631,37 +631,37 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Parámetros de la petición incorrectos",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "403": {
-                        "description": "禁止访问",
+                        "description": "Acceso prohibido",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "404": {
-                        "description": "证书不存在",
+                        "description": "El certificado no existe",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "409": {
-                        "description": "证书名称已存在",
+                        "description": "El nombre del certificado ya existe",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -674,18 +674,18 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "删除指定的SSL/TLS证书",
+                "description": "Eliminar el certificado SSL/TLS especificado",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "证书管理"
+                    "Gestión de certificados"
                 ],
-                "summary": "删除证书",
+                "summary": "Eliminar certificado",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "证书ID",
+                        "description": "ID del certificado",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -693,31 +693,31 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "证书删除成功",
+                        "description": "Certificado eliminado con éxito",
                         "schema": {
                             "$ref": "#/definitions/model.SuccessResponseNoData"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "403": {
-                        "description": "禁止访问",
+                        "description": "Acceso prohibido",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "404": {
-                        "description": "证书不存在",
+                        "description": "El certificado no existe",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -732,17 +732,17 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "获取当前系统配置信息",
+                "description": "Obtener la configuración actual del sistema",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "配置管理"
+                    "Gestión de configuración"
                 ],
-                "summary": "获取系统配置",
+                "summary": "Obtener la configuración del sistema",
                 "responses": {
                     "200": {
-                        "description": "获取配置成功",
+                        "description": "Configuración obtenida con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -760,25 +760,25 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "403": {
-                        "description": "禁止访问",
+                        "description": "Acceso prohibido",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "404": {
-                        "description": "配置不存在",
+                        "description": "La configuración no existe",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -791,7 +791,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "使用补丁方式更新系统配置",
+                "description": "Actualizar la configuración del sistema mediante PATCH",
                 "consumes": [
                     "application/json"
                 ],
@@ -799,12 +799,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "配置管理"
+                    "Gestión de configuración"
                 ],
-                "summary": "更新系统配置",
+                "summary": "Actualizar la configuración del sistema",
                 "parameters": [
                     {
-                        "description": "配置更新信息",
+                        "description": "Información de actualización de la configuración",
                         "name": "config",
                         "in": "body",
                         "required": true,
@@ -815,7 +815,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "配置更新成功",
+                        "description": "Configuración actualizada con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -833,31 +833,31 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Parámetros de la petición incorrectos",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "403": {
-                        "description": "禁止访问",
+                        "description": "Acceso prohibido",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "404": {
-                        "description": "配置不存在",
+                        "description": "La configuración no existe",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -872,33 +872,33 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "获取所有IP组列表，支持分页",
+                "description": "Obtener todos los grupos de IPs, con paginación",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "IP组管理"
+                    "Gestión de grupos de IPs"
                 ],
-                "summary": "获取IP组列表",
+                "summary": "Obtener lista de grupos de IPs",
                 "parameters": [
                     {
                         "type": "integer",
                         "default": 1,
-                        "description": "页码",
+                        "description": "Número de página",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
                         "default": 10,
-                        "description": "每页数量",
+                        "description": "Cantidad por página",
                         "name": "size",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "获取IP组列表成功",
+                        "description": "Lista de grupos de IPs obtenida con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -916,13 +916,13 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -935,7 +935,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "创建一个新的IP地址组，用于后续IP规则匹配",
+                "description": "Crear un nuevo grupo de direcciones IP para su uso en reglas de IP",
                 "consumes": [
                     "application/json"
                 ],
@@ -943,12 +943,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "IP组管理"
+                    "Gestión de grupos de IPs"
                 ],
-                "summary": "创建IP组",
+                "summary": "Crear grupo de IPs",
                 "parameters": [
                     {
-                        "description": "IP组信息",
+                        "description": "Información del grupo de IPs",
                         "name": "ipGroup",
                         "in": "body",
                         "required": true,
@@ -959,7 +959,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "IP组创建成功",
+                        "description": "Grupo de IPs creado con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -977,31 +977,31 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Parámetros de la petición incorrectos",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "403": {
-                        "description": "禁止访问",
+                        "description": "Acceso prohibido",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "409": {
-                        "description": "IP组名称已存在",
+                        "description": "El nombre del grupo de IPs ya existe",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -1016,7 +1016,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "将指定的IP地址或CIDR添加到系统默认黑名单组中",
+                "description": "Añadir la dirección IP o CIDR especificada al grupo de lista negra por defecto del sistema",
                 "consumes": [
                     "application/json"
                 ],
@@ -1024,12 +1024,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "IP组管理"
+                    "Gestión de grupos de IPs"
                 ],
-                "summary": "添加IP到黑名单",
+                "summary": "Añadir IP a la lista negra",
                 "parameters": [
                     {
-                        "description": "IP地址或CIDR",
+                        "description": "Dirección IP o CIDR",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -1040,31 +1040,31 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "IP添加成功",
+                        "description": "IP añadida con éxito",
                         "schema": {
                             "$ref": "#/definitions/model.SuccessResponseNoData"
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Parámetros de la petición incorrectos",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "404": {
-                        "description": "系统默认黑名单不存在",
+                        "description": "La lista negra por defecto del sistema no existe",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -1079,18 +1079,18 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "根据ID获取IP组详情",
+                "description": "Obtener detalles del grupo de IPs por ID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "IP组管理"
+                    "Gestión de grupos de IPs"
                 ],
-                "summary": "获取单个IP组",
+                "summary": "Obtener un grupo de IPs",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "IP组ID",
+                        "description": "ID del grupo de IPs",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1098,7 +1098,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "获取IP组详情成功",
+                        "description": "Detalles del grupo de IPs obtenidos con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -1116,25 +1116,25 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "无效的ID格式",
+                        "description": "Formato de ID no válido",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "404": {
-                        "description": "IP组不存在",
+                        "description": "El grupo de IPs no existe",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -1147,7 +1147,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "更新指定IP组的信息",
+                "description": "Actualizar la información del grupo de IPs especificado",
                 "consumes": [
                     "application/json"
                 ],
@@ -1155,19 +1155,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "IP组管理"
+                    "Gestión de grupos de IPs"
                 ],
-                "summary": "更新IP组",
+                "summary": "Actualizar grupo de IPs",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "IP组ID",
+                        "description": "ID del grupo de IPs",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "IP组更新信息",
+                        "description": "Información de actualización del grupo de IPs",
                         "name": "ipGroup",
                         "in": "body",
                         "required": true,
@@ -1178,7 +1178,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "IP组更新成功",
+                        "description": "Grupo de IPs actualizado con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -1196,37 +1196,37 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Parámetros de la petición incorrectos",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "403": {
-                        "description": "禁止操作系统默认IP组",
+                        "description": "Prohibido operar sobre el grupo de IPs por defecto del sistema",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "404": {
-                        "description": "IP组不存在",
+                        "description": "El grupo de IPs no existe",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "409": {
-                        "description": "IP组名称已存在",
+                        "description": "El nombre del grupo de IPs ya existe",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -1239,18 +1239,18 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "删除指定的IP组，系统默认IP组不允许删除",
+                "description": "Eliminar el grupo de IPs especificado; los grupos por defecto del sistema no se pueden eliminar",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "IP组管理"
+                    "Gestión de grupos de IPs"
                 ],
-                "summary": "删除IP组",
+                "summary": "Eliminar grupo de IPs",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "IP组ID",
+                        "description": "ID del grupo de IPs",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1258,37 +1258,37 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "IP组删除成功",
+                        "description": "Grupo de IPs eliminado con éxito",
                         "schema": {
                             "$ref": "#/definitions/model.SuccessResponseNoData"
                         }
                     },
                     "400": {
-                        "description": "无效的ID格式",
+                        "description": "Formato de ID no válido",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "403": {
-                        "description": "禁止删除系统默认IP组",
+                        "description": "Prohibido eliminar el grupo de IPs por defecto del sistema",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "404": {
-                        "description": "IP组不存在",
+                        "description": "El grupo de IPs no existe",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -1303,33 +1303,33 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "获取所有WAF微规则列表，支持分页",
+                "description": "Obtener todas las microrreglas del WAF, con paginación",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "规则管理"
+                    "Gestión de reglas"
                 ],
-                "summary": "获取微规则列表",
+                "summary": "Obtener lista de microrreglas",
                 "parameters": [
                     {
                         "type": "integer",
                         "default": 1,
-                        "description": "页码",
+                        "description": "Número de página",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
                         "default": 10,
-                        "description": "每页数量",
+                        "description": "Cantidad por página",
                         "name": "size",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "获取微规则列表成功",
+                        "description": "Lista de microrreglas obtenida con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -1347,13 +1347,13 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -1366,7 +1366,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "创建一个新的WAF微规则，用于匹配和过滤请求",
+                "description": "Crear una nueva microrregla WAF para filtrar peticiones",
                 "consumes": [
                     "application/json"
                 ],
@@ -1374,12 +1374,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "规则管理"
+                    "Gestión de reglas"
                 ],
-                "summary": "创建微规则",
+                "summary": "Crear microrregla",
                 "parameters": [
                     {
-                        "description": "微规则信息",
+                        "description": "Información de la microrregla",
                         "name": "rule",
                         "in": "body",
                         "required": true,
@@ -1390,7 +1390,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "微规则创建成功",
+                        "description": "Microrregla creada con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -1408,31 +1408,31 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Parámetros de la petición incorrectos",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "403": {
-                        "description": "禁止访问",
+                        "description": "Acceso prohibido",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "409": {
-                        "description": "微规则名称已存在",
+                        "description": "El nombre de la microrregla ya existe",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -1447,18 +1447,18 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "根据ID获取微规则详情",
+                "description": "Obtener detalles de la microrregla por ID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "规则管理"
+                    "Gestión de reglas"
                 ],
-                "summary": "获取单个微规则",
+                "summary": "Obtener una microrregla",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "微规则ID",
+                        "description": "ID de la microrregla",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1466,7 +1466,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "获取微规则详情成功",
+                        "description": "Detalles de la microrregla obtenidos con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -1484,25 +1484,25 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "无效的ID格式",
+                        "description": "Formato de ID no válido",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "404": {
-                        "description": "微规则不存在",
+                        "description": "La microrregla no existe",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -1515,7 +1515,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "更新指定微规则的信息，系统默认规则不允许修改",
+                "description": "Actualizar la microrregla especificada; las reglas por defecto del sistema no se pueden modificar",
                 "consumes": [
                     "application/json"
                 ],
@@ -1523,19 +1523,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "规则管理"
+                    "Gestión de reglas"
                 ],
-                "summary": "更新微规则",
+                "summary": "Actualizar microrregla",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "微规则ID",
+                        "description": "ID de la microrregla",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "微规则更新信息",
+                        "description": "Información de actualización de la microrregla",
                         "name": "rule",
                         "in": "body",
                         "required": true,
@@ -1546,7 +1546,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "微规则更新成功",
+                        "description": "Microrregla actualizada con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -1564,37 +1564,37 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Parámetros de la petición incorrectos",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "403": {
-                        "description": "禁止修改系统默认规则",
+                        "description": "Prohibido modificar las reglas por defecto del sistema",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "404": {
-                        "description": "微规则不存在",
+                        "description": "La microrregla no existe",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "409": {
-                        "description": "微规则名称已存在",
+                        "description": "El nombre de la microrregla ya existe",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -1607,18 +1607,18 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "删除指定的微规则，系统默认规则不允许删除",
+                "description": "Eliminar la microrregla especificada; las reglas por defecto del sistema no se pueden eliminar",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "规则管理"
+                    "Gestión de reglas"
                 ],
-                "summary": "删除微规则",
+                "summary": "Eliminar microrregla",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "微规则ID",
+                        "description": "ID de la microrregla",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1626,37 +1626,37 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "微规则删除成功",
+                        "description": "Microrregla eliminada con éxito",
                         "schema": {
                             "$ref": "#/definitions/model.SuccessResponseNoData"
                         }
                     },
                     "400": {
-                        "description": "无效的ID格式",
+                        "description": "Formato de ID no válido",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "403": {
-                        "description": "禁止删除系统默认规则",
+                        "description": "Prohibido eliminar las reglas por defecto del sistema",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "404": {
-                        "description": "微规则不存在",
+                        "description": "La microrregla no existe",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -1671,33 +1671,33 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "获取所有站点配置列表",
+                "description": "Obtener la lista de todas las configuraciones de sitio",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "站点管理"
+                    "Gestión de sitios"
                 ],
-                "summary": "获取站点列表",
+                "summary": "Obtener lista de sitios",
                 "parameters": [
                     {
                         "type": "integer",
                         "default": 1,
-                        "description": "页码",
+                        "description": "Número de página",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
                         "default": 10,
-                        "description": "每页数量",
+                        "description": "Cantidad por página",
                         "name": "size",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "获取站点列表成功",
+                        "description": "Lista de sitios obtenida con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -1715,13 +1715,13 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -1734,7 +1734,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "创建一个新的站点配置",
+                "description": "Crear una nueva configuración de sitio",
                 "consumes": [
                     "application/json"
                 ],
@@ -1742,12 +1742,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "站点管理"
+                    "Gestión de sitios"
                 ],
-                "summary": "创建新站点",
+                "summary": "Crear nuevo sitio",
                 "parameters": [
                     {
-                        "description": "站点信息",
+                        "description": "Información del sitio",
                         "name": "site",
                         "in": "body",
                         "required": true,
@@ -1758,7 +1758,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "站点创建成功",
+                        "description": "Sitio creado con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -1776,31 +1776,31 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Parámetros de la petición incorrectos",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "403": {
-                        "description": "禁止访问",
+                        "description": "Acceso prohibido",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "409": {
-                        "description": "域名和端口组合已存在",
+                        "description": "La combinación de dominio y puerto ya existe",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -1815,18 +1815,18 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "根据ID获取站点详情",
+                "description": "Obtener detalles del sitio por ID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "站点管理"
+                    "Gestión de sitios"
                 ],
-                "summary": "获取单个站点",
+                "summary": "Obtener un sitio",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "站点ID",
+                        "description": "ID del sitio",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1834,7 +1834,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "获取站点详情成功",
+                        "description": "Detalles del sitio obtenidos con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -1852,19 +1852,19 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "404": {
-                        "description": "站点不存在",
+                        "description": "El sitio no existe",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -1877,7 +1877,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "更新指定站点的配置",
+                "description": "Actualizar la configuración del sitio especificado",
                 "consumes": [
                     "application/json"
                 ],
@@ -1885,19 +1885,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "站点管理"
+                    "Gestión de sitios"
                 ],
-                "summary": "更新站点",
+                "summary": "Actualizar sitio",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "站点ID",
+                        "description": "ID del sitio",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "站点更新信息",
+                        "description": "Información de actualización del sitio",
                         "name": "site",
                         "in": "body",
                         "required": true,
@@ -1908,7 +1908,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "站点更新成功",
+                        "description": "Sitio actualizado con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -1926,37 +1926,37 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Parámetros de la petición incorrectos",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "403": {
-                        "description": "禁止访问",
+                        "description": "Acceso prohibido",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "404": {
-                        "description": "站点不存在",
+                        "description": "El sitio no existe",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "409": {
-                        "description": "域名和端口组合已被其他站点使用",
+                        "description": "La combinación de dominio y puerto ya está en uso por otro sitio",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -1969,18 +1969,18 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "删除指定的站点配置",
+                "description": "Eliminar la configuración de sitio especificada",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "站点管理"
+                    "Gestión de sitios"
                 ],
-                "summary": "删除站点",
+                "summary": "Eliminar sitio",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "站点ID",
+                        "description": "ID del sitio",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1988,31 +1988,31 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "站点删除成功",
+                        "description": "Sitio eliminado con éxito",
                         "schema": {
                             "$ref": "#/definitions/model.SuccessResponseNoData"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "403": {
-                        "description": "禁止访问",
+                        "description": "Acceso prohibido",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "404": {
-                        "description": "站点不存在",
+                        "description": "El sitio no existe",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -2027,14 +2027,14 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "同时获取请求数和拦截数的时间序列数据，用于图表展示",
+                "description": "Obtener series temporales de peticiones y bloqueos para mostrar en gráficos",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "统计信息"
+                    "Información estadística"
                 ],
-                "summary": "获取组合时间序列数据",
+                "summary": "Obtener datos de series temporales combinadas",
                 "parameters": [
                     {
                         "enum": [
@@ -2044,7 +2044,7 @@ const docTemplate = `{
                         ],
                         "type": "string",
                         "default": "24h",
-                        "description": "时间范围：24h(24小时)、7d(7天)、30d(30天)",
+                        "description": "Rango de tiempo: 24h (24 horas), 7d (7 días), 30d (30 días)",
                         "name": "timeRange",
                         "in": "query",
                         "required": true
@@ -2052,7 +2052,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "获取组合时间序列数据成功",
+                        "description": "Datos de series temporales combinadas obtenidos con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -2070,19 +2070,19 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Parámetros de la petición incorrectos",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -2097,14 +2097,14 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "获取指定时间范围内的统计概览数据，包括请求数、流量、错误率等",
+                "description": "Obtener datos de resumen estadístico en un rango de tiempo: peticiones, tráfico, tasa de errores, etc.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "统计信息"
+                    "Información estadística"
                 ],
-                "summary": "获取统计概览数据",
+                "summary": "Obtener datos de resumen estadístico",
                 "parameters": [
                     {
                         "enum": [
@@ -2114,7 +2114,7 @@ const docTemplate = `{
                         ],
                         "type": "string",
                         "default": "24h",
-                        "description": "时间范围：24h(24小时)、7d(7天)、30d(30天)",
+                        "description": "Rango de tiempo: 24h (24 horas), 7d (7 días), 30d (30 días)",
                         "name": "timeRange",
                         "in": "query",
                         "required": true
@@ -2122,7 +2122,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "获取统计概览成功",
+                        "description": "Resumen estadístico obtenido con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -2140,19 +2140,19 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Parámetros de la petición incorrectos",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -2167,28 +2167,28 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "获取最近的实时QPS数据点",
+                "description": "Obtener los puntos de datos QPS en tiempo real más recientes",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "统计信息"
+                    "Información estadística"
                 ],
-                "summary": "获取实时QPS数据",
+                "summary": "Obtener datos QPS en tiempo real",
                 "parameters": [
                     {
                         "maximum": 60,
                         "minimum": 1,
                         "type": "integer",
                         "default": 30,
-                        "description": "返回的数据点数量，默认30个点，最大60个点",
+                        "description": "Cantidad de puntos de datos devueltos, por defecto 30, máximo 60",
                         "name": "limit",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "获取实时QPS数据成功",
+                        "description": "Datos QPS en tiempo real obtenidos con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -2206,19 +2206,19 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Parámetros de la petición incorrectos",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -2233,14 +2233,14 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "获取指定时间范围和指标类型的时间序列数据，用于图表展示",
+                "description": "Obtener datos de series temporales por rango de tiempo y tipo de métrica para gráficos",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "统计信息"
+                    "Información estadística"
                 ],
-                "summary": "获取时间序列数据",
+                "summary": "Obtener datos de series temporales",
                 "parameters": [
                     {
                         "enum": [
@@ -2250,7 +2250,7 @@ const docTemplate = `{
                         ],
                         "type": "string",
                         "default": "24h",
-                        "description": "时间范围：24h(24小时)、7d(7天)、30d(30天)",
+                        "description": "Rango de tiempo: 24h (24 horas), 7d (7 días), 30d (30 días)",
                         "name": "timeRange",
                         "in": "query",
                         "required": true
@@ -2262,7 +2262,7 @@ const docTemplate = `{
                         ],
                         "type": "string",
                         "default": "requests",
-                        "description": "指标类型：requests(请求数)、blocks(拦截数)",
+                        "description": "Tipo de métrica: requests (peticiones), blocks (bloqueos)",
                         "name": "metric",
                         "in": "query",
                         "required": true
@@ -2270,7 +2270,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "获取时间序列数据成功",
+                        "description": "Datos de series temporales obtenidos con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -2288,19 +2288,19 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Parámetros de la petición incorrectos",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -2315,14 +2315,14 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "获取指定时间范围的入站和出站流量时间序列数据，用于图表展示",
+                "description": "Obtener series temporales de tráfico entrante y saliente en un rango de tiempo para gráficos",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "统计信息"
+                    "Información estadística"
                 ],
-                "summary": "获取流量时间序列数据",
+                "summary": "Obtener datos de series temporales de tráfico",
                 "parameters": [
                     {
                         "enum": [
@@ -2332,7 +2332,7 @@ const docTemplate = `{
                         ],
                         "type": "string",
                         "default": "24h",
-                        "description": "时间范围：24h(24小时)、7d(7天)、30d(30天)",
+                        "description": "Rango de tiempo: 24h (24 horas), 7d (7 días), 30d (30 días)",
                         "name": "timeRange",
                         "in": "query",
                         "required": true
@@ -2340,7 +2340,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "获取流量时间序列数据成功",
+                        "description": "Datos de series temporales de tráfico obtenidos con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -2358,19 +2358,19 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Parámetros de la petición incorrectos",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -2380,7 +2380,7 @@ const docTemplate = `{
         },
         "/api/v1/waf/logs": {
             "get": {
-                "description": "查询详细的WAF攻击日志记录，提供多条件筛选和分页功能，支持按规则ID、IP、域名、端口和时间范围过滤",
+                "description": "Consultar registros detallados de ataques del WAF, con filtros múltiples y paginación, por ID de regla, IP, dominio, puerto y rango de tiempo",
                 "consumes": [
                     "application/json"
                 ],
@@ -2388,80 +2388,80 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "WAF安全日志"
+                    "Registros de seguridad del WAF"
                 ],
-                "summary": "获取详细攻击日志",
+                "summary": "Obtener logs de ataque detallados",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "规则ID，触发攻击检测的WAF规则标识",
+                        "description": "ID de la regla WAF que detectó el ataque",
                         "name": "ruleId",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "来源IP地址，攻击者地址",
+                        "description": "Dirección IP de origen, dirección del atacante",
                         "name": "srcIp",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "目标IP地址，被攻击的服务器地址",
+                        "description": "Dirección IP de destino, dirección del servidor atacado",
                         "name": "dstIp",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "域名，被攻击的站点域名",
+                        "description": "Dominio del sitio atacado",
                         "name": "domain",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "来源端口号，发起攻击的端口",
+                        "description": "Puerto de origen desde el que se inició el ataque",
                         "name": "srcPort",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "目标端口号，被攻击的服务端口",
+                        "description": "Puerto de destino, puerto del servicio atacado",
                         "name": "dstPort",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "请求ID，唯一标识HTTP请求的ID",
+                        "description": "ID de la petición, identificador único de la petición HTTP",
                         "name": "requestId",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "查询起始时间 (ISO8601格式，如: 2024-03-17T00:00:00Z)",
+                        "description": "Hora de inicio de la consulta (formato ISO8601, p. ej.: 2024-03-17T00:00:00Z)",
                         "name": "startTime",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "查询结束时间 (ISO8601格式，如: 2024-03-18T23:59:59Z)",
+                        "description": "Hora de fin de la consulta (formato ISO8601, p. ej.: 2024-03-18T23:59:59Z)",
                         "name": "endTime",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "当前页码，从1开始计数 (默认: 1)",
+                        "description": "Página actual, comenzando en 1 (por defecto: 1)",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "每页记录数，最大100条 (默认: 10)",
+                        "description": "Registros por página, máximo 100 (por defecto: 10)",
                         "name": "pageSize",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "成功",
+                        "description": "Éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -2479,13 +2479,13 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Parámetros de la petición incorrectos",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -2495,7 +2495,7 @@ const docTemplate = `{
         },
         "/api/v1/waf/logs/events": {
             "get": {
-                "description": "按来源IP、目标端口和域名聚合的攻击事件统计，支持多维度筛选和分页",
+                "description": "Estadísticas de eventos de ataque agregados por IP de origen, puerto destino y dominio, con filtrado multidimensional y paginación",
                 "consumes": [
                     "application/json"
                 ],
@@ -2503,68 +2503,68 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "WAF安全日志"
+                    "Registros de seguridad del WAF"
                 ],
-                "summary": "获取聚合攻击事件",
+                "summary": "Obtener eventos de ataque agregados",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "来源IP地址，攻击者地址",
+                        "description": "Dirección IP de origen, dirección del atacante",
                         "name": "srcIp",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "目标IP地址，被攻击的服务器地址",
+                        "description": "Dirección IP de destino, dirección del servidor atacado",
                         "name": "dstIp",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "域名，被攻击的站点域名",
+                        "description": "Dominio del sitio atacado",
                         "name": "domain",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "来源端口号，发起攻击的端口",
+                        "description": "Puerto de origen desde el que se inició el ataque",
                         "name": "srcPort",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "目标端口号，被攻击的服务端口",
+                        "description": "Puerto de destino, puerto del servicio atacado",
                         "name": "dstPort",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "查询起始时间 (ISO8601格式，如: 2024-03-17T00:00:00Z)",
+                        "description": "Hora de inicio de la consulta (formato ISO8601, p. ej.: 2024-03-17T00:00:00Z)",
                         "name": "startTime",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "查询结束时间 (ISO8601格式，如: 2024-03-18T23:59:59Z)",
+                        "description": "Hora de fin de la consulta (formato ISO8601, p. ej.: 2024-03-18T23:59:59Z)",
                         "name": "endTime",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "当前页码，从1开始计数 (默认: 1)",
+                        "description": "Página actual, comenzando en 1 (por defecto: 1)",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "每页记录数，最大100条 (默认: 10)",
+                        "description": "Registros por página, máximo 100 (por defecto: 10)",
                         "name": "pageSize",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "成功",
+                        "description": "Éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -2582,13 +2582,13 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Parámetros de la petición incorrectos",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -2598,7 +2598,7 @@ const docTemplate = `{
         },
         "/auth/login": {
             "post": {
-                "description": "用户登录并获取JWT令牌",
+                "description": "Inicio de sesión y obtención de token JWT",
                 "consumes": [
                     "application/json"
                 ],
@@ -2606,12 +2606,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证"
+                    "Autenticación"
                 ],
-                "summary": "用户登录",
+                "summary": "Inicio de sesión",
                 "parameters": [
                     {
-                        "description": "登录信息",
+                        "description": "Información de inicio de sesión",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -2622,7 +2622,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "登录成功",
+                        "description": "Inicio de sesión exitoso",
                         "schema": {
                             "allOf": [
                                 {
@@ -2640,19 +2640,19 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Parámetros de la petición incorrectos",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "401": {
-                        "description": "用户名或密码错误",
+                        "description": "Nombre de usuario o contraseña incorrectos",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -2667,17 +2667,17 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "获取当前登录用户的详细信息",
+                "description": "Obtener información detallada del usuario autenticado",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "认证"
+                    "Autenticación"
                 ],
-                "summary": "获取当前用户信息",
+                "summary": "Obtener información del usuario actual",
                 "responses": {
                     "200": {
-                        "description": "获取用户信息成功",
+                        "description": "Información del usuario obtenida con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -2695,7 +2695,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -2710,7 +2710,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "用户重置自己的密码",
+                "description": "El usuario restablece su propia contraseña",
                 "consumes": [
                     "application/json"
                 ],
@@ -2718,12 +2718,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证"
+                    "Autenticación"
                 ],
-                "summary": "重置密码",
+                "summary": "Restablecer contraseña",
                 "parameters": [
                     {
-                        "description": "密码重置信息",
+                        "description": "Información de restablecimiento de contraseña",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -2734,25 +2734,25 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "密码重置成功",
+                        "description": "Contraseña restablecida con éxito",
                         "schema": {
                             "$ref": "#/definitions/model.SuccessResponseNoData"
                         }
                     },
                     "400": {
-                        "description": "请求参数错误或原密码错误",
+                        "description": "Parámetros incorrectos o contraseña actual incorrecta",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -2767,29 +2767,29 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "获取HAProxy原始的统计信息",
+                "description": "Obtener estadísticas originales de HAProxy",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "统计信息"
+                    "Información estadística"
                 ],
-                "summary": "获取HAProxy原始统计数据",
+                "summary": "Obtener datos estadísticos originales de HAProxy",
                 "responses": {
                     "200": {
-                        "description": "获取统计数据成功",
+                        "description": "Datos estadísticos obtenidos con éxito",
                         "schema": {
                             "$ref": "#/definitions/model.SuccessResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -2804,17 +2804,17 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "获取系统中所有用户的列表",
+                "description": "Obtener la lista de todos los usuarios del sistema",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "用户管理"
+                    "Gestión de usuarios"
                 ],
-                "summary": "获取所有用户",
+                "summary": "Obtener todos los usuarios",
                 "responses": {
                     "200": {
-                        "description": "获取用户列表成功",
+                        "description": "Lista de usuarios obtenida con éxito",
                         "schema": {
                             "allOf": [
                                 {
@@ -2835,19 +2835,19 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "403": {
-                        "description": "禁止访问",
+                        "description": "Acceso prohibido",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -2860,7 +2860,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "管理员创建新用户",
+                "description": "El administrador crea un nuevo usuario",
                 "consumes": [
                     "application/json"
                 ],
@@ -2868,12 +2868,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "用户管理"
+                    "Gestión de usuarios"
                 ],
-                "summary": "创建新用户",
+                "summary": "Crear nuevo usuario",
                 "parameters": [
                     {
-                        "description": "用户创建信息",
+                        "description": "Información de creación de usuario",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -2884,37 +2884,37 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "用户创建成功",
+                        "description": "Usuario creado con éxito",
                         "schema": {
                             "$ref": "#/definitions/dto.ResetPasswordResponseData"
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Parámetros de la petición incorrectos",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "403": {
-                        "description": "禁止访问",
+                        "description": "Acceso prohibido",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "409": {
-                        "description": "用户名已存在",
+                        "description": "El nombre de usuario ya existe",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.ErrResponseDontShowError"
                         }
@@ -2929,7 +2929,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "管理员更新指定用户的信息",
+                "description": "El administrador actualiza la información del usuario especificado",
                 "consumes": [
                     "application/json"
                 ],
@@ -2937,19 +2937,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "用户管理"
+                    "Gestión de usuarios"
                 ],
-                "summary": "更新用户信息",
+                "summary": "Actualizar información del usuario",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "用户ID",
+                        "description": "ID de usuario",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "用户更新信息",
+                        "description": "Información de actualización del usuario",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -2960,37 +2960,37 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "用户更新成功",
+                        "description": "Usuario actualizado con éxito",
                         "schema": {
                             "$ref": "#/definitions/model.APIResponse"
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Parámetros de la petición incorrectos",
                         "schema": {
                             "$ref": "#/definitions/model.APIResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.APIResponse"
                         }
                     },
                     "403": {
-                        "description": "禁止访问",
+                        "description": "Acceso prohibido",
                         "schema": {
                             "$ref": "#/definitions/model.APIResponse"
                         }
                     },
                     "404": {
-                        "description": "用户不存在",
+                        "description": "El usuario no existe",
                         "schema": {
                             "$ref": "#/definitions/model.APIResponse"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.APIResponse"
                         }
@@ -3003,18 +3003,18 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "管理员删除指定用户",
+                "description": "El administrador elimina el usuario especificado",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "用户管理"
+                    "Gestión de usuarios"
                 ],
-                "summary": "删除用户",
+                "summary": "Eliminar usuario",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "用户ID",
+                        "description": "ID de usuario",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -3022,31 +3022,31 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "用户删除成功",
+                        "description": "Usuario eliminado con éxito",
                         "schema": {
                             "$ref": "#/definitions/model.APIResponse"
                         }
                     },
                     "401": {
-                        "description": "未授权访问",
+                        "description": "Acceso no autorizado",
                         "schema": {
                             "$ref": "#/definitions/model.APIResponse"
                         }
                     },
                     "403": {
-                        "description": "禁止访问",
+                        "description": "Acceso prohibido",
                         "schema": {
                             "$ref": "#/definitions/model.APIResponse"
                         }
                     },
                     "404": {
-                        "description": "用户不存在",
+                        "description": "El usuario no existe",
                         "schema": {
                             "$ref": "#/definitions/model.APIResponse"
                         }
                     },
                     "500": {
-                        "description": "服务器内部错误",
+                        "description": "Error interno del servidor",
                         "schema": {
                             "$ref": "#/definitions/model.APIResponse"
                         }
@@ -3057,14 +3057,14 @@ const docTemplate = `{
     },
     "definitions": {
         "dto.AddIPToBlacklistRequest": {
-            "description": "添加IP地址或CIDR到系统默认黑名单的请求",
+            "description": "Petición para añadir dirección IP o CIDR a la lista negra por defecto del sistema",
             "type": "object",
             "required": [
                 "ip"
             ],
             "properties": {
                 "ip": {
-                    "description": "IP地址或CIDR",
+                    "description": "Dirección IP o CIDR",
                     "type": "string",
                     "example": "192.168.1.1"
                 }
@@ -3074,27 +3074,27 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "directives": {
-                    "description": "指令配置",
+                    "description": "Configuración de directivas",
                     "type": "string"
                 },
                 "logFile": {
-                    "description": "日志文件",
+                    "description": "Archivo de log",
                     "type": "string"
                 },
                 "logFormat": {
-                    "description": "日志格式",
+                    "description": "Formato de log",
                     "type": "string"
                 },
                 "logLevel": {
-                    "description": "日志级别",
+                    "description": "Nivel de log",
                     "type": "string"
                 },
                 "name": {
-                    "description": "应用名称",
+                    "description": "Nombre de la aplicación",
                     "type": "string"
                 },
                 "transactionTTL": {
-                    "description": "事务超时时间(毫秒)",
+                    "description": "Tiempo de espera de la transacción (ms)",
                     "type": "integer",
                     "example": 60000
                 }
@@ -3104,82 +3104,82 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "directives": {
-                    "description": "指令配置",
+                    "description": "Configuración de directivas",
                     "type": "string"
                 },
                 "logFile": {
-                    "description": "日志文件",
+                    "description": "Archivo de log",
                     "type": "string",
                     "example": "/dev/stdout"
                 },
                 "logFormat": {
-                    "description": "日志格式",
+                    "description": "Formato de log",
                     "type": "string",
                     "example": "console"
                 },
                 "logLevel": {
-                    "description": "日志级别",
+                    "description": "Nivel de log",
                     "type": "string",
                     "example": "info"
                 },
                 "name": {
-                    "description": "应用名称",
+                    "description": "Nombre de la aplicación",
                     "type": "string",
                     "example": "coraza"
                 },
                 "transactionTTL": {
-                    "description": "事务超时时间(毫秒)",
+                    "description": "Tiempo de espera de la transacción (ms)",
                     "type": "integer",
                     "example": 60000
                 }
             }
         },
         "dto.AttackEventAggregateResult": {
-            "description": "攻击事件的聚合统计结果，提供IP、域名、端口维度的攻击信息汇总，包含攻击次数、首次和最近攻击时间、持续时间等关键指标",
+            "description": "Resultado de estadísticas agregadas de eventos de ataque, con resumen por IP, dominio y puerto, incluyendo número de ataques, primera y última vez, y duración",
             "type": "object",
             "properties": {
                 "count": {
-                    "description": "攻击总次数，同一来源的攻击计数",
+                    "description": "Número total de ataques desde el mismo origen",
                     "type": "integer",
                     "example": 15
                 },
                 "domain": {
-                    "description": "域名，被攻击的站点",
+                    "description": "Dominio del sitio atacado",
                     "type": "string",
                     "example": "example.com"
                 },
                 "dstPort": {
-                    "description": "目标端口号，被攻击的服务端口",
+                    "description": "Puerto de destino, puerto del servicio atacado",
                     "type": "integer",
                     "example": 443
                 },
                 "durationInMinutes": {
-                    "description": "攻击持续时间(分钟)，从首次到最近攻击的时间跨度",
+                    "description": "Duración del ataque (minutos), lapso desde el primer hasta el último ataque",
                     "type": "number",
                     "example": 18.2
                 },
                 "firstAttackTime": {
-                    "description": "首次攻击时间，该IP首次发起攻击的时间点",
+                    "description": "Hora del primer ataque desde esta IP",
                     "type": "string",
                     "example": "2024-03-18T08:12:33Z"
                 },
                 "isOngoing": {
-                    "description": "是否正在进行中，标识攻击是否仍在持续",
+                    "description": "Si está en curso, indica si el ataque continúa",
                     "type": "boolean",
                     "example": true
                 },
                 "lastAttackTime": {
-                    "description": "最近攻击时间，该IP最后一次攻击的时间点",
+                    "description": "Hora del último ataque desde esta IP",
                     "type": "string",
                     "example": "2024-03-18T08:30:45Z"
                 },
                 "srcIp": {
-                    "description": "来源IP地址，攻击者地址",
+                    "description": "Dirección IP de origen, dirección del atacante",
                     "type": "string",
                     "example": "192.168.1.100"
                 },
                 "srcIpInfo": {
-                    "description": "来源IP地址，攻击者地址",
+                    "description": "Dirección IP de origen, dirección del atacante",
                     "allOf": [
                         {
                             "$ref": "#/definitions/model.IPInfo"
@@ -3189,66 +3189,66 @@ const docTemplate = `{
             }
         },
         "dto.AttackEventResponse": {
-            "description": "攻击事件查询的分页响应结构体，包含聚合结果列表及分页元数据，用于前端展示和翻页控制",
+            "description": "Estructura de respuesta paginada de consulta de eventos de ataque, con lista de resultados agregados y metadatos de paginación",
             "type": "object",
             "properties": {
                 "currentPage": {
-                    "description": "当前页码，从1开始计数",
+                    "description": "Página actual, comenzando en 1",
                     "type": "integer",
                     "example": 1
                 },
                 "pageSize": {
-                    "description": "每页大小，当前设置的每页记录数",
+                    "description": "Tamaño de página, registros por página configurados",
                     "type": "integer",
                     "example": 10
                 },
                 "results": {
-                    "description": "聚合结果列表，当前页的攻击事件记录",
+                    "description": "Lista de resultados agregados, registros de eventos de ataque de la página actual",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.AttackEventAggregateResult"
                     }
                 },
                 "totalCount": {
-                    "description": "总记录数，符合条件的攻击事件总数",
+                    "description": "Total de registros, cantidad de eventos de ataque que cumplen los criterios",
                     "type": "integer",
                     "example": 35
                 },
                 "totalPages": {
-                    "description": "总页数，根据总记录数和每页大小计算",
+                    "description": "Total de páginas, calculado según el total de registros y el tamaño de página",
                     "type": "integer",
                     "example": 4
                 }
             }
         },
         "dto.AttackLogResponse": {
-            "description": "攻击日志查询的分页响应结构体，返回详细的WAF日志记录及分页信息，便于安全分析和事件追踪",
+            "description": "Estructura de respuesta paginada de consulta de logs de ataques, con registros WAF detallados e información de paginación",
             "type": "object",
             "properties": {
                 "currentPage": {
-                    "description": "当前页码，从1开始计数",
+                    "description": "Página actual, comenzando en 1",
                     "type": "integer",
                     "example": 1
                 },
                 "pageSize": {
-                    "description": "每页大小，当前设置的每页记录数",
+                    "description": "Tamaño de página, registros por página configurados",
                     "type": "integer",
                     "example": 10
                 },
                 "results": {
-                    "description": "日志记录列表，当前页的WAF攻击日志详情",
+                    "description": "Lista de registros de log, detalles de ataques WAF de la página actual",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.WAFLog"
                     }
                 },
                 "totalCount": {
-                    "description": "总记录数，符合查询条件的日志总数",
+                    "description": "Total de registros, cantidad de logs que cumplen los criterios de búsqueda",
                     "type": "integer",
                     "example": 128
                 },
                 "totalPages": {
-                    "description": "总页数，根据总记录数和每页大小计算",
+                    "description": "Total de páginas, calculado según el total de registros y el tamaño de página",
                     "type": "integer",
                     "example": 13
                 }
@@ -3261,7 +3261,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "servers": {
-                    "description": "服务器列表，至少需要一个服务器",
+                    "description": "Lista de servidores, se requiere al menos uno",
                     "type": "array",
                     "minItems": 1,
                     "items": {
@@ -3271,148 +3271,148 @@ const docTemplate = `{
             }
         },
         "dto.BlockedIPCleanupResponse": {
-            "description": "清理过期封禁IP记录的响应数据",
+            "description": "Datos de respuesta de la limpieza de registros de IPs bloqueadas expirados",
             "type": "object",
             "properties": {
                 "deletedCount": {
-                    "description": "删除的记录数量",
+                    "description": "Cantidad de registros eliminados",
                     "type": "integer",
                     "example": 25
                 },
                 "message": {
-                    "description": "操作结果消息",
+                    "description": "Mensaje del resultado de la operación",
                     "type": "string",
-                    "example": "已成功清理过期的封禁IP记录"
+                    "example": "Registros de IPs bloqueadas expirados limpiados con éxito"
                 }
             }
         },
         "dto.BlockedIPHourlyStats": {
-            "description": "按小时的封禁统计",
+            "description": "Estadísticas de bloqueo por hora",
             "type": "object",
             "properties": {
                 "count": {
-                    "description": "该小时的封禁数量",
+                    "description": "Cantidad de bloqueos en esa hora",
                     "type": "integer",
                     "example": 10
                 },
                 "hour": {
-                    "description": "小时时间点",
+                    "description": "Punto de tiempo por horas",
                     "type": "string",
                     "example": "2023-12-01T10:00:00Z"
                 }
             }
         },
         "dto.BlockedIPListResponse": {
-            "description": "封禁IP分页列表响应",
+            "description": "Respuesta paginada de la lista de IPs bloqueadas",
             "type": "object",
             "properties": {
                 "items": {
-                    "description": "IP列表",
+                    "description": "Lista de IPs",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.BlockedIPResponse"
                     }
                 },
                 "page": {
-                    "description": "当前页码",
+                    "description": "Página actual",
                     "type": "integer",
                     "example": 1
                 },
                 "pages": {
-                    "description": "总页数",
+                    "description": "Total de páginas",
                     "type": "integer",
                     "example": 10
                 },
                 "size": {
-                    "description": "每页数量",
+                    "description": "Cantidad por página",
                     "type": "integer",
                     "example": 10
                 },
                 "total": {
-                    "description": "总数量",
+                    "description": "Cantidad total",
                     "type": "integer",
                     "example": 100
                 }
             }
         },
         "dto.BlockedIPResponse": {
-            "description": "封禁IP详细信息",
+            "description": "Detalles de la IP bloqueada",
             "type": "object",
             "properties": {
                 "blockedAt": {
-                    "description": "封禁开始时间",
+                    "description": "Hora de inicio del bloqueo",
                     "type": "string",
                     "example": "2023-12-01T10:00:00Z"
                 },
                 "blockedUntil": {
-                    "description": "封禁结束时间",
+                    "description": "Hora de fin del bloqueo",
                     "type": "string",
                     "example": "2023-12-01T11:00:00Z"
                 },
                 "ip": {
-                    "description": "被封禁的IP地址",
+                    "description": "Dirección IP bloqueada",
                     "type": "string",
                     "example": "192.168.1.1"
                 },
                 "isActive": {
-                    "description": "是否仍在封禁中",
+                    "description": "Si sigue bloqueado",
                     "type": "boolean",
                     "example": true
                 },
                 "reason": {
-                    "description": "封禁原因",
+                    "description": "Motivo del bloqueo",
                     "type": "string",
                     "example": "high_frequency_attack"
                 },
                 "remainingTTL": {
-                    "description": "剩余封禁时间（秒）",
+                    "description": "Tiempo de bloqueo restante (segundos)",
                     "type": "integer",
                     "example": 3600
                 },
                 "requestUri": {
-                    "description": "请求URI",
+                    "description": "URI de la petición",
                     "type": "string",
                     "example": "/api/v1/login"
                 }
             }
         },
         "dto.BlockedIPStatsResponse": {
-            "description": "封禁IP统计信息",
+            "description": "Estadísticas de IPs bloqueadas",
             "type": "object",
             "properties": {
                 "activeBlocked": {
-                    "description": "当前生效的封禁数量",
+                    "description": "Cantidad de bloqueos actualmente activos",
                     "type": "integer",
                     "example": 50
                 },
                 "expiredBlocked": {
-                    "description": "已过期的封禁数量",
+                    "description": "Cantidad de bloqueos expirados",
                     "type": "integer",
                     "example": 950
                 },
                 "last24HourStats": {
-                    "description": "最近24小时统计",
+                    "description": "Estadísticas de las últimas 24 horas",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.BlockedIPHourlyStats"
                     }
                 },
                 "reasonStats": {
-                    "description": "按原因统计",
+                    "description": "Estadísticas por motivo",
                     "type": "object",
                     "additionalProperties": {
                         "type": "integer"
                     }
                 },
                 "totalBlocked": {
-                    "description": "总封禁数量",
+                    "description": "Cantidad total de bloqueos",
                     "type": "integer",
                     "example": 1000
                 }
             }
         },
         "dto.CertificateCreateRequest": {
-            "description": "创建证书的请求参数",
+            "description": "Parámetros de la petición para crear un certificado",
             "type": "object",
             "required": [
                 "privateKey",
@@ -3420,12 +3420,12 @@ const docTemplate = `{
             ],
             "properties": {
                 "description": {
-                    "description": "证书描述",
+                    "description": "Descripción del certificado",
                     "type": "string",
-                    "example": "用于example.com的证书"
+                    "example": "Certificado para example.com"
                 },
                 "domains": {
-                    "description": "证书绑定的域名列表",
+                    "description": "Lista de dominios asociados al certificado",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -3435,31 +3435,31 @@ const docTemplate = `{
                     ]
                 },
                 "expireDate": {
-                    "description": "证书过期日期",
+                    "description": "Fecha de caducidad del certificado",
                     "type": "string",
                     "example": "2023-12-31T23:59:59Z"
                 },
                 "fingerPrint": {
-                    "description": "证书指纹",
+                    "description": "Huella del certificado",
                     "type": "string",
                     "example": "AA:BB:CC:DD:..."
                 },
                 "issuerName": {
-                    "description": "颁发机构",
+                    "description": "Autoridad emisora",
                     "type": "string",
                     "example": "Let's Encrypt"
                 },
                 "name": {
-                    "description": "证书名称/别名",
+                    "description": "Nombre/alias del certificado",
                     "type": "string",
                     "example": "example-cert"
                 },
                 "privateKey": {
-                    "description": "私钥内容（PEM格式）",
+                    "description": "Contenido de la clave privada (formato PEM)",
                     "type": "string"
                 },
                 "publicKey": {
-                    "description": "公钥内容（PEM格式）",
+                    "description": "Contenido de la clave pública (formato PEM)",
                     "type": "string"
                 }
             }
@@ -3476,61 +3476,61 @@ const docTemplate = `{
             ],
             "properties": {
                 "certName": {
-                    "description": "证书名称",
+                    "description": "Nombre del certificado",
                     "type": "string",
                     "example": "my-cert"
                 },
                 "expireDate": {
-                    "description": "过期时间",
+                    "description": "Hora de expiración",
                     "type": "string"
                 },
                 "fingerPrint": {
-                    "description": "证书指纹",
+                    "description": "Huella del certificado",
                     "type": "string"
                 },
                 "issuerName": {
-                    "description": "颁发机构",
+                    "description": "Autoridad emisora",
                     "type": "string",
                     "example": "Let's Encrypt"
                 },
                 "privateKey": {
-                    "description": "私钥内容",
+                    "description": "Contenido de la clave privada",
                     "type": "string"
                 },
                 "publicKey": {
-                    "description": "公钥内容",
+                    "description": "Contenido de la clave pública",
                     "type": "string"
                 }
             }
         },
         "dto.CertificateListResponse": {
-            "description": "证书列表响应",
+            "description": "Respuesta de lista de certificados",
             "type": "object",
             "properties": {
                 "items": {
-                    "description": "证书列表",
+                    "description": "Lista de certificados",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.CertificateStore"
                     }
                 },
                 "total": {
-                    "description": "总数",
+                    "description": "Total",
                     "type": "integer"
                 }
             }
         },
         "dto.CertificateUpdateRequest": {
-            "description": "更新证书的请求参数",
+            "description": "Parámetros de la petición para actualizar un certificado",
             "type": "object",
             "properties": {
                 "description": {
-                    "description": "证书描述",
+                    "description": "Descripción del certificado",
                     "type": "string",
-                    "example": "用于example.com的证书"
+                    "example": "Certificado para example.com"
                 },
                 "domains": {
-                    "description": "证书绑定的域名列表",
+                    "description": "Lista de dominios asociados al certificado",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -3540,41 +3540,41 @@ const docTemplate = `{
                     ]
                 },
                 "expireDate": {
-                    "description": "证书过期日期",
+                    "description": "Fecha de caducidad del certificado",
                     "type": "string",
                     "example": "2023-12-31T23:59:59Z"
                 },
                 "fingerPrint": {
-                    "description": "证书指纹",
+                    "description": "Huella del certificado",
                     "type": "string",
                     "example": "AA:BB:CC:DD:..."
                 },
                 "issuerName": {
-                    "description": "颁发机构",
+                    "description": "Autoridad emisora",
                     "type": "string",
                     "example": "Let's Encrypt"
                 },
                 "name": {
-                    "description": "证书名称/别名",
+                    "description": "Nombre/alias del certificado",
                     "type": "string",
                     "example": "example-cert"
                 },
                 "privateKey": {
-                    "description": "私钥内容（PEM格式）",
+                    "description": "Contenido de la clave privada (formato PEM)",
                     "type": "string"
                 },
                 "publicKey": {
-                    "description": "公钥内容（PEM格式）",
+                    "description": "Contenido de la clave pública (formato PEM)",
                     "type": "string"
                 }
             }
         },
         "dto.CombinedTimeSeriesResponse": {
-            "description": "同时包含请求数和拦截数的时间序列数据",
+            "description": "Datos de series temporales con peticiones y bloqueos",
             "type": "object",
             "properties": {
                 "blocks": {
-                    "description": "拦截数时间序列",
+                    "description": "Serie temporal de bloqueos",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dto.TimeSeriesResponse"
@@ -3582,7 +3582,7 @@ const docTemplate = `{
                     ]
                 },
                 "requests": {
-                    "description": "请求数时间序列",
+                    "description": "Serie temporal de peticiones",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dto.TimeSeriesResponse"
@@ -3590,18 +3590,18 @@ const docTemplate = `{
                     ]
                 },
                 "timeRange": {
-                    "description": "时间范围",
+                    "description": "Rango de tiempo",
                     "type": "string",
                     "example": "24h"
                 }
             }
         },
         "dto.ConfigPatchRequest": {
-            "description": "用于部分更新配置的请求参数",
+            "description": "Parámetros de la petición para actualización parcial de configuración",
             "type": "object",
             "properties": {
                 "engine": {
-                    "description": "引擎配置",
+                    "description": "Configuración del motor",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dto.EnginePatchDTO"
@@ -3609,7 +3609,7 @@ const docTemplate = `{
                     ]
                 },
                 "haproxy": {
-                    "description": "HAProxy配置",
+                    "description": "Configuración de HAProxy",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dto.HaproxyPatchDTO"
@@ -3617,37 +3617,37 @@ const docTemplate = `{
                     ]
                 },
                 "isDebug": {
-                    "description": "是否开启调试模式",
+                    "description": "Si el modo de depuración está activado",
                     "type": "boolean",
                     "example": false
                 },
                 "isK8s": {
-                    "description": "是否在K8s环境",
+                    "description": "Si está en entorno K8s",
                     "type": "boolean",
                     "example": false
                 },
                 "isResponseCheck": {
-                    "description": "是否检查响应",
+                    "description": "Si se inspeccionan las respuestas",
                     "type": "boolean",
                     "example": false
                 },
                 "name": {
-                    "description": "配置名称",
+                    "description": "Nombre de la configuración",
                     "type": "string",
                     "example": "AppConfig"
                 }
             }
         },
         "dto.ConfigResponse": {
-            "description": "配置响应",
+            "description": "Respuesta de configuración",
             "type": "object",
             "properties": {
                 "createdAt": {
-                    "description": "创建时间",
+                    "description": "Fecha de creación",
                     "type": "string"
                 },
                 "engine": {
-                    "description": "引擎配置",
+                    "description": "Configuración del motor",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dto.EngineDTO"
@@ -3655,7 +3655,7 @@ const docTemplate = `{
                     ]
                 },
                 "haproxy": {
-                    "description": "HAProxy配置",
+                    "description": "Configuración de HAProxy",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dto.HaproxyDTO"
@@ -3663,33 +3663,33 @@ const docTemplate = `{
                     ]
                 },
                 "id": {
-                    "description": "配置ID",
+                    "description": "ID de configuración",
                     "type": "string"
                 },
                 "isDebug": {
-                    "description": "是否开启调试模式",
+                    "description": "Si el modo de depuración está activado",
                     "type": "boolean"
                 },
                 "isK8s": {
-                    "description": "是否在K8s环境",
+                    "description": "Si está en entorno K8s",
                     "type": "boolean"
                 },
                 "isResponseCheck": {
-                    "description": "是否检查响应",
+                    "description": "Si se inspeccionan las respuestas",
                     "type": "boolean"
                 },
                 "name": {
-                    "description": "配置名称",
+                    "description": "Nombre de la configuración",
                     "type": "string"
                 },
                 "updatedAt": {
-                    "description": "更新时间",
+                    "description": "Hora de actualización",
                     "type": "string"
                 }
             }
         },
         "dto.CreateSiteRequest": {
-            "description": "创建站点的请求参数",
+            "description": "Parámetros de la petición para crear un sitio",
             "type": "object",
             "required": [
                 "backend",
@@ -3699,12 +3699,12 @@ const docTemplate = `{
             ],
             "properties": {
                 "activeStatus": {
-                    "description": "站点状态",
+                    "description": "Estado del sitio",
                     "type": "boolean",
                     "example": true
                 },
                 "backend": {
-                    "description": "后端服务器配置",
+                    "description": "Configuración del servidor backend",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dto.BackendDTO"
@@ -3712,7 +3712,7 @@ const docTemplate = `{
                     ]
                 },
                 "certificate": {
-                    "description": "证书信息",
+                    "description": "Información del certificado",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dto.CertificateDTO"
@@ -3720,34 +3720,34 @@ const docTemplate = `{
                     ]
                 },
                 "domain": {
-                    "description": "域名",
+                    "description": "Dominio",
                     "type": "string",
                     "example": "example.com"
                 },
                 "enableHTTPS": {
-                    "description": "是否启用HTTPS",
+                    "description": "Si HTTPS está habilitado",
                     "type": "boolean",
                     "example": false
                 },
                 "listenPort": {
-                    "description": "监听端口",
+                    "description": "Puerto de escucha",
                     "type": "integer",
                     "maximum": 65535,
                     "minimum": 1,
                     "example": 8080
                 },
                 "name": {
-                    "description": "站点名称",
+                    "description": "Nombre del sitio",
                     "type": "string",
                     "example": "my-site"
                 },
                 "wafEnabled": {
-                    "description": "是否启用WAF",
+                    "description": "Si el WAF está habilitado",
                     "type": "boolean",
                     "example": false
                 },
                 "wafMode": {
-                    "description": "WAF模式",
+                    "description": "Modo WAF",
                     "type": "string",
                     "enum": [
                         "protection",
@@ -3761,26 +3761,26 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "appConfig": {
-                    "description": "应用配置列表",
+                    "description": "Lista de configuraciones de aplicación",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.AppConfigDTO"
                     }
                 },
                 "asnDBPath": {
-                    "description": "ASN数据库路径",
+                    "description": "Ruta de la base de datos ASN",
                     "type": "string"
                 },
                 "bind": {
-                    "description": "引擎绑定地址",
+                    "description": "Dirección de enlace del motor",
                     "type": "string"
                 },
                 "cityDBPath": {
-                    "description": "城市数据库路径",
+                    "description": "Ruta de la base de datos de ciudades",
                     "type": "string"
                 },
                 "flowController": {
-                    "description": "流量控制配置",
+                    "description": "Configuración de control de flujo",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dto.FlowControllerDTO"
@@ -3788,7 +3788,7 @@ const docTemplate = `{
                     ]
                 },
                 "useBuiltinRules": {
-                    "description": "是否使用内置规则",
+                    "description": "Si se usan reglas integradas",
                     "type": "boolean"
                 }
             }
@@ -3797,29 +3797,29 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "appConfig": {
-                    "description": "应用配置列表",
+                    "description": "Lista de configuraciones de aplicación",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.AppConfigPatchDTO"
                     }
                 },
                 "asnDBPath": {
-                    "description": "ASN数据库路径",
+                    "description": "Ruta de la base de datos ASN",
                     "type": "string",
                     "example": "/opt/geoip/GeoLite2-ASN.mmdb"
                 },
                 "bind": {
-                    "description": "引擎绑定地址",
+                    "description": "Dirección de enlace del motor",
                     "type": "string",
                     "example": "127.0.0.1:2342"
                 },
                 "cityDBPath": {
-                    "description": "城市数据库路径",
+                    "description": "Ruta de la base de datos de ciudades",
                     "type": "string",
                     "example": "/opt/geoip/GeoLite2-City.mmdb"
                 },
                 "flowController": {
-                    "description": "流量控制配置",
+                    "description": "Configuración de control de flujo",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dto.FlowControllerPatchDTO"
@@ -3827,7 +3827,7 @@ const docTemplate = `{
                     ]
                 },
                 "useBuiltinRules": {
-                    "description": "是否使用内置规则",
+                    "description": "Si se usan reglas integradas",
                     "type": "boolean",
                     "example": true
                 }
@@ -3837,7 +3837,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "attackLimit": {
-                    "description": "攻击频率限制配置",
+                    "description": "Configuración del límite de frecuencia de ataques",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dto.LimitConfigDTO"
@@ -3845,7 +3845,7 @@ const docTemplate = `{
                     ]
                 },
                 "errorLimit": {
-                    "description": "错误频率限制配置",
+                    "description": "Configuración del límite de frecuencia de errores",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dto.LimitConfigDTO"
@@ -3853,7 +3853,7 @@ const docTemplate = `{
                     ]
                 },
                 "visitLimit": {
-                    "description": "访问频率限制配置",
+                    "description": "Configuración del límite de frecuencia de acceso",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dto.LimitConfigDTO"
@@ -3866,7 +3866,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "attackLimit": {
-                    "description": "攻击频率限制配置",
+                    "description": "Configuración del límite de frecuencia de ataques",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dto.LimitConfigPatchDTO"
@@ -3874,7 +3874,7 @@ const docTemplate = `{
                     ]
                 },
                 "errorLimit": {
-                    "description": "错误频率限制配置",
+                    "description": "Configuración del límite de frecuencia de errores",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dto.LimitConfigPatchDTO"
@@ -3882,7 +3882,7 @@ const docTemplate = `{
                     ]
                 },
                 "visitLimit": {
-                    "description": "访问频率限制配置",
+                    "description": "Configuración del límite de frecuencia de acceso",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dto.LimitConfigPatchDTO"
@@ -3916,27 +3916,27 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "backupsNumber": {
-                    "description": "备份数量",
+                    "description": "Cantidad de copias de seguridad",
                     "type": "integer"
                 },
                 "configBaseDir": {
-                    "description": "配置文件根目录",
+                    "description": "Directorio raíz de archivos de configuración",
                     "type": "string"
                 },
                 "haproxyBin": {
-                    "description": "HAProxy二进制文件路径",
+                    "description": "Ruta del binario de HAProxy",
                     "type": "string"
                 },
                 "spoeAgentAddr": {
-                    "description": "SPOE代理地址",
+                    "description": "Dirección del agente SPOE",
                     "type": "string"
                 },
                 "spoeAgentPort": {
-                    "description": "SPOE代理端口",
+                    "description": "Puerto del agente SPOE",
                     "type": "integer"
                 },
                 "thread": {
-                    "description": "线程数",
+                    "description": "Número de hilos",
                     "type": "integer"
                 }
             }
@@ -3945,32 +3945,32 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "backupsNumber": {
-                    "description": "备份数量",
+                    "description": "Cantidad de copias de seguridad",
                     "type": "integer",
                     "example": 5
                 },
                 "configBaseDir": {
-                    "description": "配置文件根目录",
+                    "description": "Directorio raíz de archivos de configuración",
                     "type": "string",
-                    "example": "/RuiQi"
+                    "example": "/EscudoWAF"
                 },
                 "haproxyBin": {
-                    "description": "HAProxy二进制文件路径",
+                    "description": "Ruta del binario de HAProxy",
                     "type": "string",
                     "example": "haproxy"
                 },
                 "spoeAgentAddr": {
-                    "description": "SPOE代理地址",
+                    "description": "Dirección del agente SPOE",
                     "type": "string",
                     "example": "127.0.0.1"
                 },
                 "spoeAgentPort": {
-                    "description": "SPOE代理端口",
+                    "description": "Puerto del agente SPOE",
                     "type": "integer",
                     "example": 2342
                 },
                 "thread": {
-                    "description": "线程数",
+                    "description": "Número de hilos",
                     "type": "integer",
                     "maximum": 256,
                     "minimum": 0,
@@ -3979,7 +3979,7 @@ const docTemplate = `{
             }
         },
         "dto.IPGroupCreateRequest": {
-            "description": "创建IP组的请求参数",
+            "description": "Parámetros de la petición para crear un grupo de IPs",
             "type": "object",
             "required": [
                 "items",
@@ -3987,7 +3987,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "items": {
-                    "description": "IP地址或CIDR列表",
+                    "description": "Lista de direcciones IP o CIDR",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -3997,35 +3997,35 @@ const docTemplate = `{
                     ]
                 },
                 "name": {
-                    "description": "IP组名称",
+                    "description": "Nombre del grupo de IPs",
                     "type": "string",
-                    "example": "内部服务器"
+                    "example": "Servidor interno"
                 }
             }
         },
         "dto.IPGroupListResponse": {
-            "description": "IP组列表响应",
+            "description": "Respuesta de lista de grupos de IPs",
             "type": "object",
             "properties": {
                 "items": {
-                    "description": "IP组列表",
+                    "description": "Lista de grupos de IPs",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.IPGroup"
                     }
                 },
                 "total": {
-                    "description": "总数",
+                    "description": "Total",
                     "type": "integer"
                 }
             }
         },
         "dto.IPGroupUpdateRequest": {
-            "description": "更新IP组的请求参数",
+            "description": "Parámetros de la petición para actualizar un grupo de IPs",
             "type": "object",
             "properties": {
                 "items": {
-                    "description": "IP地址或CIDR列表",
+                    "description": "Lista de direcciones IP o CIDR",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -4035,9 +4035,9 @@ const docTemplate = `{
                     ]
                 },
                 "name": {
-                    "description": "IP组名称",
+                    "description": "Nombre del grupo de IPs",
                     "type": "string",
-                    "example": "内部服务器"
+                    "example": "Servidor interno"
                 }
             }
         },
@@ -4045,27 +4045,27 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "blockDuration": {
-                    "description": "封禁时长（秒）",
+                    "description": "Duración del bloqueo (segundos)",
                     "type": "integer"
                 },
                 "burstCount": {
-                    "description": "允许的突发请求数",
+                    "description": "Número de peticiones en ráfaga permitidas",
                     "type": "integer"
                 },
                 "enabled": {
-                    "description": "是否启用",
+                    "description": "Si está habilitado",
                     "type": "boolean"
                 },
                 "paramsCapacity": {
-                    "description": "缓存容量",
+                    "description": "Capacidad de caché",
                     "type": "integer"
                 },
                 "statDuration": {
-                    "description": "统计时间窗口（秒）",
+                    "description": "Ventana de tiempo (segundos)",
                     "type": "integer"
                 },
                 "threshold": {
-                    "description": "阈值",
+                    "description": "Umbral",
                     "type": "integer"
                 }
             }
@@ -4074,32 +4074,32 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "blockDuration": {
-                    "description": "封禁时长（秒）",
+                    "description": "Duración del bloqueo (segundos)",
                     "type": "integer",
                     "example": 600
                 },
                 "burstCount": {
-                    "description": "允许的突发请求数",
+                    "description": "Número de peticiones en ráfaga permitidas",
                     "type": "integer",
                     "example": 10
                 },
                 "enabled": {
-                    "description": "是否启用",
+                    "description": "Si está habilitado",
                     "type": "boolean",
                     "example": true
                 },
                 "paramsCapacity": {
-                    "description": "缓存容量",
+                    "description": "Capacidad de caché",
                     "type": "integer",
                     "example": 10000
                 },
                 "statDuration": {
-                    "description": "统计时间窗口（秒）",
+                    "description": "Ventana de tiempo (segundos)",
                     "type": "integer",
                     "example": 60
                 },
                 "threshold": {
-                    "description": "阈值",
+                    "description": "Umbral",
                     "type": "integer",
                     "example": 100
                 }
@@ -4114,7 +4114,7 @@ const docTemplate = `{
                     "example": "eyJhbGciOiJIUzI1NiIs..."
                 },
                 "user": {
-                    "description": "用户信息",
+                    "description": "Información del usuario",
                     "allOf": [
                         {
                             "$ref": "#/definitions/model.User"
@@ -4124,7 +4124,7 @@ const docTemplate = `{
             }
         },
         "dto.MicroRuleCreateRequest": {
-            "description": "创建微规则的请求参数",
+            "description": "Parámetros de la petición para crear una microrregla",
             "type": "object",
             "required": [
                 "condition",
@@ -4135,21 +4135,21 @@ const docTemplate = `{
             ],
             "properties": {
                 "condition": {
-                    "description": "规则条件",
+                    "description": "Condiciones de la regla",
                     "type": "object"
                 },
                 "name": {
-                    "description": "规则名称",
+                    "description": "Nombre de la regla",
                     "type": "string",
-                    "example": "SQL注入防护规则"
+                    "example": "Regla de protección contra inyección SQL"
                 },
                 "priority": {
-                    "description": "优先级字段，数字越大优先级越高",
+                    "description": "Campo de prioridad; a mayor número, mayor prioridad",
                     "type": "integer",
                     "example": 100
                 },
                 "status": {
-                    "description": "规则状态",
+                    "description": "Estado de la regla",
                     "type": "string",
                     "enum": [
                         "enabled",
@@ -4158,7 +4158,7 @@ const docTemplate = `{
                     "example": "enabled"
                 },
                 "type": {
-                    "description": "规则类型",
+                    "description": "Tipo de regla",
                     "type": "string",
                     "enum": [
                         "whitelist",
@@ -4169,28 +4169,28 @@ const docTemplate = `{
             }
         },
         "dto.MicroRuleListResponse": {
-            "description": "微规则列表响应",
+            "description": "Respuesta de lista de microrreglas",
             "type": "object",
             "properties": {
                 "items": {
-                    "description": "微规则列表",
+                    "description": "Lista de microrreglas",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.MicroRuleResponse"
                     }
                 },
                 "total": {
-                    "description": "总数",
+                    "description": "Total",
                     "type": "integer"
                 }
             }
         },
         "dto.MicroRuleResponse": {
-            "description": "微规则响应参数",
+            "description": "Parámetros de respuesta de la microrregla",
             "type": "object",
             "properties": {
                 "condition": {
-                    "description": "规则条件",
+                    "description": "Condiciones de la regla",
                     "type": "object"
                 },
                 "id": {
@@ -4198,17 +4198,17 @@ const docTemplate = `{
                     "example": "60a763d0f03239868b50e810"
                 },
                 "name": {
-                    "description": "规则名称",
+                    "description": "Nombre de la regla",
                     "type": "string",
-                    "example": "SQL注入防护规则"
+                    "example": "Regla de protección contra inyección SQL"
                 },
                 "priority": {
-                    "description": "优先级字段，数字越大优先级越高",
+                    "description": "Campo de prioridad; a mayor número, mayor prioridad",
                     "type": "integer",
                     "example": 100
                 },
                 "status": {
-                    "description": "规则状态",
+                    "description": "Estado de la regla",
                     "type": "string",
                     "enum": [
                         "enabled",
@@ -4217,7 +4217,7 @@ const docTemplate = `{
                     "example": "enabled"
                 },
                 "type": {
-                    "description": "规则类型",
+                    "description": "Tipo de regla",
                     "type": "string",
                     "enum": [
                         "whitelist",
@@ -4228,25 +4228,25 @@ const docTemplate = `{
             }
         },
         "dto.MicroRuleUpdateRequest": {
-            "description": "更新微规则的请求参数",
+            "description": "Parámetros de la petición para actualizar una microrregla",
             "type": "object",
             "properties": {
                 "condition": {
-                    "description": "规则条件",
+                    "description": "Condiciones de la regla",
                     "type": "object"
                 },
                 "name": {
-                    "description": "规则名称",
+                    "description": "Nombre de la regla",
                     "type": "string",
-                    "example": "SQL注入防护规则"
+                    "example": "Regla de protección contra inyección SQL"
                 },
                 "priority": {
-                    "description": "优先级字段，数字越大优先级越高",
+                    "description": "Campo de prioridad; a mayor número, mayor prioridad",
                     "type": "integer",
                     "example": 100
                 },
                 "status": {
-                    "description": "规则状态",
+                    "description": "Estado de la regla",
                     "type": "string",
                     "enum": [
                         "enabled",
@@ -4255,7 +4255,7 @@ const docTemplate = `{
                     "example": "enabled"
                 },
                 "type": {
-                    "description": "规则类型",
+                    "description": "Tipo de regla",
                     "type": "string",
                     "enum": [
                         "whitelist",
@@ -4266,88 +4266,88 @@ const docTemplate = `{
             }
         },
         "dto.OverviewStats": {
-            "description": "概览统计数据，包含各项关键指标",
+            "description": "Estadísticas de resumen con los indicadores clave",
             "type": "object",
             "properties": {
                 "attackIPCount": {
-                    "description": "攻击IP数量",
+                    "description": "Cantidad de IPs atacantes",
                     "type": "integer",
                     "example": 45
                 },
                 "blockCount": {
-                    "description": "安全统计",
+                    "description": "Estadísticas de seguridad",
                     "type": "integer",
                     "example": 123
                 },
                 "error4xx": {
-                    "description": "错误统计",
+                    "description": "Estadísticas de errores",
                     "type": "integer",
                     "example": 234
                 },
                 "error4xxRate": {
-                    "description": "4xx错误率(百分比)",
+                    "description": "Tasa de errores 4xx (porcentaje)",
                     "type": "number",
                     "example": 0.23
                 },
                 "error5xx": {
-                    "description": "5xx错误数量",
+                    "description": "Cantidad de errores 5xx",
                     "type": "integer",
                     "example": 45
                 },
                 "error5xxRate": {
-                    "description": "5xx错误率(百分比)",
+                    "description": "Tasa de errores 5xx (porcentaje)",
                     "type": "number",
                     "example": 0.05
                 },
                 "inboundTraffic": {
-                    "description": "入站流量(字节)",
+                    "description": "Tráfico entrante (bytes)",
                     "type": "integer",
                     "example": 67890123
                 },
                 "maxQPS": {
-                    "description": "最大QPS",
+                    "description": "QPS máximo",
                     "type": "integer",
                     "example": 150
                 },
                 "outboundTraffic": {
-                    "description": "出站流量(字节)",
+                    "description": "Tráfico saliente (bytes)",
                     "type": "integer",
                     "example": 12345678
                 },
                 "timeRange": {
-                    "description": "时间范围",
+                    "description": "Rango de tiempo",
                     "type": "string",
                     "example": "24h"
                 },
                 "totalRequests": {
-                    "description": "流量统计",
+                    "description": "Estadísticas de tráfico",
                     "type": "integer",
                     "example": 123456
                 }
             }
         },
         "dto.RealtimeQPSData": {
-            "description": "实时QPS数据点，包含时间戳和值",
+            "description": "Punto de datos QPS en tiempo real, con marca de tiempo y valor",
             "type": "object",
             "properties": {
                 "timestamp": {
-                    "description": "时间戳",
+                    "description": "Marca de tiempo",
                     "type": "string",
                     "example": "2024-01-01T12:30:45Z"
                 },
                 "value": {
-                    "description": "QPS值",
+                    "description": "Valor de QPS",
                     "type": "integer",
                     "example": 120
                 }
             }
         },
         "dto.RealtimeQPSResponse": {
-            "description": "实时QPS数据响应",
+            "description": "Respuesta de datos QPS en tiempo real",
             "type": "object",
             "properties": {
                 "data": {
-                    "description": "QPS数据点列表",
+                    "description": "Lista de puntos de datos QPS",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.RealtimeQPSData"
@@ -4367,7 +4367,7 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string",
-                    "example": "操作成功"
+                    "example": "Operación exitosa"
                 },
                 "requestId": {
                     "type": "string",
@@ -4390,7 +4390,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "action": {
-                    "description": "控制动作",
+                    "description": "Acción de control",
                     "type": "string",
                     "enum": [
                         "start",
@@ -4406,22 +4406,22 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "action": {
-                    "description": "执行的动作",
+                    "description": "Acción ejecutada",
                     "type": "string",
                     "example": "start"
                 },
                 "message": {
-                    "description": "操作消息",
+                    "description": "Mensaje de la operación",
                     "type": "string",
-                    "example": "运行器已成功启动"
+                    "example": "El runner se inició con éxito"
                 },
                 "state": {
-                    "description": "操作后的状态",
+                    "description": "Estado después de la operación",
                     "type": "string",
                     "example": "running"
                 },
                 "success": {
-                    "description": "操作是否成功",
+                    "description": "Si la operación tuvo éxito",
                     "type": "boolean",
                     "example": true
                 }
@@ -4431,12 +4431,12 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "isRunning": {
-                    "description": "是否正在运行",
+                    "description": "Si está en ejecución",
                     "type": "boolean",
                     "example": true
                 },
                 "state": {
-                    "description": "状态：running, stopped, error",
+                    "description": "Estado: running, stopped, error",
                     "type": "string",
                     "example": "running"
                 }
@@ -4450,17 +4450,17 @@ const docTemplate = `{
             ],
             "properties": {
                 "host": {
-                    "description": "主机地址",
+                    "description": "Dirección del host",
                     "type": "string",
                     "example": "backend.example.com"
                 },
                 "isSSL": {
-                    "description": "是否启用SSL",
+                    "description": "Si SSL está habilitado",
                     "type": "boolean",
                     "example": false
                 },
                 "port": {
-                    "description": "端口",
+                    "description": "Puerto",
                     "type": "integer",
                     "maximum": 65535,
                     "minimum": 1,
@@ -4469,32 +4469,32 @@ const docTemplate = `{
             }
         },
         "dto.SiteListResponse": {
-            "description": "站点列表响应",
+            "description": "Respuesta de lista de sitios",
             "type": "object",
             "properties": {
                 "items": {
-                    "description": "站点列表",
+                    "description": "Lista de sitios",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.Site"
                     }
                 },
                 "total": {
-                    "description": "总数",
+                    "description": "Total",
                     "type": "integer"
                 }
             }
         },
         "dto.SiteResponse": {
-            "description": "站点信息响应",
+            "description": "Respuesta de información del sitio",
             "type": "object",
             "properties": {
                 "activeStatus": {
-                    "description": "站点是否激活",
+                    "description": "Si el sitio está activo",
                     "type": "boolean"
                 },
                 "backend": {
-                    "description": "后端服务器配置",
+                    "description": "Configuración del servidor backend",
                     "allOf": [
                         {
                             "$ref": "#/definitions/model.Backend"
@@ -4502,7 +4502,7 @@ const docTemplate = `{
                     ]
                 },
                 "certificate": {
-                    "description": "证书信息",
+                    "description": "Información del certificado",
                     "allOf": [
                         {
                             "$ref": "#/definitions/model.Certificate"
@@ -4513,34 +4513,34 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "domain": {
-                    "description": "域名，如 a.com",
+                    "description": "Dominio, p. ej. a.com",
                     "type": "string"
                 },
                 "enableHTTPS": {
-                    "description": "是否启用HTTPS",
+                    "description": "Si HTTPS está habilitado",
                     "type": "boolean"
                 },
                 "id": {
-                    "description": "站点ID",
+                    "description": "ID del sitio",
                     "type": "string"
                 },
                 "listenPort": {
-                    "description": "监听端口，如 9000",
+                    "description": "Puerto de escucha, p. ej. 9000",
                     "type": "integer"
                 },
                 "name": {
-                    "description": "站点名称",
+                    "description": "Nombre del sitio",
                     "type": "string"
                 },
                 "updatedAt": {
                     "type": "string"
                 },
                 "wafEnabled": {
-                    "description": "是否启用WAF",
+                    "description": "Si el WAF está habilitado",
                     "type": "boolean"
                 },
                 "wafMode": {
-                    "description": "WAF防护模式",
+                    "description": "Modo de protección WAF",
                     "allOf": [
                         {
                             "$ref": "#/definitions/model.WAFMode"
@@ -4550,94 +4550,94 @@ const docTemplate = `{
             }
         },
         "dto.TimeSeriesDataPoint": {
-            "description": "时间序列图表数据点",
+            "description": "Punto de datos del gráfico de series temporales",
             "type": "object",
             "properties": {
                 "timestamp": {
-                    "description": "时间戳，表示数据点的时间",
+                    "description": "Marca de tiempo que indica el momento del punto de datos",
                     "type": "string",
                     "example": "2024-01-01T12:00:00Z"
                 },
                 "value": {
-                    "description": "数值，表示该时间点的指标值",
+                    "description": "Valor numérico que representa la métrica en ese punto temporal",
                     "type": "integer",
                     "example": 128
                 }
             }
         },
         "dto.TimeSeriesResponse": {
-            "description": "时间序列图表数据响应",
+            "description": "Respuesta de datos del gráfico de series temporales",
             "type": "object",
             "properties": {
                 "data": {
-                    "description": "数据点列表",
+                    "description": "Lista de puntos de datos",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.TimeSeriesDataPoint"
                     }
                 },
                 "metric": {
-                    "description": "指标名称",
+                    "description": "Nombre de la métrica",
                     "type": "string",
                     "example": "requests"
                 },
                 "timeRange": {
-                    "description": "时间范围",
+                    "description": "Rango de tiempo",
                     "type": "string",
                     "example": "24h"
                 }
             }
         },
         "dto.TrafficDataPoint": {
-            "description": "流量时间序列图表数据点",
+            "description": "Punto de datos del gráfico de series temporales de tráfico",
             "type": "object",
             "properties": {
                 "inboundTraffic": {
-                    "description": "入站流量(字节)",
+                    "description": "Tráfico entrante (bytes)",
                     "type": "integer",
                     "example": 1024000
                 },
                 "outboundTraffic": {
-                    "description": "出站流量(字节)",
+                    "description": "Tráfico saliente (bytes)",
                     "type": "integer",
                     "example": 2048000
                 },
                 "timestamp": {
-                    "description": "时间戳，表示数据点的时间",
+                    "description": "Marca de tiempo que indica el momento del punto de datos",
                     "type": "string",
                     "example": "2024-01-01T12:00:00Z"
                 }
             }
         },
         "dto.TrafficTimeSeriesResponse": {
-            "description": "流量时间序列图表数据响应",
+            "description": "Respuesta de datos del gráfico de series temporales de tráfico",
             "type": "object",
             "properties": {
                 "data": {
-                    "description": "流量数据点列表",
+                    "description": "Lista de puntos de datos de tráfico",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.TrafficDataPoint"
                     }
                 },
                 "timeRange": {
-                    "description": "时间范围",
+                    "description": "Rango de tiempo",
                     "type": "string",
                     "example": "24h"
                 }
             }
         },
         "dto.UpdateSiteRequest": {
-            "description": "更新站点的请求参数",
+            "description": "Parámetros de la petición para actualizar un sitio",
             "type": "object",
             "properties": {
                 "activeStatus": {
-                    "description": "站点状态",
+                    "description": "Estado del sitio",
                     "type": "boolean",
                     "example": true
                 },
                 "backend": {
-                    "description": "后端服务器配置",
+                    "description": "Configuración del servidor backend",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dto.BackendDTO"
@@ -4645,7 +4645,7 @@ const docTemplate = `{
                     ]
                 },
                 "certificate": {
-                    "description": "证书信息",
+                    "description": "Información del certificado",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dto.CertificateDTO"
@@ -4653,34 +4653,34 @@ const docTemplate = `{
                     ]
                 },
                 "domain": {
-                    "description": "域名",
+                    "description": "Dominio",
                     "type": "string",
                     "example": "example.com"
                 },
                 "enableHTTPS": {
-                    "description": "是否启用HTTPS",
+                    "description": "Si HTTPS está habilitado",
                     "type": "boolean",
                     "example": false
                 },
                 "listenPort": {
-                    "description": "监听端口",
+                    "description": "Puerto de escucha",
                     "type": "integer",
                     "maximum": 65535,
                     "minimum": 1,
                     "example": 8080
                 },
                 "name": {
-                    "description": "站点名称",
+                    "description": "Nombre del sitio",
                     "type": "string",
                     "example": "my-site"
                 },
                 "wafEnabled": {
-                    "description": "是否启用WAF",
+                    "description": "Si el WAF está habilitado",
                     "type": "boolean",
                     "example": false
                 },
                 "wafMode": {
-                    "description": "WAF模式",
+                    "description": "Modo WAF",
                     "type": "string",
                     "enum": [
                         "protection",
@@ -4774,39 +4774,39 @@ const docTemplate = `{
             }
         },
         "model.APIResponse": {
-            "description": "API响应的标准格式",
+            "description": "Formato estándar de respuesta de la API",
             "type": "object",
             "properties": {
                 "code": {
-                    "description": "HTTP状态码",
+                    "description": "Código de estado HTTP",
                     "type": "integer",
                     "example": 200
                 },
                 "data": {
-                    "description": "响应数据"
+                    "description": "Datos de la respuesta"
                 },
                 "error": {
-                    "description": "错误信息(当success=false时)",
+                    "description": "Información del error (cuando success=false)",
                     "type": "string",
-                    "example": "参数错误"
+                    "example": "Error en los parámetros"
                 },
                 "message": {
-                    "description": "响应消息",
+                    "description": "Mensaje de la respuesta",
                     "type": "string",
-                    "example": "操作成功"
+                    "example": "Operación exitosa"
                 },
                 "requestId": {
-                    "description": "请求ID，用于跟踪",
+                    "description": "ID de la petición, para trazabilidad",
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "success": {
-                    "description": "是否成功",
+                    "description": "Si tuvo éxito",
                     "type": "boolean",
                     "example": true
                 },
                 "timestamp": {
-                    "description": "响应时间戳",
+                    "description": "Marca de tiempo de la respuesta",
                     "type": "string",
                     "example": "2023-01-01T12:00:00Z"
                 }
@@ -4816,7 +4816,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "servers": {
-                    "description": "服务器列表",
+                    "description": "Lista de servidores",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.Server"
@@ -4828,27 +4828,27 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "certName": {
-                    "description": "证书名称/别名",
+                    "description": "Nombre/alias del certificado",
                     "type": "string"
                 },
                 "expireDate": {
-                    "description": "证书过期日期",
+                    "description": "Fecha de caducidad del certificado",
                     "type": "string"
                 },
                 "fingerPrint": {
-                    "description": "证书指纹",
+                    "description": "Huella del certificado",
                     "type": "string"
                 },
                 "issuerName": {
-                    "description": "颁发机构",
+                    "description": "Autoridad emisora",
                     "type": "string"
                 },
                 "privateKey": {
-                    "description": "私钥内容（PEM格式）",
+                    "description": "Contenido de la clave privada (formato PEM)",
                     "type": "string"
                 },
                 "publicKey": {
-                    "description": "公钥内容（PEM格式）",
+                    "description": "Contenido de la clave pública (formato PEM)",
                     "type": "string"
                 }
             }
@@ -4857,56 +4857,56 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "createdAt": {
-                    "description": "创建时间",
+                    "description": "Fecha de creación",
                     "type": "string"
                 },
                 "description": {
-                    "description": "证书描述",
+                    "description": "Descripción del certificado",
                     "type": "string"
                 },
                 "domains": {
-                    "description": "证书绑定的域名列表",
+                    "description": "Lista de dominios asociados al certificado",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "expireDate": {
-                    "description": "证书过期日期",
+                    "description": "Fecha de caducidad del certificado",
                     "type": "string"
                 },
                 "fingerPrint": {
-                    "description": "证书指纹",
+                    "description": "Huella del certificado",
                     "type": "string"
                 },
                 "id": {
-                    "description": "证书ID",
+                    "description": "ID del certificado",
                     "type": "string"
                 },
                 "issuerName": {
-                    "description": "颁发机构",
+                    "description": "Autoridad emisora",
                     "type": "string"
                 },
                 "name": {
-                    "description": "证书名称/别名",
+                    "description": "Nombre/alias del certificado",
                     "type": "string"
                 },
                 "privateKey": {
-                    "description": "私钥内容（PEM格式）",
+                    "description": "Contenido de la clave privada (formato PEM)",
                     "type": "string"
                 },
                 "publicKey": {
-                    "description": "公钥内容（PEM格式）",
+                    "description": "Contenido de la clave pública (formato PEM)",
                     "type": "string"
                 },
                 "updatedAt": {
-                    "description": "更新时间",
+                    "description": "Hora de actualización",
                     "type": "string"
                 }
             }
         },
         "model.ErrResponse": {
-            "description": "错误的API响应标准格式",
+            "description": "Formato estándar de respuesta de API de error",
             "type": "object",
             "properties": {
                 "code": {
@@ -4915,11 +4915,11 @@ const docTemplate = `{
                 },
                 "error": {
                     "type": "string",
-                    "example": "参数错误"
+                    "example": "Error en los parámetros"
                 },
                 "message": {
                     "type": "string",
-                    "example": "请求参数错误"
+                    "example": "Parámetros de la petición incorrectos"
                 },
                 "requestId": {
                     "type": "string",
@@ -4936,7 +4936,7 @@ const docTemplate = `{
             }
         },
         "model.ErrResponseDontShowError": {
-            "description": "错误的API响应标准格式,不展示 error",
+            "description": "Formato estándar de respuesta de API de error, sin mostrar error",
             "type": "object",
             "properties": {
                 "code": {
@@ -4945,7 +4945,7 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string",
-                    "example": "请求参数错误"
+                    "example": "Parámetros de la petición incorrectos"
                 },
                 "requestId": {
                     "type": "string",
@@ -4962,16 +4962,16 @@ const docTemplate = `{
             }
         },
         "model.IPGroup": {
-            "description": "IP地址组信息，包含组名和IP地址列表",
+            "description": "Información del grupo de IPs, incluye nombre del grupo y lista de IPs",
             "type": "object",
             "properties": {
                 "id": {
-                    "description": "组唯一标识符",
+                    "description": "Identificador único del grupo",
                     "type": "string",
                     "example": "60d21b4367d0d8992e89e964"
                 },
                 "items": {
-                    "description": "IP地址或CIDR列表",
+                    "description": "Lista de direcciones IP o CIDR",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -4982,26 +4982,26 @@ const docTemplate = `{
                     ]
                 },
                 "name": {
-                    "description": "组名称",
+                    "description": "Nombre del grupo",
                     "type": "string",
-                    "example": "内部服务器"
+                    "example": "Servidor interno"
                 }
             }
         },
         "model.IPInfo": {
-            "description": "IP地址地理位置详细信息，包含城市、区域、国家和ASN等数据",
+            "description": "Información detallada de geolocalización de la IP, incluyendo ciudad, región, país y datos ASN",
             "type": "object",
             "properties": {
                 "asn": {
                     "type": "object",
                     "properties": {
                         "number": {
-                            "description": "ASN号码",
+                            "description": "Número ASN",
                             "type": "integer",
                             "example": 4134
                         },
                         "organization": {
-                            "description": "组织名称",
+                            "description": "Nombre de la organización",
                             "type": "string",
                             "example": "China Telecom"
                         }
@@ -5011,14 +5011,14 @@ const docTemplate = `{
                     "type": "object",
                     "properties": {
                         "nameEn": {
-                            "description": "城市英文名称",
+                            "description": "Nombre de la ciudad en inglés",
                             "type": "string",
                             "example": "Hangzhou"
                         },
                         "nameZh": {
-                            "description": "城市中文名称",
+                            "description": "Nombre de la ciudad en chino",
                             "type": "string",
-                            "example": "杭州"
+                            "example": "Hangzhou"
                         }
                     }
                 },
@@ -5026,14 +5026,14 @@ const docTemplate = `{
                     "type": "object",
                     "properties": {
                         "nameEn": {
-                            "description": "大洲英文名称",
+                            "description": "Nombre del continente en inglés",
                             "type": "string",
                             "example": "Asia"
                         },
                         "nameZh": {
-                            "description": "大洲中文名称",
+                            "description": "Nombre del continente en chino",
                             "type": "string",
-                            "example": "亚洲"
+                            "example": "Asia"
                         }
                     }
                 },
@@ -5041,19 +5041,19 @@ const docTemplate = `{
                     "type": "object",
                     "properties": {
                         "isoCode": {
-                            "description": "国家ISO代码",
+                            "description": "Código ISO del país",
                             "type": "string",
                             "example": "CN"
                         },
                         "nameEn": {
-                            "description": "国家英文名称",
+                            "description": "Nombre del país en inglés",
                             "type": "string",
                             "example": "China"
                         },
                         "nameZh": {
-                            "description": "国家中文名称",
+                            "description": "Nombre del país en chino",
                             "type": "string",
-                            "example": "中国"
+                            "example": "China"
                         }
                     }
                 },
@@ -5061,17 +5061,17 @@ const docTemplate = `{
                     "type": "object",
                     "properties": {
                         "latitude": {
-                            "description": "纬度",
+                            "description": "Latitud",
                             "type": "number",
                             "example": 30.2943
                         },
                         "longitude": {
-                            "description": "经度",
+                            "description": "Longitud",
                             "type": "number",
                             "example": 120.1663
                         },
                         "timeZone": {
-                            "description": "时区",
+                            "description": "Zona horaria",
                             "type": "string",
                             "example": "Asia/Shanghai"
                         }
@@ -5081,70 +5081,70 @@ const docTemplate = `{
                     "type": "object",
                     "properties": {
                         "isoCode": {
-                            "description": "省/州代码",
+                            "description": "Código de la provincia/estado",
                             "type": "string",
                             "example": "ZJ"
                         },
                         "nameEn": {
-                            "description": "省/州英文名称",
+                            "description": "Nombre de la provincia/estado en inglés",
                             "type": "string",
                             "example": "Zhejiang"
                         },
                         "nameZh": {
-                            "description": "省/州中文名称",
+                            "description": "Nombre de la provincia/estado en chino",
                             "type": "string",
-                            "example": "浙江"
+                            "example": "Zhejiang"
                         }
                     }
                 }
             }
         },
         "model.Log": {
-            "description": "详细的WAF规则匹配记录，包含规则触发的详细信息和原始日志",
+            "description": "Registro detallado de coincidencias de reglas del WAF, con información de activación y log original",
             "type": "object",
             "properties": {
                 "accuracy": {
-                    "description": "规则匹配准确度(0-10)",
+                    "description": "Precisión de coincidencia de la regla (0-10)",
                     "type": "integer",
                     "example": 9
                 },
                 "logRaw": {
-                    "description": "原始日志数据",
+                    "description": "Datos de log originales",
                     "type": "string",
-                    "example": "[2024-03-18 08:12:33] [error] ModSecurity: Access denied with code 403 (phase 1). Matched \"Operator 'Rx' with parameter '(?:scanner)' against variable 'REQUEST_HEADERS:User-Agent'\" [id \"10086\"] [msg \"恶意扫描器检测\"] [severity \"CRITICAL\"]"
+                    "example": "[2024-03-18 08:12:33] [error] ModSecurity: Access denied with code 403 (phase 1). Matched \"Operator 'Rx' with parameter '(?:scanner)' against variable 'REQUEST_HEADERS:User-Agent'\" [id \"10086\"] [msg \"Detección de escáner malicioso\"] [severity \"CRITICAL\"]"
                 },
                 "message": {
-                    "description": "日志消息",
+                    "description": "Mensaje de log",
                     "type": "string",
-                    "example": "恶意扫描器检测"
+                    "example": "Detección de escáner malicioso"
                 },
                 "payload": {
-                    "description": "攻击载荷",
+                    "description": "Carga del ataque",
                     "type": "string",
                     "example": "Scanner/1.0"
                 },
                 "phase": {
-                    "description": "请求处理阶段",
+                    "description": "Fase de procesamiento de la petición",
                     "type": "integer",
                     "example": 1
                 },
                 "ruleId": {
-                    "description": "规则ID",
+                    "description": "ID de la regla",
                     "type": "integer",
                     "example": 10086
                 },
                 "secLangRaw": {
-                    "description": "安全规则原始定义",
+                    "description": "Definición original de la regla de seguridad",
                     "type": "string",
                     "example": "SecRule REQUEST_HEADERS:User-Agent \"@rx (?:scanner)\" \"id:1008,phase:1,severity:'CRITICAL'\""
                 },
                 "secMark": {
-                    "description": "安全标记",
+                    "description": "Marca de seguridad",
                     "type": "string",
                     "example": "web_scanner"
                 },
                 "severity": {
-                    "description": "严重级别(0-5)",
+                    "description": "Nivel de severidad (0-5)",
                     "type": "integer",
                     "example": 2
                 }
@@ -5154,15 +5154,15 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "host": {
-                    "description": "主机地址，如 IP 或域名",
+                    "description": "Dirección del host, p. ej. IP o dominio",
                     "type": "string"
                 },
                 "isSSL": {
-                    "description": "是否启用SSL",
+                    "description": "Si SSL está habilitado",
                     "type": "boolean"
                 },
                 "port": {
-                    "description": "端口",
+                    "description": "Puerto",
                     "type": "integer"
                 }
             }
@@ -5171,11 +5171,11 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "activeStatus": {
-                    "description": "站点是否激活",
+                    "description": "Si el sitio está activo",
                     "type": "boolean"
                 },
                 "backend": {
-                    "description": "后端服务器配置",
+                    "description": "Configuración del servidor backend",
                     "allOf": [
                         {
                             "$ref": "#/definitions/model.Backend"
@@ -5183,7 +5183,7 @@ const docTemplate = `{
                     ]
                 },
                 "certificate": {
-                    "description": "证书信息",
+                    "description": "Información del certificado",
                     "allOf": [
                         {
                             "$ref": "#/definitions/model.Certificate"
@@ -5194,34 +5194,34 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "domain": {
-                    "description": "域名，如 a.com",
+                    "description": "Dominio, p. ej. a.com",
                     "type": "string"
                 },
                 "enableHTTPS": {
-                    "description": "是否启用HTTPS",
+                    "description": "Si HTTPS está habilitado",
                     "type": "boolean"
                 },
                 "id": {
-                    "description": "站点ID",
+                    "description": "ID del sitio",
                     "type": "string"
                 },
                 "listenPort": {
-                    "description": "监听端口，如 9000",
+                    "description": "Puerto de escucha, p. ej. 9000",
                     "type": "integer"
                 },
                 "name": {
-                    "description": "站点名称",
+                    "description": "Nombre del sitio",
                     "type": "string"
                 },
                 "updatedAt": {
                     "type": "string"
                 },
                 "wafEnabled": {
-                    "description": "是否启用WAF",
+                    "description": "Si el WAF está habilitado",
                     "type": "boolean"
                 },
                 "wafMode": {
-                    "description": "WAF防护模式",
+                    "description": "Modo de protección WAF",
                     "allOf": [
                         {
                             "$ref": "#/definitions/model.WAFMode"
@@ -5231,7 +5231,7 @@ const docTemplate = `{
             }
         },
         "model.SuccessResponse": {
-            "description": "成功的API响应标准格式",
+            "description": "Formato estándar de respuesta de API exitosa",
             "type": "object",
             "properties": {
                 "code": {
@@ -5241,7 +5241,7 @@ const docTemplate = `{
                 "data": {},
                 "message": {
                     "type": "string",
-                    "example": "操作成功"
+                    "example": "Operación exitosa"
                 },
                 "requestId": {
                     "type": "string",
@@ -5258,7 +5258,7 @@ const docTemplate = `{
             }
         },
         "model.SuccessResponseNoData": {
-            "description": "成功的API响应标准格式,没有 data",
+            "description": "Formato estándar de respuesta de API exitosa, sin data",
             "type": "object",
             "properties": {
                 "code": {
@@ -5267,7 +5267,7 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string",
-                    "example": "操作成功"
+                    "example": "Operación exitosa"
                 },
                 "requestId": {
                     "type": "string",
@@ -5296,18 +5296,18 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "needReset": {
-                    "description": "是否需要重置密码",
+                    "description": "Si se requiere restablecer la contraseña",
                     "type": "boolean"
                 },
                 "permissions": {
-                    "description": "额外权限",
+                    "description": "Permisos adicionales",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "role": {
-                    "description": "用户角色",
+                    "description": "Rol del usuario",
                     "type": "string"
                 },
                 "updatedAt": {
@@ -5319,21 +5319,21 @@ const docTemplate = `{
             }
         },
         "model.WAFLog": {
-            "description": "Web应用防火墙安全事件完整记录，包含详细的攻击检测和防护信息",
+            "description": "Registro completo de eventos de seguridad del WAF, con información detallada de detección y protección de ataques",
             "type": "object",
             "properties": {
                 "accuracy": {
-                    "description": "规则匹配准确度(0-10)",
+                    "description": "Precisión de coincidencia de la regla (0-10)",
                     "type": "integer",
                     "example": 9
                 },
                 "clientIp": {
-                    "description": "来源IP地址",
+                    "description": "Dirección IP de origen",
                     "type": "string",
                     "example": "192.168.1.1"
                 },
                 "createdAt": {
-                    "description": "事件发生时间戳",
+                    "description": "Marca de tiempo del evento",
                     "type": "string",
                     "example": "2024-03-18T08:12:33Z"
                 },
@@ -5341,17 +5341,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "domain": {
-                    "description": "目标域名",
+                    "description": "Dominio de destino",
                     "type": "string",
                     "example": "api.example.com"
                 },
                 "dstIp": {
-                    "description": "目标IP地址",
+                    "description": "Dirección IP de destino",
                     "type": "string",
                     "example": "10.0.0.1"
                 },
                 "dstPort": {
-                    "description": "目标端口",
+                    "description": "Puerto de destino",
                     "type": "integer",
                     "example": 443
                 },
@@ -5363,81 +5363,81 @@ const docTemplate = `{
                     "example": 0
                 },
                 "id": {
-                    "description": "日志唯一标识符",
+                    "description": "Identificador único del log",
                     "type": "string"
                 },
                 "logs": {
-                    "description": "关联的日志条目",
+                    "description": "Entradas de log asociadas",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.Log"
                     }
                 },
                 "message": {
-                    "description": "事件描述消息",
+                    "description": "Mensaje descriptivo del evento",
                     "type": "string",
-                    "example": "恶意扫描器检测"
+                    "example": "Detección de escáner malicioso"
                 },
                 "minute": {
                     "type": "integer"
                 },
                 "payload": {
-                    "description": "攻击载荷",
+                    "description": "Carga del ataque",
                     "type": "string",
                     "example": "Scanner/1.0"
                 },
                 "phase": {
-                    "description": "请求处理阶段",
+                    "description": "Fase de procesamiento de la petición",
                     "type": "integer",
                     "example": 1
                 },
                 "request": {
-                    "description": "原始HTTP请求",
+                    "description": "Petición HTTP original",
                     "type": "string",
                     "example": "GET /api/v1/users HTTP/1.1\nHost: api.example.com\nUser-Agent: Scanner/1.0"
                 },
                 "requestId": {
-                    "description": "请求唯一标识",
+                    "description": "Identificador único de la petición",
                     "type": "string",
                     "example": "a1b2c3d4e5f6"
                 },
                 "response": {
-                    "description": "原始HTTP响应",
+                    "description": "Respuesta HTTP original",
                     "type": "string",
                     "example": "HTTP/1.1 403 Forbidden\nContent-Type: text/html\nContent-Length: 146"
                 },
                 "ruleId": {
-                    "description": "触发的规则ID",
+                    "description": "ID de la regla activada",
                     "type": "integer",
                     "example": 10086
                 },
                 "secLangRaw": {
-                    "description": "安全规则原始定义",
+                    "description": "Definición original de la regla de seguridad",
                     "type": "string",
                     "example": "SecRule REQUEST_HEADERS:User-Agent \"@rx (?:scanner)\" \"id:1008,phase:1,severity:'CRITICAL'\""
                 },
                 "secMark": {
-                    "description": "安全标记",
+                    "description": "Marca de seguridad",
                     "type": "string",
                     "example": "web_scanner"
                 },
                 "serverIp": {
-                    "description": "目标IP地址",
+                    "description": "Dirección IP de destino",
                     "type": "string",
                     "example": "10.0.0.1"
                 },
                 "severity": {
-                    "description": "事件严重级别(0-5)",
+                    "description": "Nivel de severidad del evento (0-5)",
                     "type": "integer",
                     "example": 2
                 },
                 "srcIp": {
-                    "description": "来源IP地址",
+                    "description": "Dirección IP de origen",
                     "type": "string",
                     "example": "192.168.1.1"
                 },
                 "srcIpInfo": {
-                    "description": "来源IP地理位置信息",
+                    "description": "Información de geolocalización de la IP de origen",
                     "allOf": [
                         {
                             "$ref": "#/definitions/model.IPInfo"
@@ -5445,12 +5445,12 @@ const docTemplate = `{
                     ]
                 },
                 "srcPort": {
-                    "description": "来源端口",
+                    "description": "Puerto de origen",
                     "type": "integer",
                     "example": 52134
                 },
                 "uri": {
-                    "description": "请求URI路径",
+                    "description": "Ruta del URI de la petición",
                     "type": "string",
                     "example": "/api/v1/users"
                 }
@@ -5463,8 +5463,8 @@ const docTemplate = `{
                 "observation"
             ],
             "x-enum-comments": {
-                "WAFModeObservation": "观察模式",
-                "WAFModeProtection": "防护模式"
+                "WAFModeObservation": "Modo observación",
+                "WAFModeProtection": "Modo de protección"
             },
             "x-enum-varnames": [
                 "WAFModeProtection",
@@ -5474,7 +5474,7 @@ const docTemplate = `{
     },
     "securityDefinitions": {
         "BearerAuth": {
-            "description": "使用 Bearer {token} 格式进行身份验证",
+            "description": "Autenticación con el formato Bearer {token}",
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"
@@ -5488,8 +5488,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:2333",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
-	Title:            "RuiQi-WAF API",
-	Description:      "RuiQi 应用防火墙管理系统 API",
+	Title:            "EscudoWAF-WAF API",
+	Description:      "EscudoWAF - API del sistema de gestión de firewall de aplicaciones",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

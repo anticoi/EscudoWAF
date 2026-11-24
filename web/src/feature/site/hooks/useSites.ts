@@ -10,7 +10,7 @@ type ApiError = {
 }
 
 /**
- * 创建站点Hook
+ * Hook de creación de sitio
  */
 export const useCreateSite = () => {
     const queryClient = useQueryClient()
@@ -22,17 +22,17 @@ export const useCreateSite = () => {
         mutationFn: (data: CreateSiteRequest) => siteApi.createSite(data),
         onSuccess: () => {
             toast({
-                title: t("site.toast.createSuccess", "创建成功"),
-                description: t("site.toast.siteCreated", "站点已成功创建"),
+                title: t("site.toast.createSuccess", "Creado con éxito"),
+                description: t("site.toast.siteCreated", "El sitio se creó con éxito"),
             })
             queryClient.invalidateQueries({ queryKey: ['sites'] })
         },
         onError: (error: ApiError) => {
-            console.error('创建站点失败:', error)
-            setError(error.message || "创建站点时出现错误")
+            console.error('Error al crear el sitio:', error)
+            setError(error.message || "Se produjo un error al crear el sitio")
             toast({
-                title: t("site.toast.createFailed", "创建失败"),
-                description: error.message || t("site.toast.createError", "创建站点时出现错误"),
+                title: t("site.toast.createFailed", "Error de creación"),
+                description: error.message || t("site.toast.createError", "Se produjo un error al crear el sitio"),
                 variant: "destructive",
             })
         }
@@ -47,7 +47,7 @@ export const useCreateSite = () => {
 }
 
 /**
- * 删除站点Hook
+ * Eliminar sitioHook
  */
 export const useDeleteSite = () => {
     const queryClient = useQueryClient()
@@ -59,17 +59,17 @@ export const useDeleteSite = () => {
         mutationFn: (id: string) => siteApi.deleteSite(id),
         onSuccess: () => {
             toast({
-                title: t("site.toast.deleteSuccess", "删除成功"),
-                description: t("site.toast.siteDeleted", "站点已成功删除"),
+                title: t("site.toast.deleteSuccess", "Eliminado con éxito"),
+                description: t("site.toast.siteDeleted", "El sitio se eliminó con éxito"),
             })
             queryClient.invalidateQueries({ queryKey: ['sites'] })
         },
         onError: (error: ApiError) => {
-            console.error('删除站点失败:', error)
-            setError(error.message || "删除站点时出现错误")
+            console.error('Error al eliminar el sitio:', error)
+            setError(error.message || "Se produjo un error al eliminar el sitio")
             toast({
-                title: t("site.toast.deleteFailed", "删除失败"),
-                description: error.message || t("site.toast.deleteError", "删除站点时出现错误"),
+                title: t("site.toast.deleteFailed", "Error de eliminación"),
+                description: error.message || t("site.toast.deleteError", "Se produjo un error al eliminar el sitio"),
                 variant: "destructive",
             })
         }
@@ -84,7 +84,7 @@ export const useDeleteSite = () => {
 }
 
 /**
- * 更新站点Hook
+ * Actualizar sitioHook
  */
 export const useUpdateSite = () => {
     const queryClient = useQueryClient()
@@ -97,17 +97,17 @@ export const useUpdateSite = () => {
             siteApi.updateSite(id, data),
         onSuccess: () => {
             toast({
-                title: t("site.toast.updateSuccess", "更新成功"),
-                description: t("site.toast.siteUpdated", "站点已成功更新"),
+                title: t("site.toast.updateSuccess", "Actualizado con éxito"),
+                description: t("site.toast.siteUpdated", "El sitio se actualizó con éxito"),
             })
             queryClient.invalidateQueries({ queryKey: ['sites'] })
         },
         onError: (error: ApiError) => {
-            console.error('更新站点失败:', error)
-            setError(error.message || "更新站点时出现错误")
+            console.error('Error al actualizar el sitio:', error)
+            setError(error.message || "Se produjo un error al actualizar el sitio")
             toast({
-                title: t("site.toast.updateFailed", "更新失败"),
-                description: error.message || t("site.toast.updateError", "更新站点时出现错误"),
+                title: t("site.toast.updateFailed", "Error de actualización"),
+                description: error.message || t("site.toast.updateError", "Se produjo un error al actualizar el sitio"),
                 variant: "destructive",
             })
         }

@@ -3,11 +3,11 @@ import { useAuthStore } from '@/store/auth'
 import { ENV } from '@/utils/env'
 
 // ======================
-// API 响应类型定义
+// Definiciones de tipos de respuesta de la API
 // ======================
 
 /**
- * 通用API响应接口
+ * Interfaz de respuesta de API genérica
  */
 export interface APIResponse<T = unknown> {
     code: number
@@ -20,7 +20,7 @@ export interface APIResponse<T = unknown> {
 }
 
 /**
- * 自定义API错误类
+ * Clase de error de API personalizada
  */
 export class ApiError extends Error {
     code: number
@@ -36,18 +36,18 @@ export class ApiError extends Error {
     }
 }
 
-// 定义基础请求和响应接口
+// Definición de interfaces base de petición y respuesta
 export type ApiRequestData = Record<string, unknown>
 export type ApiResponseData = Record<string, unknown>
 
 // ======================
-// API 客户端配置
+// Configuración del cliente de API
 // ======================
 
 const API_BASE_URL = ENV.API_BASE_URL || '/api/v1'
 const API_TIMEOUT = Number(ENV.API_TIMEOUT || 10000)
 
-// 创建axios实例
+// Crear instancia de axios
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
     timeout: API_TIMEOUT,
@@ -56,7 +56,7 @@ const apiClient = axios.create({
     },
 })
 
-// 请求拦截器
+// Interceptor de peticiones
 apiClient.interceptors.request.use(
     (config) => {
         const token = useAuthStore.getState().token
@@ -72,16 +72,16 @@ apiClient.interceptors.request.use(
     }
 )
 
-// 响应拦截器 - 统一处理错误和响应格式
+// Interceptor de respuestas - manejo unificado de errores y formato de respuesta
 apiClient.interceptors.response.use(
     (response) => {
-        // 检查响应格式是否符合API标准格式
+        // Comprobar si el formato de respuesta cumple el formato estándar de la API
         const data = response.data as APIResponse
 
-        // 如果响应中有success字段且为false，视为业务逻辑错误
+        // Si la respuesta tiene success=false, tratarlo como error de lógica de negocio
         if (data && data.success === false) {
             throw new ApiError(
-                data.message || '请求失败',
+                data.message || 'Petición fallida',
                 data.code || response.status,
                 data.requestId,
                 data.error
@@ -94,31 +94,31 @@ apiClient.interceptors.response.use(
         const status = error.response?.status
         const errorData = error.response?.data
 
-        // 处理401未授权错误
+        // Manejar el error 401 no autorizado
         if (status === 401) {
             useAuthStore.getState().logout()
             window.location.href = '/login'
         }
 
-        // 转换为自定义API错误对象
+        // Convertir a objeto de error de API personalizado
         if (errorData) {
             throw new ApiError(
-                errorData.message || '请求失败',
+                errorData.message || 'Petición fallida',
                 errorData.code || status || 500,
                 errorData.requestId,
                 errorData.error
             )
         } else {
-            // 网络错误或其他非标准错误
+            // Error de red u otro error no estándar
             throw new ApiError(
-                error.message || '网络请求失败',
+                error.message || 'Falló la petición de red',
                 status || 500
             )
         }
     }
 )
 
-// 增加请求重试功能的封装方法
+// Método envolvente que añade reintentos a las peticiones
 const withRetry = async <T>(
     requestFn: () => Promise<T>,
     maxRetries = 3,
@@ -130,10 +130,10 @@ const withRetry = async <T>(
         try {
             return await requestFn()
         } catch (error) {
-            // 使用类型断言而不是 any
+            // Usar aserción de tipos en lugar de any
             const err = error as Error
             if (error instanceof ApiError && error.code >= 500 && retries < maxRetries - 1) {
-                // 只有服务器错误才重试，并且不是最后一次尝试
+                // Solo reintentar en errores de servidor y si no es el último intento
                 retries++
                 await new Promise(resolve => setTimeout(resolve, delay * retries))
                 continue
@@ -146,14 +146,14 @@ const withRetry = async <T>(
 }
 
 // ======================
-// API 请求方法
+// Métodos de petición de la API
 // ======================
 
 /**
- * GET请求
- * @param url 请求URL
- * @param config 请求配置
- * @returns 响应数据
+ * Petición GET
+ * @param url URL de la petición
+ * @param config configuración de la petición
+ * @returns datos de la respuesta
  */
 export const get = <T = ApiResponseData>(url: string, config?: AxiosRequestConfig): Promise<T> => {
     return apiClient.get<APIResponse<T>>(url, config)
@@ -163,11 +163,11 @@ export const get = <T = ApiResponseData>(url: string, config?: AxiosRequestConfi
 }
 
 /**
- * POST请求
- * @param url 请求URL
- * @param data 请求数据
- * @param config 请求配置
- * @returns 响应数据
+ * Petición POST
+ * @param url URL de la petición
+ * @param data datos de la petición
+ * @param config configuración de la petición
+ * @returns datos de la respuesta
  */
 export const post = <T = ApiResponseData>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> => {
     return apiClient.post<APIResponse<T>>(url, data, config)
@@ -177,11 +177,11 @@ export const post = <T = ApiResponseData>(url: string, data?: unknown, config?: 
 }
 
 /**
- * PUT请求
- * @param url 请求URL
- * @param data 请求数据
- * @param config 请求配置
- * @returns 响应数据
+ * Petición PUT
+ * @param url URL de la petición
+ * @param data datos de la petición
+ * @param config configuración de la petición
+ * @returns datos de la respuesta
  */
 export const put = <T = ApiResponseData>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> => {
     return apiClient.put<APIResponse<T>>(url, data, config)
@@ -191,11 +191,11 @@ export const put = <T = ApiResponseData>(url: string, data?: unknown, config?: A
 }
 
 /**
- * PATCH请求
- * @param url 请求URL
- * @param data 请求数据
- * @param config 请求配置
- * @returns 响应数据
+ * Petición PATCH
+ * @param url URL de la petición
+ * @param data datos de la petición
+ * @param config configuración de la petición
+ * @returns datos de la respuesta
  */
 export const patch = <T = ApiResponseData>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> => {
     return apiClient.patch<APIResponse<T>>(url, data, config)
@@ -205,10 +205,10 @@ export const patch = <T = ApiResponseData>(url: string, data?: unknown, config?:
 }
 
 /**
- * DELETE请求
- * @param url 请求URL
- * @param config 请求配置
- * @returns 响应数据
+ * Petición DELETE
+ * @param url URL de la petición
+ * @param config configuración de la petición
+ * @returns datos de la respuesta
  */
 export const del = <T = ApiResponseData>(url: string, config?: AxiosRequestConfig): Promise<T> => {
     return apiClient.delete<APIResponse<T>>(url, config)
@@ -218,58 +218,58 @@ export const del = <T = ApiResponseData>(url: string, config?: AxiosRequestConfi
 }
 
 /**
- * 带重试功能的GET请求
- * @param url 请求URL
- * @param config 请求配置
- * @param retries 重试次数
- * @returns 响应数据
+ * Petición GET con reintentos
+ * @param url URL de la petición
+ * @param config configuración de la petición
+ * @param retries número de reintentos
+ * @returns datos de la respuesta
  */
 export const getWithRetry = <T = ApiResponseData>(url: string, config?: AxiosRequestConfig, retries = 3): Promise<T> => {
     return withRetry(() => get<T>(url, config), retries)
 }
 
 /**
- * 带重试功能的POST请求
- * @param url 请求URL
- * @param data 请求数据
- * @param config 请求配置
- * @param retries 重试次数
- * @returns 响应数据
+ * Petición POST con reintentos
+ * @param url URL de la petición
+ * @param data datos de la petición
+ * @param config configuración de la petición
+ * @param retries número de reintentos
+ * @returns datos de la respuesta
  */
 export const postWithRetry = <T = ApiResponseData>(url: string, data?: unknown, config?: AxiosRequestConfig, retries = 3): Promise<T> => {
     return withRetry(() => post<T>(url, data, config), retries)
 }
 
 /**
- * 带重试功能的PUT请求
- * @param url 请求URL
- * @param data 请求数据
- * @param config 请求配置
- * @param retries 重试次数
- * @returns 响应数据
+ * Petición PUT con reintentos
+ * @param url URL de la petición
+ * @param data datos de la petición
+ * @param config configuración de la petición
+ * @param retries número de reintentos
+ * @returns datos de la respuesta
  */
 export const putWithRetry = <T = ApiResponseData>(url: string, data?: unknown, config?: AxiosRequestConfig, retries = 3): Promise<T> => {
     return withRetry(() => put<T>(url, data, config), retries)
 }
 
 /**
- * 带重试功能的DELETE请求
- * @param url 请求URL
- * @param config 请求配置
- * @param retries 重试次数
- * @returns 响应数据
+ * Petición DELETE con reintentos
+ * @param url URL de la petición
+ * @param config configuración de la petición
+ * @param retries número de reintentos
+ * @returns datos de la respuesta
  */
 export const delWithRetry = <T = ApiResponseData>(url: string, config?: AxiosRequestConfig, retries = 3): Promise<T> => {
     return withRetry(() => del<T>(url, config), retries)
 }
 
 /**
- * 带重试功能的PATCH请求
- * @param url 请求URL
- * @param data 请求数据
- * @param config 请求配置
- * @param retries 重试次数
- * @returns 响应数据
+ * Petición PATCH con reintentos
+ * @param url URL de la petición
+ * @param data datos de la petición
+ * @param config configuración de la petición
+ * @param retries número de reintentos
+ * @returns datos de la respuesta
  */
 export const patchWithRetry = <T = ApiResponseData>(url: string, data?: unknown, config?: AxiosRequestConfig, retries = 3): Promise<T> => {
     return withRetry(() => patch<T>(url, data, config), retries)

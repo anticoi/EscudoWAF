@@ -17,29 +17,29 @@ export function useResizeObserver(
         height: undefined,
     })
 
-    // ResizeObserver实例的引用
+    // Referencia a la instancia de ResizeObserver
     const observerRef = useRef<ResizeObserver | null>(null)
 
     useEffect(() => {
-        // 如果DOM元素不存在，直接返回
+        // Si el elemento DOM no existe, retornar directamente
         if (!ref.current) return
 
-        // 清理旧的observer
+        // Limpiar el observer anterior
         if (observerRef.current) {
             observerRef.current.disconnect()
         }
 
-        // 创建一个新的ResizeObserver
+        // Crear un nuevo ResizeObserver
         const observer = new ResizeObserver((entries: ResizeObserverEntry[]) => {
             const { width, height } = entries[0].contentRect
             setSize({ width, height })
         })
 
-        // 开始观察目标元素
+        // Empezar a observar el elemento objetivo
         observer.observe(ref.current)
         observerRef.current = observer
 
-        // 清理函数
+        // Función de limpieza
         return () => {
             if (observerRef.current) {
                 observerRef.current.disconnect()

@@ -6,12 +6,12 @@ import (
 	"math"
 	"time"
 
-	mongodb "github.com/HUAHUAI23/RuiQi/pkg/database/mongo"
-	pkgModel "github.com/HUAHUAI23/RuiQi/pkg/model"
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/dto"
-	"github.com/HUAHUAI23/RuiQi/server/model"
-	"github.com/HUAHUAI23/RuiQi/server/repository"
+	mongodb "github.com/anticoi/EscudoWAF/pkg/database/mongo"
+	pkgModel "github.com/anticoi/EscudoWAF/pkg/model"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/dto"
+	"github.com/anticoi/EscudoWAF/server/model"
+	"github.com/anticoi/EscudoWAF/server/repository"
 	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -42,33 +42,33 @@ func NewStatsService(wafLogRepository repository.WAFLogRepository) StatsService 
 	}
 }
 
-// GetOverviewStats 获取概览统计数据
+// GetOverviewStats obtiene las estadísticas de resumen
 func (s *StatsServiceImpl) GetOverviewStats(ctx context.Context, timeRange string) (*dto.OverviewStats, error) {
-	// 确定时间范围
+	// Determinar el rango de tiempo
 	startTime, err := s.getTimeRangeStart(timeRange)
 	if err != nil {
 		return nil, err
 	}
 
-	// 获取MongoDB数据库连接
+	// Obtener la conexión a la base de datos MongoDB
 	db, err := mongodb.GetDatabase(s.dbName)
 	if err != nil {
-		return nil, fmt.Errorf("获取数据库连接失败: %w", err)
+		return nil, fmt.Errorf("Error al obtener la conexión a la base de datos: %w", err)
 	}
 
-	// 1. 获取 HAProxyMinuteStats 的统计数据
+	// 1. Obtener los datos estadísticos de HAProxyMinuteStats
 	minuteStatsResult, err := s.getHAProxyStatsAggregate(ctx, db, startTime)
 	if err != nil {
-		return nil, fmt.Errorf("获取统计数据失败: %w", err)
+		return nil, fmt.Errorf("Error al obtener los datos estadísticos: %w", err)
 	}
 
-	// 2. 获取 WAF 拦截统计数据
+	// 2. Obtener estadísticas de bloqueo del WAF
 	blockCount, attackIPCount, err := s.getWAFBlockStats(ctx, startTime)
 	if err != nil {
-		return nil, fmt.Errorf("获取WAF拦截统计失败: %w", err)
+		return nil, fmt.Errorf("Error al obtener las estadísticas de bloqueo del WAF: %w", err)
 	}
 
-	// 3. 计算错误率
+	// 3. Calcular la tasa de errores
 	error4xxRate := 0.0
 	error5xxRate := 0.0
 
@@ -77,7 +77,7 @@ func (s *StatsServiceImpl) GetOverviewStats(ctx context.Context, timeRange strin
 		error5xxRate = float64(minuteStatsResult.Error5xx) / float64(minuteStatsResult.TotalRequests) * 100
 	}
 
-	// 构建结果
+	// Construir el resultado
 	result := &dto.OverviewStats{
 		TimeRange:       timeRange,
 		TotalRequests:   minuteStatsResult.TotalRequests,
@@ -85,9 +85,9 @@ func (s *StatsServiceImpl) GetOverviewStats(ctx context.Context, timeRange strin
 		OutboundTraffic: minuteStatsResult.OutboundTraffic,
 		MaxQPS:          minuteStatsResult.MaxQPS,
 		Error4xx:        minuteStatsResult.Error4xx,
-		Error4xxRate:    math.Round(error4xxRate*100) / 100, // 保留两位小数
+		Error4xxRate:    math.Round(error4xxRate*100) / 100, // Conservar dos decimales
 		Error5xx:        minuteStatsResult.Error5xx,
-		Error5xxRate:    math.Round(error5xxRate*100) / 100, // 保留两位小数
+		Error5xxRate:    math.Round(error5xxRate*100) / 100, // Conservar dos decimales
 		BlockCount:      blockCount,
 		AttackIPCount:   attackIPCount,
 	}
@@ -95,55 +95,55 @@ func (s *StatsServiceImpl) GetOverviewStats(ctx context.Context, timeRange strin
 	return result, nil
 }
 
-// GetRealtimeQPS 获取实时QPS数据
+// GetRealtimeQPS Obtener datos QPS en tiempo real
 func (s *StatsServiceImpl) GetRealtimeQPS(ctx context.Context, limit int) (*dto.RealtimeQPSResponse, error) {
 	if limit <= 0 {
-		limit = 30 // 默认获取30个点
+		limit = 30 // Obtener 30 puntos por defecto
 	}
 	if limit > 240 {
-		limit = 240 // 最多不超过240个点
+		limit = 240 // No más de 240 puntos
 	}
 
-	// 获取MongoDB数据库连接
+	// Obtener la conexión a la base de datos MongoDB
 	db, err := mongodb.GetDatabase(s.dbName)
 	if err != nil {
-		return nil, fmt.Errorf("获取数据库连接失败: %w", err)
+		return nil, fmt.Errorf("Error al obtener la conexión a la base de datos: %w", err)
 	}
 
-	// 从时序数据库中查询数据
+	// Consultar datos de la base de datos de series temporales
 	matchStage := bson.D{{Key: "$match", Value: bson.D{
 		{Key: "metadata.target", Value: "all"},
 	}}}
 
 	sortStage := bson.D{{Key: "$sort", Value: bson.D{
-		{Key: "timestamp", Value: -1}, // 按时间降序排序
+		{Key: "timestamp", Value: -1}, // Ordenar por tiempo descendente
 	}}}
 
 	limitStage := bson.D{{Key: "$limit", Value: limit}}
 
 	pipeline := mongo.Pipeline{matchStage, sortStage, limitStage}
 
-	// 执行聚合查询
+	// Ejecutar la consulta de agregación
 	reqRateColl := db.Collection("req_rate")
 	cursor, err := reqRateColl.Aggregate(ctx, pipeline)
 	if err != nil {
-		return nil, fmt.Errorf("查询实时QPS数据失败: %w", err)
+		return nil, fmt.Errorf("Error al consultar los datos QPS en tiempo real: %w", err)
 	}
 	defer cursor.Close(ctx)
 
-	// 解析结果
+	// Resultado del análisis
 	var results []struct {
 		Timestamp time.Time `bson:"timestamp"`
 		Value     int64     `bson:"value"`
 		Metadata  bson.D    `bson:"metadata"`
 	}
 	if err = cursor.All(ctx, &results); err != nil {
-		return nil, fmt.Errorf("解析实时QPS数据失败: %w", err)
+		return nil, fmt.Errorf("Error al analizar los datos QPS en tiempo real: %w", err)
 	}
 
-	// 构建结果
+	// Construir el resultado
 	dataPoints := make([]dto.RealtimeQPSData, 0, len(results))
-	// 反转顺序，让时间从旧到新
+	// Invertir el orden para que el tiempo vaya de antiguo a reciente
 	for i := len(results) - 1; i >= 0; i-- {
 		dataPoints = append(dataPoints, dto.RealtimeQPSData{
 			Timestamp: results[i].Timestamp,
@@ -156,47 +156,47 @@ func (s *StatsServiceImpl) GetRealtimeQPS(ctx context.Context, limit int) (*dto.
 	}, nil
 }
 
-// GetTimeSeriesData 获取时间序列数据
+// GetTimeSeriesData Obtener datos de series temporales
 func (s *StatsServiceImpl) GetTimeSeriesData(ctx context.Context, timeRange string, metric string) (*dto.TimeSeriesResponse, error) {
-	// 确定时间范围
+	// Determinar el rango de tiempo
 	startTime, err := s.getTimeRangeStart(timeRange)
 	if err != nil {
 		return nil, err
 	}
 
-	// 根据时间范围决定数据聚合粒度
+	// Decidir la granularidad de agregación según el rango de tiempo
 	var interval string
 	var groupByFields []string
 
 	switch timeRange {
 	case dto.TimeRange24Hours:
-		// 24小时内按小时聚合
+		// Agregación por hora en las últimas 24 horas
 		interval = "hour"
 		groupByFields = []string{"date", "hour"}
 	case dto.TimeRange7Days:
-		// 7天内按6小时聚合，提供更多数据点
+		// Agregación cada 6 horas en 7 días, para más puntos de datos
 		interval = "6hour"
 		groupByFields = []string{"date", "hourGroupSix"}
 	case dto.TimeRange30Days:
-		// 30天内按天聚合
+		// Agregación por día en los últimos 30 días
 		interval = "day"
 		groupByFields = []string{"date"}
 	default:
-		return nil, fmt.Errorf("无效的时间范围: %s", timeRange)
+		return nil, fmt.Errorf("Rango de tiempo no válido: %s", timeRange)
 	}
 
-	// 根据指标类型获取数据
+	// Obtener datos según el tipo de métrica
 	var dataPoints []dto.TimeSeriesDataPoint
 
 	switch metric {
 	case "requests":
-		// 请求数时间序列
+		// Serie temporal de peticiones
 		dataPoints, err = s.getRequestTimeSeries(ctx, startTime, interval, groupByFields)
 	case "blocks":
-		// 拦截数时间序列
+		// Serie temporal de bloqueos
 		dataPoints, err = s.getBlockTimeSeries(ctx, startTime, interval, groupByFields)
 	default:
-		return nil, fmt.Errorf("无效的指标类型: %s", metric)
+		return nil, fmt.Errorf("Tipo de métrica no válido: %s", metric)
 	}
 
 	if err != nil {
@@ -210,36 +210,36 @@ func (s *StatsServiceImpl) GetTimeSeriesData(ctx context.Context, timeRange stri
 	}, nil
 }
 
-// GetCombinedTimeSeriesData 同时获取请求数和拦截数的时间序列数据
+// GetCombinedTimeSeriesData obtiene series temporales de peticiones y bloqueos
 func (s *StatsServiceImpl) GetCombinedTimeSeriesData(ctx context.Context, timeRange string) (*dto.CombinedTimeSeriesResponse, error) {
-	// 确定时间范围
+	// Determinar el rango de tiempo
 	startTime, err := s.getTimeRangeStart(timeRange)
 	if err != nil {
 		return nil, err
 	}
 
-	// 根据时间范围决定数据聚合粒度
+	// Decidir la granularidad de agregación según el rango de tiempo
 	var interval string
 	var groupByFields []string
 
 	switch timeRange {
 	case dto.TimeRange24Hours:
-		// 24小时内按小时聚合
+		// Agregación por hora en las últimas 24 horas
 		interval = "hour"
 		groupByFields = []string{"date", "hour"}
 	case dto.TimeRange7Days:
-		// 7天内按6小时聚合，提供更多数据点
+		// Agregación cada 6 horas en 7 días, para más puntos de datos
 		interval = "6hour"
 		groupByFields = []string{"date", "hourGroupSix"}
 	case dto.TimeRange30Days:
-		// 30天内按天聚合
+		// Agregación por día en los últimos 30 días
 		interval = "day"
 		groupByFields = []string{"date"}
 	default:
-		return nil, fmt.Errorf("无效的时间范围: %s", timeRange)
+		return nil, fmt.Errorf("Rango de tiempo no válido: %s", timeRange)
 	}
 
-	// 并行获取两种数据
+	// Obtener ambos tipos de datos en paralelo
 	requestCh := make(chan struct {
 		data []dto.TimeSeriesDataPoint
 		err  error
@@ -249,7 +249,7 @@ func (s *StatsServiceImpl) GetCombinedTimeSeriesData(ctx context.Context, timeRa
 		err  error
 	})
 
-	// 获取请求数据
+	// Obtener los datos de la petición
 	go func() {
 		data, err := s.getRequestTimeSeries(ctx, startTime, interval, groupByFields)
 		requestCh <- struct {
@@ -258,7 +258,7 @@ func (s *StatsServiceImpl) GetCombinedTimeSeriesData(ctx context.Context, timeRa
 		}{data, err}
 	}()
 
-	// 获取拦截数据
+	// Obtener los datos de bloqueos
 	go func() {
 		data, err := s.getBlockTimeSeries(ctx, startTime, interval, groupByFields)
 		blockCh <- struct {
@@ -267,19 +267,19 @@ func (s *StatsServiceImpl) GetCombinedTimeSeriesData(ctx context.Context, timeRa
 		}{data, err}
 	}()
 
-	// 接收结果
+	// Recibir resultados
 	requestResult := <-requestCh
 	blockResult := <-blockCh
 
-	// 检查错误
+	// Comprobar errores
 	if requestResult.err != nil {
-		return nil, fmt.Errorf("获取请求数据失败: %w", requestResult.err)
+		return nil, fmt.Errorf("Error al obtener los datos de la petición: %w", requestResult.err)
 	}
 	if blockResult.err != nil {
-		return nil, fmt.Errorf("获取拦截数据失败: %w", blockResult.err)
+		return nil, fmt.Errorf("Error al obtener los datos de bloqueo: %w", blockResult.err)
 	}
 
-	// 返回组合结果
+	// Devolver el resultado combinado
 	return &dto.CombinedTimeSeriesResponse{
 		TimeRange: timeRange,
 		Requests: dto.TimeSeriesResponse{
@@ -295,55 +295,55 @@ func (s *StatsServiceImpl) GetCombinedTimeSeriesData(ctx context.Context, timeRa
 	}, nil
 }
 
-// GetTrafficTimeSeriesData 获取流量时间序列数据
+// GetTrafficTimeSeriesData Obtener datos de series temporales de tráfico
 func (s *StatsServiceImpl) GetTrafficTimeSeriesData(ctx context.Context, timeRange string) (*dto.TrafficTimeSeriesResponse, error) {
-	// 确定时间范围
+	// Determinar el rango de tiempo
 	startTime, err := s.getTimeRangeStart(timeRange)
 	if err != nil {
 		return nil, err
 	}
 
-	// 根据时间范围决定数据聚合粒度
+	// Decidir la granularidad de agregación según el rango de tiempo
 	var interval string
 	var groupByFields []string
 
 	switch timeRange {
 	case dto.TimeRange24Hours:
-		// 24小时内按小时聚合
+		// Agregación por hora en las últimas 24 horas
 		interval = "hour"
 		groupByFields = []string{"date", "hour"}
 	case dto.TimeRange7Days:
-		// 7天内按6小时聚合，提供更多数据点
+		// Agregación cada 6 horas en 7 días, para más puntos de datos
 		interval = "6hour"
 		groupByFields = []string{"date", "hourGroupSix"}
 	case dto.TimeRange30Days:
-		// 30天内按天聚合
+		// Agregación por día en los últimos 30 días
 		interval = "day"
 		groupByFields = []string{"date"}
 	default:
-		return nil, fmt.Errorf("无效的时间范围: %s", timeRange)
+		return nil, fmt.Errorf("Rango de tiempo no válido: %s", timeRange)
 	}
 
-	// 获取MongoDB数据库连接
+	// Obtener la conexión a la base de datos MongoDB
 	db, err := mongodb.GetDatabase(s.dbName)
 	if err != nil {
-		return nil, fmt.Errorf("获取数据库连接失败: %w", err)
+		return nil, fmt.Errorf("Error al obtener la conexión a la base de datos: %w", err)
 	}
 
 	var haproxyMinuteStats model.HAProxyMinuteStats
 	collection := db.Collection(haproxyMinuteStats.GetCollectionName())
 
-	// 构建时间过滤条件
+	// Construir las condiciones de filtro de tiempo
 	matchStage := bson.D{{Key: "$match", Value: bson.D{
 		{Key: "target_name", Value: "all"},
 		{Key: "timestamp", Value: bson.D{{Key: "$gte", Value: startTime}}},
 	}}}
 
-	// 构建分组条件
+	// Construir las condiciones de agrupación
 	var groupStage bson.D
 
 	if interval == "6hour" {
-		// 使用预计算的HourGroupSix字段进行分组
+		// Agrupar usando el campo precalculado HourGroupSix
 		groupStage = bson.D{{Key: "$group", Value: bson.D{
 			{Key: "_id", Value: bson.D{
 				{Key: "date", Value: "$date"},
@@ -354,7 +354,7 @@ func (s *StatsServiceImpl) GetTrafficTimeSeriesData(ctx context.Context, timeRan
 			{Key: "timestamp", Value: bson.D{{Key: "$min", Value: "$timestamp"}}},
 		}}}
 	} else {
-		// 构建常规分组ID
+		// Construir el ID de agrupación convencional
 		groupID := bson.D{}
 		for _, field := range groupByFields {
 			groupID = append(groupID, bson.E{Key: field, Value: fmt.Sprintf("$%s", field)})
@@ -369,21 +369,21 @@ func (s *StatsServiceImpl) GetTrafficTimeSeriesData(ctx context.Context, timeRan
 	}
 
 	sortStage := bson.D{{Key: "$sort", Value: bson.D{
-		{Key: "timestamp", Value: 1}, // 按时间升序排序
+		{Key: "timestamp", Value: 1}, // Ordenar por tiempo ascendente
 	}}}
 
 	pipeline := mongo.Pipeline{matchStage, groupStage, sortStage}
 	aggregateOptions := options.Aggregate().
 		SetAllowDiskUse(true)
 
-	// 执行聚合查询
+	// Ejecutar la consulta de agregación
 	cursor, err := collection.Aggregate(ctx, pipeline, aggregateOptions)
 	if err != nil {
-		return nil, fmt.Errorf("执行流量时间序列聚合查询失败: %w", err)
+		return nil, fmt.Errorf("Error al ejecutar la consulta de agregación de series temporales de tráfico: %w", err)
 	}
 	defer cursor.Close(ctx)
 
-	// 解析结果
+	// Resultado del análisis
 	var results []struct {
 		ID              bson.D    `bson:"_id"`
 		InboundTraffic  int64     `bson:"inboundTraffic"`
@@ -391,10 +391,10 @@ func (s *StatsServiceImpl) GetTrafficTimeSeriesData(ctx context.Context, timeRan
 		Timestamp       time.Time `bson:"timestamp"`
 	}
 	if err = cursor.All(ctx, &results); err != nil {
-		return nil, fmt.Errorf("解析流量时间序列结果失败: %w", err)
+		return nil, fmt.Errorf("Error al analizar el resultado de series temporales de tráfico: %w", err)
 	}
 
-	// 构建数据点
+	// Construir los puntos de datos
 	dataPoints := make([]dto.TrafficDataPoint, 0, len(results))
 	for _, result := range results {
 		dataPoints = append(dataPoints, dto.TrafficDataPoint{
@@ -410,7 +410,7 @@ func (s *StatsServiceImpl) GetTrafficTimeSeriesData(ctx context.Context, timeRan
 	}, nil
 }
 
-// 辅助方法 - 获取时间范围的开始时间
+// Método auxiliar - obtener la hora de inicio del rango de tiempo
 func (s *StatsServiceImpl) getTimeRangeStart(timeRange string) (time.Time, error) {
 	now := time.Now()
 
@@ -422,23 +422,23 @@ func (s *StatsServiceImpl) getTimeRangeStart(timeRange string) (time.Time, error
 	case dto.TimeRange30Days:
 		return now.AddDate(0, 0, -30), nil
 	default:
-		return time.Time{}, fmt.Errorf("无效的时间范围: %s", timeRange)
+		return time.Time{}, fmt.Errorf("Rango de tiempo no válido: %s", timeRange)
 	}
 }
 
-// 辅助方法 - haproxy统计聚合结果
+// Método auxiliar - resultado de agregación de estadísticas de haproxy
 type haproxyStatsAggregateResult struct {
-	TotalRequests   int64 // 总请求数
-	InboundTraffic  int64 // 入站流量
-	OutboundTraffic int64 // 出站流量
-	MaxQPS          int64 // 最大QPS
-	Error4xx        int64 // 4xx错误数
-	Error5xx        int64 // 5xx错误数
+	TotalRequests   int64 // Total de peticiones
+	InboundTraffic  int64 // Tráfico entrante
+	OutboundTraffic int64 // Tráfico saliente
+	MaxQPS          int64 // QPS máximo
+	Error4xx        int64 // Cantidad de errores 4xx
+	Error5xx        int64 // Cantidad de errores 5xx
 }
 
-// 辅助方法 - 获取haproxy统计数据聚合结果
+// Método auxiliar - obtener resultado agregado de estadísticas de haproxy
 func (s *StatsServiceImpl) getHAProxyStatsAggregate(ctx context.Context, db *mongo.Database, startTime time.Time) (*haproxyStatsAggregateResult, error) {
-	// 创建聚合管道
+	// Crear el pipeline de agregación
 	matchStage := bson.D{{Key: "$match", Value: bson.D{
 		{Key: "target_name", Value: "all"},
 		{Key: "timestamp", Value: bson.D{{Key: "$gte", Value: startTime}}},
@@ -456,12 +456,12 @@ func (s *StatsServiceImpl) getHAProxyStatsAggregate(ctx context.Context, db *mon
 
 	pipeline := mongo.Pipeline{matchStage, groupStage}
 
-	// 设置聚合选项以优化性能
+	// Establecer opciones de agregación para optimizar el rendimiento
 	aggregateOptions := options.Aggregate().
-		SetAllowDiskUse(true).                                                        // 允许使用磁盘进行大数据集聚合
-		SetHint(bson.D{{Key: "target_name", Value: 1}, {Key: "timestamp", Value: 1}}) // 使用最优复合索引
+		SetAllowDiskUse(true).                                                        // Permitir el uso de disco para agregaciones de conjuntos de datos grandes
+		SetHint(bson.D{{Key: "target_name", Value: 1}, {Key: "timestamp", Value: 1}}) // Usar el índice compuesto óptimo
 
-	// 执行聚合查询
+	// Ejecutar la consulta de agregación
 	var haproxyMinuteStats model.HAProxyMinuteStats
 	collection := db.Collection(haproxyMinuteStats.GetCollectionName())
 
@@ -474,12 +474,12 @@ func (s *StatsServiceImpl) getHAProxyStatsAggregate(ctx context.Context, db *mon
 			Err(err).
 			Dur("duration", duration).
 			Time("queryStartTime", startTime).
-			Msg("HAProxy统计聚合查询失败")
-		return nil, fmt.Errorf("执行统计聚合查询失败: %w", err)
+			Msg("Falló la consulta de agregación de estadísticas de HAProxy")
+		return nil, fmt.Errorf("Error al ejecutar la consulta de agregación de estadísticas: %w", err)
 	}
 	defer cursor.Close(ctx)
 
-	// 解析结果
+	// Resultado del análisis
 	var results []struct {
 		TotalRequests   int64 `bson:"totalRequests"`
 		InboundTraffic  int64 `bson:"inboundTraffic"`
@@ -492,11 +492,11 @@ func (s *StatsServiceImpl) getHAProxyStatsAggregate(ctx context.Context, db *mon
 		s.logger.Error().
 			Err(err).
 			Dur("duration", duration).
-			Msg("解析HAProxy统计聚合结果失败")
-		return nil, fmt.Errorf("解析统计聚合结果失败: %w", err)
+			Msg("Error al analizar el resultado de agregación de estadísticas de HAProxy")
+		return nil, fmt.Errorf("Error al analizar el resultado de agregación estadística: %w", err)
 	}
 
-	// 构建结果
+	// Construir el resultado
 	result := &haproxyStatsAggregateResult{}
 	if len(results) > 0 {
 		result.TotalRequests = results[0].TotalRequests
@@ -507,7 +507,7 @@ func (s *StatsServiceImpl) getHAProxyStatsAggregate(ctx context.Context, db *mon
 		result.Error5xx = results[0].Error5xx
 	}
 
-	// 记录性能监控日志
+	// Registrar logs de monitorización de rendimiento
 	s.logger.Debug().
 		Dur("duration", duration).
 		Int64("totalRequests", result.TotalRequests).
@@ -515,42 +515,42 @@ func (s *StatsServiceImpl) getHAProxyStatsAggregate(ctx context.Context, db *mon
 		Int64("outboundTraffic", result.OutboundTraffic).
 		Int64("maxQPS", result.MaxQPS).
 		Time("queryStartTime", startTime).
-		Msg("HAProxy统计聚合查询完成")
+		Msg("Consulta de agregación de estadísticas de HAProxy completada")
 
-	// 性能警告
+	// Advertencia de rendimiento
 	if duration > 1*time.Second {
 		s.logger.Warn().
 			Dur("duration", duration).
 			Time("queryStartTime", startTime).
-			Msg("HAProxy统计聚合查询耗时较长")
+			Msg("La consulta de agregación de estadísticas de HAProxy tardó demasiado")
 	}
 
 	return result, nil
 }
 
-// 辅助方法 - 获取WAF拦截统计
+// Método auxiliar - obtener estadísticas de bloqueos del WAF
 func (s *StatsServiceImpl) getWAFBlockStats(ctx context.Context, startTime time.Time) (int64, int64, error) {
-	// 构建时间过滤条件
+	// Construir las condiciones de filtro de tiempo
 	timeFilter := bson.D{
 		{Key: "createdAt", Value: bson.D{{Key: "$gte", Value: startTime}}},
 	}
 
-	// 获取拦截总数
+	// Obtener el total de bloqueos
 	blockCount, err := s.wafLogRepository.CountAttackLogs(ctx, timeFilter)
 	if err != nil {
-		return 0, 0, fmt.Errorf("计算拦截总数失败: %w", err)
+		return 0, 0, fmt.Errorf("Error al calcular el total de bloqueos: %w", err)
 	}
 
-	// 获取MongoDB数据库连接，直接执行聚合查询获取不同攻击IP数
+	// Obtener la conexión a MongoDB y ejecutar directamente la agregación para el número de IPs atacantes distintas
 	db, err := mongodb.GetDatabase(s.dbName)
 	if err != nil {
-		return 0, 0, fmt.Errorf("获取数据库连接失败: %w", err)
+		return 0, 0, fmt.Errorf("Error al obtener la conexión a la base de datos: %w", err)
 	}
 
 	var wafLog pkgModel.WAFLog
 	collection := db.Collection(wafLog.GetCollectionName())
 
-	// 优化的聚合管道：直接计算不同IP数量
+	// Pipeline de agregación optimizado: calcula directamente IPs distintas
 	ipCountPipeline := mongo.Pipeline{
 		{
 			{Key: "$match", Value: bson.D{
@@ -567,20 +567,20 @@ func (s *StatsServiceImpl) getWAFBlockStats(ctx context.Context, startTime time.
 		},
 	}
 
-	// 设置聚合选项以优化大数据集查询性能
+	// Establecer opciones de agregación para optimizar consultas en grandes volúmenes de datos
 	aggregateOptions := options.Aggregate().
-		SetAllowDiskUse(true).                                                  // 允许使用磁盘进行大数据集聚合
-		SetHint(bson.D{{Key: "srcIp", Value: 1}, {Key: "createdAt", Value: 1}}) // 使用复合索引提示
+		SetAllowDiskUse(true).                                                  // Permitir el uso de disco para agregaciones de conjuntos de datos grandes
+		SetHint(bson.D{{Key: "srcIp", Value: 1}, {Key: "createdAt", Value: 1}}) // Usar hint de índice compuesto
 
-	// 执行聚合查询
+	// Ejecutar la consulta de agregación
 	cursor, err := collection.Aggregate(ctx, ipCountPipeline, aggregateOptions)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("计算攻击IP数量失败")
+		s.logger.Error().Err(err).Msg("Error al calcular la cantidad de IPs atacantes")
 		return blockCount, 0, nil
 	}
 	defer cursor.Close(ctx)
 
-	// 解析结果
+	// Resultado del análisis
 	var result struct {
 		UniqueIPs int64 `bson:"uniqueIPs"`
 	}
@@ -588,44 +588,44 @@ func (s *StatsServiceImpl) getWAFBlockStats(ctx context.Context, startTime time.
 	attackIPCount := int64(0)
 	if cursor.Next(ctx) {
 		if err := cursor.Decode(&result); err != nil {
-			s.logger.Error().Err(err).Msg("解析攻击IP数量结果失败")
+			s.logger.Error().Err(err).Msg("Error al analizar el resultado de cantidad de IPs atacantes")
 			return blockCount, 0, nil
 		}
 		attackIPCount = result.UniqueIPs
 	}
 
-	// 记录统计信息用于性能监控
+	// Registrar estadísticas para monitorización de rendimiento
 	s.logger.Debug().
 		Int64("blockCount", blockCount).
 		Int64("attackIPCount", attackIPCount).
 		Time("startTime", startTime).
-		Msg("WAF拦截统计查询完成")
+		Msg("Consulta de estadísticas de bloqueo del WAF completada")
 
 	return blockCount, attackIPCount, nil
 }
 
-// 辅助方法 - 获取请求数时间序列
+// Método auxiliar - obtener la serie temporal de peticiones
 func (s *StatsServiceImpl) getRequestTimeSeries(ctx context.Context, startTime time.Time, interval string, groupByFields []string) ([]dto.TimeSeriesDataPoint, error) {
-	// 获取MongoDB数据库连接
+	// Obtener la conexión a la base de datos MongoDB
 	db, err := mongodb.GetDatabase(s.dbName)
 	if err != nil {
-		return nil, fmt.Errorf("获取数据库连接失败: %w", err)
+		return nil, fmt.Errorf("Error al obtener la conexión a la base de datos: %w", err)
 	}
 
 	var haproxyMinuteStats model.HAProxyMinuteStats
 	collection := db.Collection(haproxyMinuteStats.GetCollectionName())
 
-	// 构建时间过滤条件
+	// Construir las condiciones de filtro de tiempo
 	matchStage := bson.D{{Key: "$match", Value: bson.D{
 		{Key: "target_name", Value: "all"},
 		{Key: "timestamp", Value: bson.D{{Key: "$gte", Value: startTime}}},
 	}}}
 
-	// 构建分组条件
+	// Construir las condiciones de agrupación
 	var groupStage bson.D
 
 	if interval == "6hour" {
-		// 使用预计算的HourGroupSix字段进行分组
+		// Agrupar usando el campo precalculado HourGroupSix
 		groupStage = bson.D{{Key: "$group", Value: bson.D{
 			{Key: "_id", Value: bson.D{
 				{Key: "date", Value: "$date"},
@@ -635,7 +635,7 @@ func (s *StatsServiceImpl) getRequestTimeSeries(ctx context.Context, startTime t
 			{Key: "timestamp", Value: bson.D{{Key: "$min", Value: "$timestamp"}}},
 		}}}
 	} else {
-		// 构建常规分组ID
+		// Construir el ID de agrupación convencional
 		groupID := bson.D{}
 		for _, field := range groupByFields {
 			groupID = append(groupID, bson.E{Key: field, Value: fmt.Sprintf("$%s", field)})
@@ -649,7 +649,7 @@ func (s *StatsServiceImpl) getRequestTimeSeries(ctx context.Context, startTime t
 	}
 
 	sortStage := bson.D{{Key: "$sort", Value: bson.D{
-		{Key: "timestamp", Value: 1}, // 按时间升序排序
+		{Key: "timestamp", Value: 1}, // Ordenar por tiempo ascendente
 	}}}
 
 	pipeline := mongo.Pipeline{matchStage, groupStage, sortStage}
@@ -657,24 +657,24 @@ func (s *StatsServiceImpl) getRequestTimeSeries(ctx context.Context, startTime t
 	aggregateOptions := options.Aggregate().
 		SetAllowDiskUse(true)
 
-	// 执行聚合查询
+	// Ejecutar la consulta de agregación
 	cursor, err := collection.Aggregate(ctx, pipeline, aggregateOptions)
 	if err != nil {
-		return nil, fmt.Errorf("执行请求时间序列聚合查询失败: %w", err)
+		return nil, fmt.Errorf("Error al ejecutar la consulta de agregación de series temporales de peticiones: %w", err)
 	}
 	defer cursor.Close(ctx)
 
-	// 解析结果
+	// Resultado del análisis
 	var results []struct {
 		ID        bson.D    `bson:"_id"`
 		Requests  int64     `bson:"requests"`
 		Timestamp time.Time `bson:"timestamp"`
 	}
 	if err = cursor.All(ctx, &results); err != nil {
-		return nil, fmt.Errorf("解析请求时间序列结果失败: %w", err)
+		return nil, fmt.Errorf("Error al analizar el resultado de series temporales de peticiones: %w", err)
 	}
 
-	// 构建数据点
+	// Construir los puntos de datos
 	dataPoints := make([]dto.TimeSeriesDataPoint, 0, len(results))
 	for _, result := range results {
 		dataPoints = append(dataPoints, dto.TimeSeriesDataPoint{
@@ -686,26 +686,26 @@ func (s *StatsServiceImpl) getRequestTimeSeries(ctx context.Context, startTime t
 	return dataPoints, nil
 }
 
-// 辅助方法 - 获取拦截数时间序列
+// Método auxiliar - obtener la serie temporal de bloqueos
 func (s *StatsServiceImpl) getBlockTimeSeries(ctx context.Context, startTime time.Time, interval string, groupByFields []string) ([]dto.TimeSeriesDataPoint, error) {
-	// 获取MongoDB数据库连接
+	// Obtener la conexión a la base de datos MongoDB
 	db, err := mongodb.GetDatabase(s.dbName)
 	if err != nil {
-		return nil, fmt.Errorf("获取数据库连接失败: %w", err)
+		return nil, fmt.Errorf("Error al obtener la conexión a la base de datos: %w", err)
 	}
 
 	collection := db.Collection("waf_log")
 
-	// 构建时间过滤条件
+	// Construir las condiciones de filtro de tiempo
 	matchStage := bson.D{{Key: "$match", Value: bson.D{
 		{Key: "createdAt", Value: bson.D{{Key: "$gte", Value: startTime}}},
 	}}}
 
-	// 根据interval决定如何分组
+	// Decidir cómo agrupar según el intervalo
 	var groupStage bson.D
 
 	if interval == "hour" {
-		// 按小时分组
+		// Agrupar por hora
 		groupStage = bson.D{{Key: "$group", Value: bson.D{
 			{Key: "_id", Value: bson.D{
 				{Key: "date", Value: "$date"},
@@ -715,7 +715,7 @@ func (s *StatsServiceImpl) getBlockTimeSeries(ctx context.Context, startTime tim
 			{Key: "timestamp", Value: bson.D{{Key: "$min", Value: "$createdAt"}}},
 		}}}
 	} else if interval == "6hour" {
-		// 使用预计算的HourGroupSix字段分组
+		// Agrupar con el campo precalculado HourGroupSix
 		groupStage = bson.D{{Key: "$group", Value: bson.D{
 			{Key: "_id", Value: bson.D{
 				{Key: "date", Value: "$date"},
@@ -725,7 +725,7 @@ func (s *StatsServiceImpl) getBlockTimeSeries(ctx context.Context, startTime tim
 			{Key: "timestamp", Value: bson.D{{Key: "$min", Value: "$createdAt"}}},
 		}}}
 	} else {
-		// 按日期分组
+		// Agrupar por fecha
 		groupStage = bson.D{{Key: "$group", Value: bson.D{
 			{Key: "_id", Value: bson.D{{Key: "date", Value: "$date"}}},
 			{Key: "count", Value: bson.D{{Key: "$sum", Value: 1}}},
@@ -734,10 +734,10 @@ func (s *StatsServiceImpl) getBlockTimeSeries(ctx context.Context, startTime tim
 	}
 
 	sortStage := bson.D{{Key: "$sort", Value: bson.D{
-		{Key: "timestamp", Value: 1}, // 按时间升序排序
+		{Key: "timestamp", Value: 1}, // Ordenar por tiempo ascendente
 	}}}
 
-	// 限制返回项目 - 优化性能
+	// Limitar los elementos devueltos - optimiza el rendimiento
 	projectStage := bson.D{{Key: "$project", Value: bson.D{
 		{Key: "_id", Value: 0},
 		{Key: "count", Value: 1},
@@ -749,24 +749,24 @@ func (s *StatsServiceImpl) getBlockTimeSeries(ctx context.Context, startTime tim
 	aggregateOptions := options.Aggregate().
 		SetAllowDiskUse(true)
 
-	// 执行聚合查询
+	// Ejecutar la consulta de agregación
 	cursor, err := collection.Aggregate(ctx, pipeline, aggregateOptions)
 	if err != nil {
-		return nil, fmt.Errorf("执行WAF拦截时间序列聚合查询失败: %w", err)
+		return nil, fmt.Errorf("Error al ejecutar la consulta de agregación de series temporales de bloqueos del WAF: %w", err)
 	}
 	defer cursor.Close(ctx)
 
-	// 解析结果
+	// Resultado del análisis
 	var results []struct {
 		Count     int64     `bson:"count"`
 		Timestamp time.Time `bson:"timestamp"`
 	}
 
 	if err = cursor.All(ctx, &results); err != nil {
-		return nil, fmt.Errorf("解析WAF拦截时间序列结果失败: %w", err)
+		return nil, fmt.Errorf("Error al analizar el resultado de series temporales de bloqueos del WAF: %w", err)
 	}
 
-	// 构建数据点
+	// Construir los puntos de datos
 	dataPoints := make([]dto.TimeSeriesDataPoint, 0, len(results))
 	for _, result := range results {
 		dataPoints = append(dataPoints, dto.TimeSeriesDataPoint{

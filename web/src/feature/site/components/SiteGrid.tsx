@@ -42,13 +42,13 @@ interface SiteGridProps {
 export function SiteGrid({ onEdit, onDelete }: SiteGridProps) {
     const { t } = useTranslation()
 
-    // 引用用于无限滚动
+    // Referencia usada para scroll infinito
     const sentinelRef = useRef<HTMLDivElement>(null)
 
-    // 每页数据条数
+    // Cantidad de registros por página
     const PAGE_SIZE = 20
 
-    // 获取站点列表
+    // Obtener lista de sitios
     const {
         data,
         isLoading,
@@ -60,26 +60,26 @@ export function SiteGrid({ onEdit, onDelete }: SiteGridProps) {
         queryFn: ({ pageParam }) => siteApi.getSites(pageParam as number, PAGE_SIZE),
         initialPageParam: 1,
         getNextPageParam: (lastPage, allPages) => {
-            // 优化判断逻辑：使用实际获取的数据总量，而不是假设每页恰好有PAGE_SIZE条
+            // Lógica optimizada: usar el total real de datos obtenidos en lugar de asumir PAGE_SIZE por página
             const fetchedItemsCount = allPages.reduce((total, page) => total + page.items.length, 0)
             return fetchedItemsCount < lastPage.total ? allPages.length + 1 : undefined
         },
     })
 
-    // 扁平化分页数据
+    // Datos de paginación aplanados
     const sites = useMemo(() => {
         return data?.pages.flatMap(page => page.items) || []
     }, [data])
 
-    // 优化的无限滚动实现
+    // Implementación optimizada de scroll infinito
     useEffect(() => {
-        // 只有当有更多页面可加载时才创建观察器
+        // Solo crear el observador cuando hay más páginas por cargar
         if (!hasNextPage) return
 
         const options = {
-            // 降低threshold使其更容易触发
+            // Reducir el umbral para que se dispare más fácilmente
             threshold: 0.1,
-            // 减小rootMargin以避免过早触发，但仍保持一定的预加载空间
+            // Reducir rootMargin para evitar activación prematura, manteniendo algo de precarga
             rootMargin: '100px 0px'
         }
 
@@ -105,7 +105,7 @@ export function SiteGrid({ onEdit, onDelete }: SiteGridProps) {
         }
     }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
-    // 站点卡片组件
+    // Componente de tarjeta de sitio
     const SiteCard = ({ site }: { site: Site }) => {
         const isInactive = !site.activeStatus
 
@@ -172,9 +172,9 @@ export function SiteGrid({ onEdit, onDelete }: SiteGridProps) {
                         </div>
 
                         <div className="space-y-4">
-                            {/* 状态信息 */}
+                            {/* Información de estado */}
                             <div className="flex flex-wrap gap-2">
-                                {/* 站点状态 */}
+                                {/* Estado del sitio */}
                                 {site.activeStatus ? (
                                     <Badge variant="outline" className="flex items-center gap-1 bg-green-300 border-green-300 text-green-700 dark:bg-green-900/50 dark:border-green-800 dark:text-green-300 rounded-full px-3 py-1 dark:badge-neon">
                                         <CheckCircle className="h-3 w-3 text-green-600 dark:text-green-300 dark:icon-neon" />
@@ -187,7 +187,7 @@ export function SiteGrid({ onEdit, onDelete }: SiteGridProps) {
                                     </Badge>
                                 )}
 
-                                {/* HTTPS状态 */}
+                                {/* HTTPSEstado */}
                                 {site.enableHTTPS ? (
                                     <Badge variant="outline" className={`flex items-center gap-1 rounded-full px-3 py-1 dark:badge-neon ${isInactive
                                         ? 'bg-gray-200 border-gray-200 text-gray-700 dark:bg-gray-800/70 dark:border-gray-700 dark:text-gray-300'
@@ -198,7 +198,7 @@ export function SiteGrid({ onEdit, onDelete }: SiteGridProps) {
                                     </Badge>
                                 ) : null}
 
-                                {/* WAF状态 */}
+                                {/* WAFEstado */}
                                 {site.wafEnabled && (
                                     site.wafMode === WAFMode.Protection ? (
                                         <Badge variant="outline" className={`flex items-center gap-1 rounded-full px-3 py-1 dark:badge-neon ${isInactive
@@ -221,7 +221,7 @@ export function SiteGrid({ onEdit, onDelete }: SiteGridProps) {
                                 )}
                             </div>
 
-                            {/* 上游服务器信息 */}
+                            {/* Información del servidor upstream */}
                             <div className={`space-y-1 ${isInactive ? 'text-gray-400 dark:text-gray-500' : 'text-slate-700 dark:text-slate-300'}`}>
                                 <div className="text-sm font-medium dark:text-shadow-glow-white">{t("site.card.upstreamServers")}</div>
                                 <div className="space-y-1">
@@ -237,7 +237,7 @@ export function SiteGrid({ onEdit, onDelete }: SiteGridProps) {
                                 </div>
                             </div>
 
-                            {/* 如果有证书，显示证书信息 */}
+                            {/* Si hay certificado, mostrar su información */}
                             {site.enableHTTPS && site.certificate && (
                                 <div className={`space-y-1 ${isInactive ? 'text-gray-400 dark:text-gray-500' : 'text-slate-700 dark:text-slate-300'}`}>
                                     <div className="text-sm font-medium dark:text-shadow-glow-white">{t("site.card.certInfo")}</div>
@@ -256,7 +256,7 @@ export function SiteGrid({ onEdit, onDelete }: SiteGridProps) {
         )
     }
 
-    // 卡片加载骨架屏
+    // Skeleton de carga de tarjetas
     const SiteCardSkeleton = () => (
         <Card className="p-5 rounded-md dark:border-neon-pulse">
             <div className="flex justify-between items-start mb-4">
@@ -283,7 +283,7 @@ export function SiteGrid({ onEdit, onDelete }: SiteGridProps) {
         </Card>
     )
 
-    // 显示加载状态
+    // Mostrar estado de carga
     if (isLoading) {
         return (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -303,14 +303,14 @@ export function SiteGrid({ onEdit, onDelete }: SiteGridProps) {
             ) : (
                 <motion.div
                     className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-                    layout // 启用自动布局动画
+                    layout // Habilitar animaciones automáticas de layout
                 >
-                    <AnimatePresence mode="popLayout"> {/* 使用AnimatePresence处理元素的添加/删除动画 */}
+                    <AnimatePresence mode="popLayout"> {/* Usar AnimatePresence para animar la adición/eliminación de elementos */}
                         {sites.map(site => (
                             <motion.div
                                 key={site.id}
-                                layoutId={`site-card-${site.id}`} // 使用唯一ID跟踪元素位置
-                                {...layoutAnimationProps} // 使用布局动画配置
+                                layoutId={`site-card-${site.id}`} // Usar ID único para rastrear la posición de los elementos
+                                {...layoutAnimationProps} // Usar configuración de animación de layout
                                 whileInView={{
                                     opacity: 1,
                                     scale: 1,
@@ -334,7 +334,7 @@ export function SiteGrid({ onEdit, onDelete }: SiteGridProps) {
                 </motion.div>
             )}
 
-            {/* 无限滚动监测元素，只在有更多数据时显示 */}
+            {/* Elemento de detección de scroll infinito, visible solo si hay más datos */}
             {hasNextPage && (
                 <div
                     ref={sentinelRef}

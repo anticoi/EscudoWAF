@@ -42,10 +42,10 @@ export function ConfigForm({ config, isLoading }: ConfigFormProps) {
     const [showThreadWarning, setShowThreadWarning] = useState(false)
     const { t } = useTranslation()
 
-    // 获取引擎名称
+    // Obtener el nombre del motor
     const engineName = getEngineNameConstant()
 
-    // 创建表单
+    // Crear formulario
     const form = useForm<ConfigFormValues>({
         resolver: zodResolver(configSchema),
         defaultValues: {
@@ -67,7 +67,7 @@ export function ConfigForm({ config, isLoading }: ConfigFormProps) {
         }
     })
 
-    // 当配置数据加载时，更新表单值
+    // Al cargar los datos de configuración, actualizar los valores del formulario
     useEffect(() => {
         if (config) {
             const engineAppConfig = config.engine.appConfig.find(app => app.name === engineName)
@@ -90,12 +90,12 @@ export function ConfigForm({ config, isLoading }: ConfigFormProps) {
                 }
             })
 
-            // 初始加载时检查线程是否为0
+            // Comprobar en la carga inicial si los hilos son 0
             setShowThreadWarning(config.haproxy.thread === 0)
         }
     }, [config, engineName, form])
 
-    // 监听线程数变化
+    // Escuchar cambios en el número de hilos
     useEffect(() => {
         const subscription = form.watch((value, { name }) => {
             if (name === 'haproxy.thread') {
@@ -106,7 +106,7 @@ export function ConfigForm({ config, isLoading }: ConfigFormProps) {
         return () => subscription.unsubscribe()
     }, [form])
 
-    // 提交表单
+    // Enviar formulario
     const onSubmit = (values: ConfigFormValues) => {
         clearError()
 
@@ -141,7 +141,7 @@ export function ConfigForm({ config, isLoading }: ConfigFormProps) {
 
                 <Form {...form}>
                     <form id="config-form" onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-8">
-                        {/* 引擎线程数 */}
+                        {/* Número de hilos del motor */}
                         <FormField
                             control={form.control}
                             name="haproxy.thread"
@@ -181,7 +181,7 @@ export function ConfigForm({ config, isLoading }: ConfigFormProps) {
                             )}
                         />
 
-                        {/* 响应检测 */}
+                        {/* Inspección de respuestas */}
                         <FormField
                             control={form.control}
                             name="isResponseCheck"
@@ -206,7 +206,7 @@ export function ConfigForm({ config, isLoading }: ConfigFormProps) {
                             )}
                         />
 
-                        {/* 调试模式 */}
+                        {/* Modo de depuración */}
                         <FormField
                             control={form.control}
                             name="isDebug"
@@ -231,7 +231,7 @@ export function ConfigForm({ config, isLoading }: ConfigFormProps) {
                             )}
                         />
 
-                        {/* 引擎指令设置 */}
+                        {/* Configuración de directivas del motor */}
                         <FormField
                             control={form.control}
                             name="engine.appConfig.0.directives"
@@ -256,7 +256,7 @@ export function ConfigForm({ config, isLoading }: ConfigFormProps) {
                             )}
                         />
 
-                        {/* HAProxy配置根目录 */}
+                        {/* Directorio raíz de configuración de HAProxy */}
                         <FormField
                             control={form.control}
                             name="haproxy.configBaseDir"
@@ -280,7 +280,7 @@ export function ConfigForm({ config, isLoading }: ConfigFormProps) {
                             )}
                         />
 
-                        {/* HAProxy可执行文件路径 */}
+                        {/* Ruta del ejecutable de HAProxy */}
                         <FormField
                             control={form.control}
                             name="haproxy.haproxyBin"
@@ -304,7 +304,7 @@ export function ConfigForm({ config, isLoading }: ConfigFormProps) {
                             )}
                         />
 
-                        {/* 国际化 */}
+                        {/* Internacionalización */}
                         <div className="flex flex-row items-center justify-between p-0 mt-6">
                             <div className="space-y-0.5">
                                 <div className="flex items-center gap-2">
@@ -318,15 +318,15 @@ export function ConfigForm({ config, isLoading }: ConfigFormProps) {
                             <LanguageSelector />
                         </div>
 
-                        {/* 主题切换 */}
+                        {/* Cambio de tema */}
                         <div className="flex flex-row items-center justify-between p-0 mt-6">
                             <div className="space-y-0.5">
                                 <div className="flex items-center gap-2">
                                     <Palette className="h-4 w-4 text-muted-foreground dark:text-shadow-primary" />
-                                    <div className="text-base font-medium dark:text-shadow-glow-white">{t("globalSetting.config.theme") || "主题设置"}</div>
+                                    <div className="text-base font-medium dark:text-shadow-glow-white">{t("globalSetting.config.theme") || "Configuración del tema"}</div>
                                 </div>
                                 <div className="text-sm text-muted-foreground dark:text-shadow-primary-bold">
-                                    {t("globalSetting.config.themeDescription") || "切换浅色和深色主题模式"}
+                                    {t("globalSetting.config.themeDescription") || "Alternar entre modo claro y oscuro"}
                                 </div>
                             </div>
                             <ThemeToggle />

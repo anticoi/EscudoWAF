@@ -8,10 +8,10 @@ import (
 	"testing"
 )
 
-// 这些是从 internal 包导入的私有函数，需要通过接口访问
-// 或者我们复制实现用于基准测试
+// Estas son funciones privadas importadas del paquete internal, accesibles vía interfaz
+// O copiamos la implementación para el benchmark
 
-// 原始的bufio.Scanner实现（用于性能对比）
+// Implementación original con bufio.Scanner (para comparación de rendimiento)
 func getHeaderValueOld(headers []byte, targetHeader string) (string, error) {
 	s := bufio.NewScanner(bytes.NewReader(headers))
 	for s.Scan() {
@@ -33,25 +33,25 @@ func getHeaderValueOld(headers []byte, targetHeader string) (string, error) {
 	return "", nil
 }
 
-// 优化后的实现（复制用于基准测试）
+// Implementación optimizada (copiada para benchmark)
 func getHeaderValueOptimized(headers []byte, targetHeader string) (string, error) {
-	// 预处理目标头部为小写，避免重复转换
+	// Preprocesar el header objetivo a minúsculas, evita conversiones repetidas
 	targetLower := strings.ToLower(targetHeader)
 	targetBytes := []byte(targetLower)
 	targetLen := len(targetBytes)
 
 	i := 0
 	for i < len(headers) {
-		// 找到行的开始
+		// Encontrar el inicio de la línea
 		lineStart := i
 
-		// 找到行的结束（\n 或 \r\n）
+		// Encontrar el fin de la línea (\n o \r\n)
 		for i < len(headers) && headers[i] != '\n' && headers[i] != '\r' {
 			i++
 		}
 		lineEnd := i
 
-		// 跳过换行符
+		// Omitir saltos de línea
 		if i < len(headers) && headers[i] == '\r' {
 			i++
 		}
@@ -59,12 +59,12 @@ func getHeaderValueOptimized(headers []byte, targetHeader string) (string, error
 			i++
 		}
 
-		// 跳过空行
+		// Omitir líneas vacías
 		if lineEnd == lineStart {
 			continue
 		}
 
-		// 在当前行中查找冒号
+		// Buscar los dos puntos en la línea actual
 		colonPos := -1
 		for j := lineStart; j < lineEnd; j++ {
 			if headers[j] == ':' {
@@ -74,35 +74,35 @@ func getHeaderValueOptimized(headers []byte, targetHeader string) (string, error
 		}
 
 		if colonPos == -1 {
-			continue // 没有冒号，跳过这行
+			continue // Sin dos puntos, omitir esta línea
 		}
 
-		// 提取key（去除前后空格）
+		// Extraer la clave (eliminar espacios al inicio y al final)
 		keyStart := lineStart
 		keyEnd := colonPos
 
-		// 去除key前的空格
+		// Eliminar espacios antes de la clave
 		for keyStart < keyEnd && (headers[keyStart] == ' ' || headers[keyStart] == '\t') {
 			keyStart++
 		}
 
-		// 去除key后的空格
+		// Eliminar espacios después de la clave
 		for keyEnd > keyStart && (headers[keyEnd-1] == ' ' || headers[keyEnd-1] == '\t') {
 			keyEnd--
 		}
 
 		keyLen := keyEnd - keyStart
 
-		// 快速长度检查
+		// Comprobación rápida de longitud
 		if keyLen != targetLen {
 			continue
 		}
 
-		// 手动进行大小写不敏感比较
+		// Comparación manual sin distinción de mayúsculas
 		match := true
 		for j := 0; j < keyLen; j++ {
 			c := headers[keyStart+j]
-			// 转换为小写进行比较
+			// Convertir a minúsculas para comparar
 			if c >= 'A' && c <= 'Z' {
 				c = c + ('a' - 'A')
 			}
@@ -116,21 +116,21 @@ func getHeaderValueOptimized(headers []byte, targetHeader string) (string, error
 			continue
 		}
 
-		// 找到匹配的header，提取value
+		// Encontrar el header que coincide y extraer el valor
 		valueStart := colonPos + 1
 		valueEnd := lineEnd
 
-		// 去除value前的空格
+		// Eliminar espacios antes del valor
 		for valueStart < valueEnd && (headers[valueStart] == ' ' || headers[valueStart] == '\t') {
 			valueStart++
 		}
 
-		// 去除value后的空格
+		// Eliminar espacios después del valor
 		for valueEnd > valueStart && (headers[valueEnd-1] == ' ' || headers[valueEnd-1] == '\t') {
 			valueEnd--
 		}
 
-		// 返回value
+		// Devolver el valor
 		if valueEnd > valueStart {
 			return string(headers[valueStart:valueEnd]), nil
 		}
@@ -140,35 +140,35 @@ func getHeaderValueOptimized(headers []byte, targetHeader string) (string, error
 	return "", nil
 }
 
-// ApplicationRequest 模拟结构体用于测试
+// ApplicationRequest estructura simulada para pruebas
 type ApplicationRequest struct {
 	Headers []byte
 	SrcIp   netip.Addr
 }
 
-// 原始实现（用于性能对比）
+// Implementación original (para comparación de rendimiento)
 func getRealClientIPOriginal(req *ApplicationRequest) string {
 	if req == nil {
 		return ""
 	}
 
-	// 按优先级尝试不同的头部
+	// Probar distintas cabeceras por prioridad
 	headers := []string{
-		"x-forwarded-for",  // 最常用，链式格式
-		"x-real-ip",        // Nginx常用
+		"x-forwarded-for",  // El más común, formato en cadena
+		"x-real-ip",        // Común en Nginx
 		"true-client-ip",   // Akamai
 		"cf-connecting-ip", // Cloudflare
 		"fastly-client-ip", // Fastly
-		"x-client-ip",      // 通用
+		"x-client-ip",      // General
 		"x-original-forwarded-for",
-		"forwarded", // 标准头部
+		"forwarded", // Cabecera estándar
 		"x-cluster-client-ip",
 	}
 
-	// 尝试从各个头部获取IP
+	// Intentar obtener la IP de las distintas cabeceras
 	for _, header := range headers {
 		if value, err := getHeaderValueOptimized(req.Headers, header); err == nil && value != "" {
-			// 对于X-Forwarded-For和类似的链式格式，提取第一个IP
+			// Para X-Forwarded-For y formatos en cadena similares, extraer la primera IP
 			if header == "x-forwarded-for" || header == "x-original-forwarded-for" {
 				ips := strings.Split(value, ",")
 				if len(ips) > 0 {
@@ -177,17 +177,17 @@ func getRealClientIPOriginal(req *ApplicationRequest) string {
 						return ip
 					}
 				}
-			} else if header == "forwarded" { // 对于Forwarded头部，需要特殊处理
-				// 解析Forwarded头部，格式如：for=client;proto=https;by=proxy
+			} else if header == "forwarded" { // La cabecera Forwarded requiere tratamiento especial
+				// Analizar la cabecera Forwarded, formato p. ej.: for=client;proto=https;by=proxy
 				parts := strings.Split(value, ";")
 				for _, part := range parts {
 					kv := strings.SplitN(part, "=", 2)
 					if len(kv) == 2 && strings.TrimSpace(kv[0]) == "for" {
-						// 去除可能的引号和IPv6方括号
+						// Eliminar posibles comillas y corchetes de IPv6
 						ip := strings.TrimSpace(kv[1])
 						ip = strings.Trim(ip, "\"")
 
-						// 处理IPv6地址特殊格式
+						// Manejar formatos especiales de dirección IPv6
 						if strings.HasPrefix(ip, "[") && strings.HasSuffix(ip, "]") {
 							ip = ip[1 : len(ip)-1]
 						}
@@ -197,7 +197,7 @@ func getRealClientIPOriginal(req *ApplicationRequest) string {
 						}
 					}
 				}
-			} else { // 其他头部直接返回值
+			} else { // Otras cabeceras devuelven el valor directamente
 				ip := strings.TrimSpace(value)
 				if ip != "" {
 					return ip
@@ -206,7 +206,7 @@ func getRealClientIPOriginal(req *ApplicationRequest) string {
 		}
 	}
 
-	// 如果所有头部都没有，返回源IP
+	// Si ninguna cabecera está presente, devolver la IP de origen
 	if req.SrcIp.IsValid() {
 		return req.SrcIp.String()
 	}
@@ -214,22 +214,22 @@ func getRealClientIPOriginal(req *ApplicationRequest) string {
 	return ""
 }
 
-// 优化后的getRealClientIP实现（模拟）
+// Implementación optimizada de getRealClientIP (simulada)
 func getRealClientIPOptimized(req *ApplicationRequest) string {
 	if req == nil {
 		return ""
 	}
 
-	// 快速路径：直接查找最常用的X-Forwarded-For头部
+	// Ruta rápida: buscar directamente la cabecera X-Forwarded-For más usada
 	if value, err := getXForwardedForIP(req.Headers); err == nil && value != "" {
 		return value
 	}
 
-	// 回退到原始逻辑
+	// Volver a la lógica original
 	return getRealClientIPOriginal(req)
 }
 
-// 专用的X-Forwarded-For解析函数
+// Función de análisis dedicada para X-Forwarded-For
 func getXForwardedForIP(headers []byte) (string, error) {
 	target := []byte("x-forwarded-for")
 	targetLen := len(target)
@@ -238,13 +238,13 @@ func getXForwardedForIP(headers []byte) (string, error) {
 	for i < len(headers) {
 		lineStart := i
 
-		// 找到行结束
+		// Encontrar el fin de línea
 		for i < len(headers) && headers[i] != '\n' && headers[i] != '\r' {
 			i++
 		}
 		lineEnd := i
 
-		// 跳过换行符
+		// Omitir saltos de línea
 		if i < len(headers) && headers[i] == '\r' {
 			i++
 		}
@@ -256,7 +256,7 @@ func getXForwardedForIP(headers []byte) (string, error) {
 			continue
 		}
 
-		// 查找冒号
+		// Buscar los dos puntos
 		colonPos := -1
 		for j := lineStart; j < lineEnd; j++ {
 			if headers[j] == ':' {
@@ -269,7 +269,7 @@ func getXForwardedForIP(headers []byte) (string, error) {
 			continue
 		}
 
-		// 检查key
+		// Comprobar la clave
 		keyStart := lineStart
 		keyEnd := colonPos
 
@@ -285,7 +285,7 @@ func getXForwardedForIP(headers []byte) (string, error) {
 			continue
 		}
 
-		// 大小写不敏感比较
+		// Comparación sin distinción de mayúsculas
 		match := true
 		for j := 0; j < keyLen; j++ {
 			c := headers[keyStart+j]
@@ -302,7 +302,7 @@ func getXForwardedForIP(headers []byte) (string, error) {
 			continue
 		}
 
-		// 提取value
+		// Extraer el valor
 		valueStart := colonPos + 1
 		valueEnd := lineEnd
 
@@ -315,7 +315,7 @@ func getXForwardedForIP(headers []byte) (string, error) {
 
 		if valueEnd > valueStart {
 			value := string(headers[valueStart:valueEnd])
-			// 提取第一个IP
+			// Extraer la primera IP
 			if commaPos := strings.IndexByte(value, ','); commaPos != -1 {
 				firstIP := strings.TrimSpace(value[:commaPos])
 				if firstIP != "" {
@@ -330,7 +330,7 @@ func getXForwardedForIP(headers []byte) (string, error) {
 	return "", nil
 }
 
-// ==================== 基准测试 ====================
+// ==================== Pruebas de rendimiento ====================
 
 func BenchmarkGetHeaderValue(b *testing.B) {
 	testHeaders := []byte(`Host: example.com
@@ -361,7 +361,7 @@ Accept-Encoding: gzip, deflate, br`)
 		}
 	})
 
-	// 模拟真实场景：查找多个header（如getRealClientIP函数中的使用）
+	// Simular escenario real: buscar múltiples headers (como en getRealClientIP)
 	headers := []string{
 		"x-forwarded-for", "x-real-ip", "true-client-ip", "cf-connecting-ip",
 		"fastly-client-ip", "x-client-ip", "x-original-forwarded-for",
@@ -388,7 +388,7 @@ Accept-Encoding: gzip, deflate, br`)
 }
 
 func BenchmarkGetHeaderValueWorstCase(b *testing.B) {
-	// 创建一个很长的header列表，目标header在最后
+	// Crear una lista de headers muy larga, con el header objetivo al final
 	var headerBuilder strings.Builder
 	for i := 0; i < 20; i++ {
 		headerBuilder.WriteString("Header-")
@@ -417,7 +417,7 @@ func BenchmarkGetHeaderValueWorstCase(b *testing.B) {
 }
 
 func BenchmarkGetRealClientIPOptimization(b *testing.B) {
-	// 测试不同场景的header
+	// Probar headers de distintos escenarios
 	testCases := []struct {
 		name    string
 		headers []byte
@@ -464,7 +464,7 @@ X-Forwarded-For: 192.168.1.100, 10.0.0.1`),
 		},
 	}
 
-	// 创建模拟的SrcIp
+	// Crear SrcIp simulada
 	srcIp, _ := netip.ParseAddr("203.0.113.1")
 
 	for _, tc := range testCases {
@@ -489,7 +489,7 @@ X-Forwarded-For: 192.168.1.100, 10.0.0.1`),
 	}
 }
 
-// 专门测试X-Forwarded-For快速路径的性能
+// Prueba específica del rendimiento de la ruta rápida de X-Forwarded-For
 func BenchmarkXForwardedForFastPath(b *testing.B) {
 	testHeaders := []byte(`X-Forwarded-For: 192.168.1.100, 10.0.0.1, 172.16.0.1
 Host: example.com
@@ -510,7 +510,7 @@ User-Agent: Mozilla/5.0`)
 	})
 }
 
-// 内存分配测试
+// Prueba de asignación de memoria
 func BenchmarkHeaderParsingMemory(b *testing.B) {
 	testHeaders := []byte(`Host: example.com
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36

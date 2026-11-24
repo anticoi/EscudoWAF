@@ -9,8 +9,8 @@ interface RealtimeAttackListProps {
 }
 
 /**
- * 实时攻击列表组件
- * 显示实时Web攻击信息
+ * Componente de lista de ataques en tiempo real
+ * Mostrar información de ataques web en tiempo real
  */
 export const RealtimeAttackList: React.FC<RealtimeAttackListProps> = ({
     realtimeAttacks,
@@ -18,7 +18,7 @@ export const RealtimeAttackList: React.FC<RealtimeAttackListProps> = ({
 }) => {
     const { t, i18n } = useTranslation()
 
-    // 格式化地理位置信息
+    // Formatear la información de geolocalización
     const formatLocation = (srcIpInfo: AttackEventAggregateResult['srcIpInfo']) => {
         if (!srcIpInfo) return t('attackDetail.noLocationInfo')
 
@@ -39,7 +39,7 @@ export const RealtimeAttackList: React.FC<RealtimeAttackListProps> = ({
         return parts.join(' - ')
     }
 
-    // 格式化时间显示
+    // Formatear la visualización de la hora
     const formatTime = (timeString: string) => {
         const date = new Date(timeString)
         return date.toLocaleTimeString([], {
@@ -80,7 +80,7 @@ export const RealtimeAttackList: React.FC<RealtimeAttackListProps> = ({
                     <div className="space-y-2">
                         {realtimeAttacks.map((attack, index) => (
                             <div key={`${attack.srcIp}-${index}`} className="flex items-start gap-2 py-1">
-                                {/* 状态指示器 */}
+                                {/* Indicador de estado */}
                                 <div className="flex-shrink-0 mt-1">
                                     <div
                                         className={`w-2 h-2 rounded-full ${attack.isOngoing ? 'bg-red-500 animate-pulse' : 'bg-white/40'
@@ -88,7 +88,7 @@ export const RealtimeAttackList: React.FC<RealtimeAttackListProps> = ({
                                     ></div>
                                 </div>
 
-                                {/* 攻击信息 */}
+                                {/* Información del ataque */}
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between mb-0.5">
                                         <div className="font-mono text-xs font-medium text-white truncate">

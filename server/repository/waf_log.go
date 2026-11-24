@@ -7,9 +7,9 @@ import (
 	"sort"
 	"time"
 
-	"github.com/HUAHUAI23/RuiQi/pkg/model"
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/dto"
+	"github.com/anticoi/EscudoWAF/pkg/model"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/dto"
 	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -143,11 +143,11 @@ func (r *MongoWAFLogRepository) FindAttackLogs(
 	skip int64,
 	limit int64,
 ) ([]model.WAFLog, error) {
-	// 使用 options.Find() 创建选项
+	// Usar options.Find() para crear las opciones
 	findOptions := options.Find().
 		SetSkip(skip).
 		SetLimit(limit).
-		SetSort(bson.D{{Key: "createdAt", Value: -1}}) // 最近的优先
+		SetSort(bson.D{{Key: "createdAt", Value: -1}}) // Los más recientes primero
 
 	cursor, err := r.collection.Find(ctx, filter, findOptions)
 	if err != nil {
@@ -165,9 +165,9 @@ func (r *MongoWAFLogRepository) FindAttackLogs(
 
 // CountAttackLogs counts the total number of attack logs matching the filter
 func (r *MongoWAFLogRepository) CountAttackLogs(ctx context.Context, filter bson.D) (int64, error) {
-	// 设置计数选项以优化大数据集性能
+	// Establecer opciones de conteo para optimizar el rendimiento en grandes volúmenes
 	countOptions := options.Count().
-		SetHint(bson.D{{Key: "createdAt", Value: 1}}) // 使用时间索引提示
+		SetHint(bson.D{{Key: "createdAt", Value: 1}}) // Usar hint de índice de tiempo
 
 	total, err := r.collection.CountDocuments(ctx, filter, countOptions)
 	if err != nil {
@@ -180,10 +180,10 @@ func (r *MongoWAFLogRepository) CountAttackLogs(ctx context.Context, filter bson
 // by finding the longest sequence of attacks with gaps no larger than 5 minutes
 func (r *MongoWAFLogRepository) calculateAttackDuration(attackTimes []time.Time) float64 {
 	if len(attackTimes) == 0 {
-		return 1.0 // 即使没有攻击时间，也至少返回1分钟
+		return 1.0 // Aunque no haya hora de ataque, devolver al menos 1 minuto
 	}
 
-	// 处理只有单个攻击点的情况，直接返回1分钟
+	// Manejar el caso de un solo punto de ataque, devolver 1 minuto directamente
 	if len(attackTimes) == 1 {
 		return 1.0
 	}
@@ -197,39 +197,39 @@ func (r *MongoWAFLogRepository) calculateAttackDuration(attackTimes []time.Time)
 		return sortedTimes[i].After(sortedTimes[j])
 	})
 
-	// 从最新攻击时间开始
+	// Comenzar desde la hora del ataque más reciente
 	var currentSequenceStart time.Time = sortedTimes[0]
 	var previousTime time.Time = sortedTimes[0]
 	var foundContinuousSequence bool = false
 
-	// 查找最早的仍在连续序列中的攻击时间
+	// Buscar la hora de ataque más antigua que sigue en la secuencia continua
 	for i := 1; i < len(sortedTimes); i++ {
 		currentTime := sortedTimes[i]
 
-		// 检查与前一次攻击的时间差是否小于5分钟
+		// Comprobar si la diferencia con el ataque anterior es menor de 5 minutos
 		if previousTime.Sub(currentTime).Minutes() <= 5 {
-			// 仍在连续序列中
+			// Todavía en la secuencia continua
 			previousTime = currentTime
 			foundContinuousSequence = true
 		} else {
-			// 连续序列中断
+			// Interrupción de la secuencia continua
 			break
 		}
 	}
 
-	// 如果没有找到连续序列（最新与其他所有攻击间隔都大于5分钟）
+	// Si no se encontró secuencia continua (el ataque más reciente está a más de 5 minutos de los demás)
 	if !foundContinuousSequence {
-		return 1.0 // 返回最小持续时间1分钟
+		return 1.0 // Devolver duración mínima de 1 minuto
 	}
 
-	// 计算持续时间（最新时间减去序列中最早的时间）
+	// Calcular la duración (hora más reciente menos la más antigua de la secuencia)
 	duration := currentSequenceStart.Sub(previousTime).Minutes()
 
-	// 将持续时间向上取整到至少1分钟
+	// Redondear la duración hacia arriba a al menos 1 minuto
 	if duration < 1.0 {
 		return 1.0
 	}
 
-	// 返回整数分钟数（向上取整）
+	// Devolver minutos enteros (redondeo hacia arriba)
 	return math.Ceil(duration)
 }

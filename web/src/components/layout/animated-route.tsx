@@ -20,7 +20,7 @@ export function AnimatedRoute({
     const location = useLocation()
     const prefersReducedMotion = useReducedMotion()
     
-    // 如果用户设置了减少动画，则使用简单淡入淡出
+    // Si el usuario activó reducir animaciones, usar fundido simple
     if (prefersReducedMotion) {
         return (
             <AnimatePresence mode="wait">
@@ -34,7 +34,7 @@ export function AnimatedRoute({
         )
     }
     
-    // 根据传入的类型选择不同的动画效果
+    // Elegir distintos efectos de animación según el tipo recibido
     const getTransitionProps = () => {
         switch (transitionType) {
             case "fade":

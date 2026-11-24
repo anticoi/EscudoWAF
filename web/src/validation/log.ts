@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-// 攻击事件查询表单验证规则
+// Reglas de validación del formulario de consulta de eventos de ataque
 export const attackEventQuerySchema = z.object({
   srcIp: z.string().optional(),
   dstIp: z.string().optional(),
@@ -15,7 +15,7 @@ export const attackEventQuerySchema = z.object({
 
 export type AttackEventQueryFormValues = z.infer<typeof attackEventQuerySchema>
 
-// 攻击日志查询表单验证规则
+// Reglas de validación del formulario de consulta de logs de ataque
 export const attackLogQuerySchema = z.object({
   ruleId: z.coerce.number().optional(),
   srcIp: z.string().optional(),

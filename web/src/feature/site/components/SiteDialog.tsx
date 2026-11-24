@@ -20,7 +20,7 @@ interface SiteDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     mode: 'create' | 'update'
-    site?: Site | null // 仅在编辑模式下需要
+    site?: Site | null // Solo necesario en modo edición
 }
 
 export function SiteDialog({
@@ -31,13 +31,13 @@ export function SiteDialog({
 }: SiteDialogProps) {
     const { t } = useTranslation()
 
-    // 根据模式确定标题和描述
+    // Determinar el título y la descripción según el modo
     const title = mode === 'create' ? t('site.dialog.createTitle') : t('site.dialog.updateTitle')
     const description = mode === 'create'
         ? t('site.dialog.createDescription')
         : t('site.dialog.updateDescription')
 
-    // 根据模式准备表单默认值
+    // Preparar valores por defecto del formulario según el modo
     const defaultValues = mode === 'update' && site
         ? {
             name: site.name,

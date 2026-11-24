@@ -31,28 +31,28 @@ export default function EventsPage() {
         pageSize: 10
     })
 
-    // 轮询状态
+    // Estado del sondeo
     const [enablePolling, setEnablePolling] = useState(false)
-    const [pollingInterval, setPollingInterval] = useState(30) // 默认30秒
+    const [pollingInterval, setPollingInterval] = useState(30) // 30 segundos por defecto
 
     const { data, isLoading, error, isError, refetch } = useAttackEvents(queryParams)
 
-    // 设置轮询
+    // Establecer el sondeo
     useEffect(() => {
-        // 清除现有的轮询
+        // Limpiar el sondeo existente
         if (pollingTimerRef.current !== null) {
             clearInterval(pollingTimerRef.current)
             pollingTimerRef.current = null
         }
 
-        // 如果启用了轮询，设置新的轮询
+        // Si el sondeo está habilitado, configurar el nuevo sondeo
         if (enablePolling) {
             pollingTimerRef.current = window.setInterval(() => {
                 refetch()
             }, pollingInterval * 1000)
         }
 
-        // 组件卸载时清除轮询
+        // Limpiar el sondeo al desmontar el componente
         return () => {
             if (pollingTimerRef.current !== null) {
                 clearInterval(pollingTimerRef.current)
@@ -74,7 +74,7 @@ export default function EventsPage() {
         params.append('domain', domain)
         params.append('srcIp', srcIp)
 
-        // 如果有设置时间，也传递过去
+        // Si se estableció hora, pasarla también
         if (queryParams.startTime) {
             params.append('startTime', queryParams.startTime)
         }
@@ -192,17 +192,17 @@ export default function EventsPage() {
                 }
                 const newPagination = updater(oldPagination)
 
-                // 使用 immer 统一处理分页变化
+                // Usar immer para manejar de forma unificada los cambios de paginación
                 setQueryParams(produce(draft => {
-                    // 只有当页码改变时才更新页码
+                    // Solo actualizar el número de página cuando cambia
                     if (newPagination.pageIndex !== oldPagination.pageIndex) {
                         draft.page = newPagination.pageIndex + 1
                     }
 
-                    // 只有当每页条数改变时才更新每页条数并重置页码
+                    // Solo actualizar la cantidad por página y reiniciar la página cuando cambia
                     if (newPagination.pageSize !== oldPagination.pageSize) {
                         draft.pageSize = newPagination.pageSize
-                        draft.page = 1 // 重置到第一页
+                        draft.page = 1 // Volver a la primera página
                     }
                 }))
             }
@@ -212,7 +212,7 @@ export default function EventsPage() {
 
     return (
         <Card className="flex flex-col h-full p-0 border-none shadow-none">
-            {/* 头部区域 - 固定高度 */}
+            {/* Área de cabecera - altura fija */}
             <div className="p-6 flex-shrink-0">
                 <AttackEventFilter
                     onFilter={handleFilter}
@@ -224,7 +224,7 @@ export default function EventsPage() {
                 />
             </div>
 
-            {/* 表格区域 - 弹性高度，可滚动 */}
+            {/* Área de tabla - altura flexible, con scroll */}
             <div className="px-6 flex-1 overflow-auto">
                 {isError ? (
                     <AdvancedErrorDisplay error={error} onRetry={refetch} />
@@ -241,7 +241,7 @@ export default function EventsPage() {
                 )}
             </div>
 
-            {/* 底部分页 - 固定高度 */}
+            {/* Paginación inferior - altura fija */}
             {!isError && <div className="py-6 px-4 flex-shrink-0">
                 <DataTablePagination table={table} />
             </div>}

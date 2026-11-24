@@ -1,29 +1,29 @@
 package dto
 
 import (
-	"github.com/HUAHUAI23/RuiQi/server/model"
+	"github.com/anticoi/EscudoWAF/server/model"
 )
 
-// UserLoginRequest 用户登录请求
+// UserLoginRequest petición de inicio de sesión
 type UserLoginRequest struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
-// UserPasswordResetRequest 密码重置请求
+// UserPasswordResetRequest petición de restablecimiento de contraseña
 type UserPasswordResetRequest struct {
 	OldPassword string `json:"oldPassword" binding:"required"`
 	NewPassword string `json:"newPassword" binding:"required,min=6"`
 }
 
-// UserCreateRequest 创建用户请求（仅管理员可用）
+// UserCreateRequest petición de creación de usuario (solo administradores)
 type UserCreateRequest struct {
 	Username string `json:"username" binding:"required,min=3,max=20"`
 	Password string `json:"password" binding:"required,min=6"`
 	Role     string `json:"role" binding:"required,oneof=admin user"`
 }
 
-// UserUpdateRequest 更新用户请求
+// UserUpdateRequest petición de actualización de usuario
 type UserUpdateRequest struct {
 	Username  string `json:"username,omitempty" binding:"omitempty,min=3,max=20"`
 	Password  string `json:"password,omitempty" binding:"omitempty,min=6"`
@@ -31,10 +31,10 @@ type UserUpdateRequest struct {
 	NeedReset *bool  `json:"needReset,omitempty"`
 }
 
-// LoginResponseData 登录响应数据
+// LoginResponseData datos de respuesta de inicio de sesión
 type LoginResponseData struct {
 	Token string     `json:"token" example:"eyJhbGciOiJIUzI1NiIs..."` // JWT token
-	User  model.User `json:"user"`                                    // 用户信息
+	User  model.User `json:"user"`                                    // Información del usuario
 }
 
 type ResetPasswordResponseData = model.TSuccessResponse[model.User]

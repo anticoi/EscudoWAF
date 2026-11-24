@@ -24,7 +24,7 @@ export const AnimatedContainer = forwardRef<HTMLDivElement, AnimatedContainerPro
         layoutDependency,
         ...props 
     }, ref) => {
-        // 根据变体选择动画属性
+        // Elegir las propiedades de animación según la variante
         const getAnimationProps = () => {
             switch (variant) {
                 case "smooth":

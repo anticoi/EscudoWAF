@@ -27,7 +27,7 @@ import { AnimatedButton } from '@/components/ui/animation/components/animated-bu
 export function CertificateTable() {
     const { t } = useTranslation()
 
-    // 状态管理
+    // Gestión de estado
     const [certificateDialogOpen, setCertificateDialogOpen] = useState(false)
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
     const [selectedCertId, setSelectedCertId] = useState<string | null>(null)
@@ -37,7 +37,7 @@ export function CertificateTable() {
 
     const [isRefreshAnimating, setIsRefreshAnimating] = useState(false)
 
-    // 获取证书列表
+    // Obtener lista de certificados
     const {
         data,
         isLoading,
@@ -54,37 +54,37 @@ export function CertificateTable() {
                 return undefined
             }
 
-            // 检查allPages是否存在
+            // Comprobar si allPages existe
             if (!allPages) {
                 return undefined
             }
 
-            // 计算已加载的项目总数（累加每页的实际items长度）
+            // Calcular el total de elementos cargados (acumular la longitud real de items de cada página)
             const loadedItemsCount = allPages.reduce((count, page) => {
                 return count + (page.items?.length || 0)
             }, 0)
 
-            // 如果服务器返回的总数大于已加载的数量，则还有下一页
+            // Si el total devuelto por el servidor es mayor que lo cargado, hay otra página
             return lastPage.total > loadedItemsCount ? allPages.length + 1 : undefined
         },
         enabled: true,
     })
 
-    // 扁平化分页数据
+    // Datos de paginación aplanados
     const flatData = useMemo(() =>
         data?.pages.flatMap(page => page.items) || [],
         [data]
     )
 
-    // 优化的无限滚动实现
+    // Implementación optimizada de scroll infinito
     useEffect(() => {
-        // 只有当有更多页面可加载时才创建观察器
+        // Solo crear el observador cuando hay más páginas por cargar
         if (!hasNextPage) return
 
         const options = {
-            // 降低threshold使其更容易触发
+            // Reducir el umbral para que se dispare más fácilmente
             threshold: 0.1,
-            // 减小rootMargin以避免过早触发，但仍保持一定的预加载空间
+            // Reducir rootMargin para evitar activación prematura, manteniendo algo de precarga
             rootMargin: '100px 0px'
         }
 
@@ -110,27 +110,27 @@ export function CertificateTable() {
         }
     }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
-    // 打开创建证书对话框
+    // Abrir el diálogo de creación de certificado
     const openCreateDialog = () => {
         setDialogMode('create')
         setSelectedCertificate(null)
         setCertificateDialogOpen(true)
     }
 
-    // 打开更新证书对话框
+    // Abrir el diálogo de actualización de certificado
     const openUpdateDialog = (certificate: Certificate) => {
         setDialogMode('update')
         setSelectedCertificate(certificate)
         setCertificateDialogOpen(true)
     }
 
-    // 打开删除对话框
+    // Abrir el diálogo de eliminación
     const openDeleteDialog = (id: string) => {
         setSelectedCertId(id)
         setDeleteDialogOpen(true)
     }
 
-    // 助手函数：检查证书是否即将过期（30天内）
+    // Función auxiliar: comprobar si el certificado expira pronto (30 días)
     const isExpiringSoon = (expireDate: string): boolean => {
         const expiryDate = new Date(expireDate)
         const now = new Date()
@@ -138,7 +138,7 @@ export function CertificateTable() {
         return expiryDate.getTime() - now.getTime() < thirtyDaysInMs && expiryDate > now
     }
 
-    // 助手函数：检查证书是否已过期
+    // Función auxiliar: comprobar si el certificado ya expiró
     const isExpired = (expireDate: string): boolean => {
         return new Date(expireDate) < new Date()
     }
@@ -147,13 +147,13 @@ export function CertificateTable() {
         setIsRefreshAnimating(true)
         refetch()
 
-        // 停止动画，延迟1秒以匹配动画效果
+        // Detener la animación con 1 segundo de retraso para coincidir con el efecto
         setTimeout(() => {
             setIsRefreshAnimating(false)
         }, 1000)
     }
 
-    // 表格列定义
+    // Definición de columnas de tabla
     const columns: ColumnDef<Certificate>[] = [
         {
             accessorKey: 'name',
@@ -224,7 +224,7 @@ export function CertificateTable() {
         },
     ]
 
-    // 初始化表格
+    // Inicializar la tabla
     const table = useReactTable({
         data: flatData,
         columns,
@@ -234,7 +234,7 @@ export function CertificateTable() {
     return (
         <>
             <Card className="border-none shadow-none p-6 flex flex-col h-full">
-                {/* 标题和操作按钮 - 固定在顶部 */}
+                {/* Título y botones de acción - fijados arriba */}
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-semibold text-primary dark:text-white">{t("certificate.management")}</h2>
                     <div className="flex gap-2">
@@ -264,7 +264,7 @@ export function CertificateTable() {
                     </div>
                 </div>
 
-                {/* 表格容器 - 设置固定高度和滚动 */}
+                {/* Contenedor de tabla - altura fija y scroll */}
                 <div className="flex-1 overflow-hidden flex flex-col">
                     <div className="overflow-auto h-full">
                         <DataTable table={table}
@@ -276,7 +276,7 @@ export function CertificateTable() {
                             showScrollShadows={true}
                         />
 
-                        {/* 无限滚动监测元素 - 在滚动区域内 */}
+                        {/* Elemento de detección de scroll infinito - dentro del área de scroll */}
                         {hasNextPage && <div
                             ref={sentinelRef}
                             className="h-5 flex justify-center items-center mt-4"
@@ -289,7 +289,7 @@ export function CertificateTable() {
                 </div>
             </Card>
 
-            {/* 统一的证书对话框 */}
+            {/* Diálogo unificado de certificado */}
             <CertificateDialog
                 open={certificateDialogOpen}
                 onOpenChange={setCertificateDialogOpen}
@@ -297,7 +297,7 @@ export function CertificateTable() {
                 certificate={selectedCertificate}
             />
 
-            {/* 使用抽离出的删除对话框组件 */}
+            {/* Usar el componente de diálogo de eliminación extraído */}
             <DeleteCertificateDialog
                 open={deleteDialogOpen}
                 onOpenChange={setDeleteDialogOpen}

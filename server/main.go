@@ -14,22 +14,22 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	mongodb "github.com/HUAHUAI23/RuiQi/pkg/database/mongo"
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	_ "github.com/HUAHUAI23/RuiQi/server/docs" // 导入 swagger 文档
-	"github.com/HUAHUAI23/RuiQi/server/router"
-	haproxyStats "github.com/HUAHUAI23/RuiQi/server/service/cornjob/haproxy"
-	"github.com/HUAHUAI23/RuiQi/server/service/daemon"
-	"github.com/HUAHUAI23/RuiQi/server/validator"
+	mongodb "github.com/anticoi/EscudoWAF/pkg/database/mongo"
+	"github.com/anticoi/EscudoWAF/server/config"
+	_ "github.com/anticoi/EscudoWAF/server/docs" // Importar la documentación swagger
+	"github.com/anticoi/EscudoWAF/server/router"
+	haproxyStats "github.com/anticoi/EscudoWAF/server/service/cornjob/haproxy"
+	"github.com/anticoi/EscudoWAF/server/service/daemon"
+	"github.com/anticoi/EscudoWAF/server/validator"
 )
 
-//	@title			RuiQi-WAF API
+//	@title			EscudoWAF-WAF API
 //	@version		1.0
-//	@description	RuiQi 应用防火墙管理系统 API
-//	@termsOfService	https://github.com/HUAHUAI23/RuiQi
+//	@description	EscudoWAF - API del sistema de gestión de firewall de aplicaciones
+//	@termsOfService	https://github.com/anticoi/EscudoWAF
 
 //	@contact.name	API Support
-//	@contact.url	https://github.com/HUAHUAI23/RuiQi
+//	@contact.url	https://github.com/anticoi/EscudoWAF
 //	@contact.email	huahua1319873800@outlook.com
 
 //	@license.name	Apache 2.0
@@ -41,7 +41,7 @@ import (
 // @securityDefinitions.apikey	BearerAuth
 // @in							header
 // @name						Authorization
-// @description				使用 Bearer {token} 格式进行身份验证
+// @description				Autenticación con el formato Bearer {token}
 func main() {
 	// Load configuration
 	err := config.InitConfig()
@@ -50,14 +50,14 @@ func main() {
 		return
 	}
 
-	// 连接数据库
+	// Conectar a la base de datos
 	client, err := mongodb.Connect(config.Global.DBConfig.URI)
 	if err != nil {
 		config.Logger.Error().Err(err).Msg("Failed to connect to database")
 		return
 	}
 
-	// 获取数据库
+	// Obtener la base de datos
 	db := client.Database(config.Global.DBConfig.Database)
 
 	err = config.InitDB(db)
@@ -101,11 +101,11 @@ func main() {
 	// Setup the router
 	router.Setup(route, db)
 
-	// 初始化验证器
+	// Inicializar los validadores
 	validator.InitValidators()
 	// validators.InitStructValidators()
 
-	// 设置 Swagger 文档
+	// Configurar la documentación de Swagger
 	route.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler,
 		ginSwagger.URL("/swagger/doc.json"),
 		ginSwagger.DefaultModelsExpandDepth(2),
@@ -122,7 +122,7 @@ func main() {
 			scheme = "https://"
 		}
 
-		// 优先使用 X-Forwarded-Host，如果没有则使用 Request.Host
+		// Priorizar X-Forwarded-Host; si no existe, usar Request.Host
 		host := c.GetHeader("X-Forwarded-Host")
 		if host == "" {
 			host = c.Request.Host
@@ -134,7 +134,7 @@ func main() {
 		<!DOCTYPE html>
 		<html>
 		<head>
-			<title>RuiQi-WAF API Reference</title>
+			<title>EscudoWAF-WAF API Reference</title>
 			<meta charset="utf-8" />
 			<meta name="viewport" content="width=device-width, initial-scale=1" />
 			<style>
@@ -159,17 +159,17 @@ func main() {
 		c.String(http.StatusOK, content)
 	})
 
-	// 获取Redoc处理器
+	// Obtener el handler de Redoc
 	doc := redoc.Redoc{
-		Title:       "RuiQi-WAF API",
-		Description: "RuiQi 应用防火墙管理系统 API",
+		Title:       "EscudoWAF-WAF API",
+		Description: "EscudoWAF - API del sistema de gestión de firewall de aplicaciones",
 		SpecFile:    "./docs/swagger.json",
 		SpecPath:    "/swagger.json",
 		DocsPath:    "/redoc",
 	}
 	redocHandler := doc.Handler()
 
-	// 明确定义Redoc路由
+	// Definir explícitamente la ruta de Redoc
 	route.GET("/redoc", func(c *gin.Context) {
 		redocHandler(c.Writer, c.Request)
 	})
@@ -177,16 +177,16 @@ func main() {
 		redocHandler(c.Writer, c.Request)
 	})
 
-	// 创建HTTP服务器
+	// Crear servidor HTTP
 	srv := &http.Server{
 		Addr:    config.Global.Bind,
 		Handler: route,
 	}
 
-	// 创建一个错误通道
+	// Crear un canal de errores
 	serverError := make(chan error, 1)
 
-	// 在goroutine中启动服务器
+	// Iniciar el servidor en una goroutine
 	go func() {
 		config.Logger.Info().Msgf("Starting server on %s", config.Global.Bind)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -195,11 +195,11 @@ func main() {
 		}
 	}()
 
-	// 等待中断信号或服务器错误
+	// Esperar señal de interrupción o error del servidor
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
-	// 使用select等待任一通道有消息
+	// Usar select para esperar mensajes de cualquier canal
 	select {
 	case <-quit:
 		config.Logger.Info().Msg("Received shutdown signal, shutting down services...")
@@ -207,25 +207,25 @@ func main() {
 		config.Logger.Error().Err(err).Msg("Server failed, initiating shutdown...")
 	}
 
-	// 设置关闭超时时间
+	// Establecer el tiempo de espera de cierre
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	// 尝试优雅关闭服务器
+	// Intentar cerrar el servidor de forma elegante
 	if err := srv.Shutdown(ctx); err != nil {
 		config.Logger.Error().Err(err).Msg("Server forced to shutdown")
 	} else {
 		config.Logger.Info().Msg("Server shutdown gracefully")
 	}
 
-	// 停止后台服务
+	// Detener servicios en segundo plano
 	err = runner.StopServices()
 	if err != nil {
 		config.Logger.Error().Err(err).Msg("Failed to stop daemon services")
 	}
 	config.Logger.Info().Msg("Background services have been shut down, exiting...")
 
-	// 如果是因为服务器错误而退出，使用非零状态码
+	// Si se sale por error de servidor, usar código de estado distinto de cero
 	if len(serverError) > 0 {
 		os.Exit(1)
 	}

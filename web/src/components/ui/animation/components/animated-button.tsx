@@ -22,7 +22,7 @@ export const AnimatedButton = forwardRef<HTMLDivElement, AnimatedButtonProps>(
         animationVariant = "default",
         ...props
     }, ref) => {
-        // 根据动画变体选择动画属性
+        // Elegir las propiedades de animación según la variante
         const getAnimationProps = () => {
             switch (animationVariant) {
                 case "primary":

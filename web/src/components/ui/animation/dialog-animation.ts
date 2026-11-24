@@ -1,6 +1,6 @@
 import { HTMLMotionProps } from "motion/react"
 
-// 对话框进入和退出的容器动画
+// Animación del contenedor de entrada y salida del diálogo
 export const dialogEnterExitAnimation: HTMLMotionProps<"div"> = {
   className: "fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%]",
   initial: "hidden",
@@ -35,7 +35,7 @@ export const dialogEnterExitAnimation: HTMLMotionProps<"div"> = {
   }
 }
 
-// DialogContent 内容区域动画 - 更自然的涌动效果
+// DialogContent animación del área de contenido - efecto de aparición más natural
 export const dialogContentAnimation: HTMLMotionProps<"div"> = {
   variants: {
     hidden: { 
@@ -62,7 +62,7 @@ export const dialogContentAnimation: HTMLMotionProps<"div"> = {
   }
 }
 
-// 内容涌动的子元素动画 - 更自然的流动感
+// Animación de elementos hijos con efecto de flujo más natural
 export const dialogContentItemAnimation: HTMLMotionProps<"div"> = {
   variants: {
     hidden: { 
@@ -76,9 +76,9 @@ export const dialogContentItemAnimation: HTMLMotionProps<"div"> = {
       scale: 1,
       transition: {
         type: "spring",
-        damping: 20, // 更高的阻尼使动画更自然不过度弹跳
-        stiffness: 260, // 适当的刚度平衡速度和流畅度
-        mass: 0.4 // 较轻的质量使动画更灵活
+        damping: 20, // Mayor amortiguación para una animación más natural sin rebote excesivo
+        stiffness: 260, // La rigidez adecuada equilibra velocidad y fluidez
+        mass: 0.4 // Menor masa hace la animación más fluida
       }
     },
     exit: { 
@@ -92,7 +92,7 @@ export const dialogContentItemAnimation: HTMLMotionProps<"div"> = {
   }
 }
 
-// DialogHeader 标题区域动画
+// DialogHeader animación del área de título
 export const dialogHeaderAnimation: HTMLMotionProps<"div"> = {
   variants: {
     hidden: { 

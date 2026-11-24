@@ -7,27 +7,27 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-// CertificateStore 代表证书库表
+// CertificateStore representa la tabla de almacén de certificados
 type CertificateStore struct {
-	ID          bson.ObjectID `bson:"_id,omitempty" json:"id,omitempty"` // 证书ID
-	Name        string        `bson:"name" json:"name"`                  // 证书名称/别名
-	Description string        `bson:"description" json:"description"`    // 证书描述
-	PublicKey   string        `bson:"publicKey" json:"publicKey"`        // 公钥内容（PEM格式）
-	PrivateKey  string        `bson:"privateKey" json:"privateKey"`      // 私钥内容（PEM格式）
-	ExpireDate  time.Time     `bson:"expireDate" json:"expireDate"`      // 证书过期日期
-	IssuerName  string        `bson:"issuerName" json:"issuerName"`      // 颁发机构
-	FingerPrint string        `bson:"fingerPrint" json:"fingerPrint"`    // 证书指纹
-	Domains     []string      `bson:"domains" json:"domains"`            // 证书绑定的域名列表
-	CreatedAt   time.Time     `bson:"createdAt" json:"createdAt"`        // 创建时间
-	UpdatedAt   time.Time     `bson:"updatedAt" json:"updatedAt"`        // 更新时间
+	ID          bson.ObjectID `bson:"_id,omitempty" json:"id,omitempty"` // ID del certificado
+	Name        string        `bson:"name" json:"name"`                  // Nombre/alias del certificado
+	Description string        `bson:"description" json:"description"`    // Descripción del certificado
+	PublicKey   string        `bson:"publicKey" json:"publicKey"`        // Contenido de la clave pública (formato PEM)
+	PrivateKey  string        `bson:"privateKey" json:"privateKey"`      // Contenido de la clave privada (formato PEM)
+	ExpireDate  time.Time     `bson:"expireDate" json:"expireDate"`      // Fecha de expiración del certificado
+	IssuerName  string        `bson:"issuerName" json:"issuerName"`      // Autoridad emisora
+	FingerPrint string        `bson:"fingerPrint" json:"fingerPrint"`    // Huella del certificado
+	Domains     []string      `bson:"domains" json:"domains"`            // Lista de dominios vinculados al certificado
+	CreatedAt   time.Time     `bson:"createdAt" json:"createdAt"`        // Fecha de creación
+	UpdatedAt   time.Time     `bson:"updatedAt" json:"updatedAt"`        // Hora de actualización
 }
 
-// GetCollectionName 返回集合名称
+// GetCollectionName devuelve el nombre de la colección
 func (c *CertificateStore) GetCollectionName() string {
 	return "certificate"
 }
 
-// NewCertificateStore 创建一个新证书，设置默认值
+// NewCertificateStore crea un nuevo certificado con valores por defecto
 func NewCertificateStore() *CertificateStore {
 	now := time.Now()
 	return &CertificateStore{
@@ -37,17 +37,17 @@ func NewCertificateStore() *CertificateStore {
 	}
 }
 
-// ValidateCertificateStore 验证证书配置有效性
+// ValidateCertificateStore valida la validez de la configuración del certificado
 func ValidateCertificateStore(cert *CertificateStore) error {
-	// 只检查必需字段
+	// Solo comprobar los campos obligatorios
 	if cert.PublicKey == "" || cert.PrivateKey == "" {
 		return ErrMissingRequiredField
 	}
 	return nil
 }
 
-// 通用错误
+// Error general
 var (
-	ErrMissingRequiredField = errors.New("缺少必填字段")
-	ErrInvalidFormat        = errors.New("无效的格式")
+	ErrMissingRequiredField = errors.New("Faltan campos obligatorios")
+	ErrInvalidFormat        = errors.New("Formato no válido")
 )

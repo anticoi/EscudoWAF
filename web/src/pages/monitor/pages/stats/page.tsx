@@ -17,7 +17,7 @@ export default function StatsPage() {
 
     return (
         <ScrollArea scrollbarVariant="none" className="h-full mx-auto p-4 space-y-6">
-            {/* 时间范围选择器 */}
+            {/* Selector de rango de tiempo */}
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold text-primary dark:text-white">
                     {t('stats.title')}
@@ -28,7 +28,7 @@ export default function StatsPage() {
             <Separator className="my-4" />
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* 左侧指标区域 */}
+                {/* Área de métricas izquierda */}
                 <div className="lg:col-span-7">
                     <Card className="border-none shadow-none p-4">
                         <h2 className="text-lg font-medium mb-4 dark:text-white">{t('stats.overview')}</h2>
@@ -91,16 +91,16 @@ export default function StatsPage() {
                     </Card>
                 </div>
 
-                {/* 右侧实时QPS区域 */}
+                {/* Área de QPS en tiempo real a la derecha */}
                 <div className="lg:col-span-5">
                     <RealtimeQPSChart />
                 </div>
             </div>
 
-            {/* 中央区域 - 流量趋势图 */}
+            {/* Área central - gráfico de tendencia de tráfico */}
             <TrafficChart timeRange={timeRange} />
 
-            {/* 底部区域 - 请求与拦截折线图 */}
+            {/* Área inferior - gráfico de líneas de peticiones y bloqueos */}
             <RequestsBlocksChart timeRange={timeRange} />
         </ScrollArea>
     )

@@ -33,7 +33,7 @@ export default function LogsPage() {
     const [selectedLog, setSelectedLog] = useState<AttackDetailData | null>(null)
     const [detailDialogOpen, setDetailDialogOpen] = useState(false)
 
-    // 从URL参数中获取查询条件 - 使用 immer
+    // Obtener las condiciones de consulta de los parámetros de URL - usando immer
     useEffect(() => {
         const params = new URLSearchParams(location.search)
         const domain = params.get('domain')
@@ -65,7 +65,7 @@ export default function LogsPage() {
     }
 
 
-    // 处理打开详情对话框
+    // Manejar la apertura del diálogo de detalles
     const handleOpenDetail = (log: WAFLog) => {
         setSelectedLog({
             target: `${log.domain}:${log.dstPort}${log.uri}`,
@@ -163,17 +163,17 @@ export default function LogsPage() {
                 }
                 const newPagination = updater(oldPagination)
 
-                // 使用 immer 统一处理分页变化
+                // Usar immer para manejar de forma unificada los cambios de paginación
                 setQueryParams(produce(draft => {
-                    // 只有当页码改变时才更新页码
+                    // Solo actualizar el número de página cuando cambia
                     if (newPagination.pageIndex !== oldPagination.pageIndex) {
                         draft.page = newPagination.pageIndex + 1
                     }
 
-                    // 只有当每页条数改变时才更新每页条数并重置页码
+                    // Solo actualizar la cantidad por página y reiniciar la página cuando cambia
                     if (newPagination.pageSize !== oldPagination.pageSize) {
                         draft.pageSize = newPagination.pageSize
-                        draft.page = 1 // 重置到第一页
+                        draft.page = 1 // Volver a la primera página
                     }
                 }))
             }
@@ -183,12 +183,12 @@ export default function LogsPage() {
 
     return (
         <Card className="flex flex-col h-full p-0 border-none shadow-none">
-            {/* 头部筛选器 - 固定高度 */}
+            {/* Filtros de cabecera - altura fija */}
             <div className="p-6 flex-shrink-0">
                 <AttackLogFilter onFilter={handleFilter} defaultValues={queryParams} onRefresh={refetch} />
             </div>
 
-            {/* 表格区域 - 弹性高度，可滚动 */}
+            {/* Área de tabla - altura flexible, con scroll */}
             <div className="px-6 flex-1 overflow-auto">
                 {isError ? (
                     <AdvancedErrorDisplay error={error} onRetry={refetch} />
@@ -205,7 +205,7 @@ export default function LogsPage() {
                 )}
             </div>
 
-            {/* 底部分页 - 固定高度 */}
+            {/* Paginación inferior - altura fija */}
             {!isError && <div className="py-6 px-4 flex-shrink-0">
                 <DataTablePagination table={table} />
             </div>}

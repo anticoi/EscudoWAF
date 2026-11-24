@@ -7,15 +7,15 @@ interface StatCardProps {
 }
 
 /**
- * 统计卡片组件
- * 用于显示统计数据，左上角布局，无图标
+ * Componente de tarjeta de estadísticas
+ * Para mostrar estadísticas, layout superior izquierdo, sin icono
  */
 export const StatCard: React.FC<StatCardProps> = ({
     title,
     value,
     className = ''
 }) => {
-    // 格式化数字显示
+    // Formatear la visualización de números
     const formatValue = (val: number | string): string => {
         if (typeof val === 'string') return val
 

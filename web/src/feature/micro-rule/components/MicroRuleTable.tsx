@@ -28,7 +28,7 @@ import { Badge } from '@/components/ui/badge'
 export function MicroRuleTable() {
     const { t } = useTranslation()
 
-    // 状态管理
+    // Gestión de estado
     const [ruleDialogOpen, setRuleDialogOpen] = useState(false)
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
     const [selectedRuleId, setSelectedRuleId] = useState<string | null>(null)
@@ -38,7 +38,7 @@ export function MicroRuleTable() {
 
     const [isRefreshAnimating, setIsRefreshAnimating] = useState(false)
 
-    // 获取规则列表
+    // Obtener la lista de reglas
     const {
         data,
         isLoading,
@@ -55,37 +55,37 @@ export function MicroRuleTable() {
                 return undefined
             }
 
-            // 检查allPages是否存在
+            // Comprobar si allPages existe
             if (!allPages) {
                 return undefined
             }
 
-            // 计算已加载的项目总数（累加每页的实际items长度）
+            // Calcular el total de elementos cargados (acumular la longitud real de items de cada página)
             const loadedItemsCount = allPages.reduce((count, page) => {
                 return count + (page.items?.length || 0)
             }, 0)
 
-            // 如果服务器返回的总数大于已加载的数量，则还有下一页
+            // Si el total devuelto por el servidor es mayor que lo cargado, hay otra página
             return lastPage.total > loadedItemsCount ? allPages.length + 1 : undefined
         },
         enabled: true,
     })
 
-    // 扁平化分页数据
+    // Datos de paginación aplanados
     const flatData = useMemo(() =>
         data?.pages.flatMap(page => page.items) || [],
         [data]
     )
 
-    // 优化的无限滚动实现
+    // Implementación optimizada de scroll infinito
     useEffect(() => {
-        // 只有当有更多页面可加载时才创建观察器
+        // Solo crear el observador cuando hay más páginas por cargar
         if (!hasNextPage) return
 
         const options = {
-            // 降低threshold使其更容易触发
+            // Reducir el umbral para que se dispare más fácilmente
             threshold: 0.1,
-            // 减小rootMargin以避免过早触发，但仍保持一定的预加载空间
+            // Reducir rootMargin para evitar activación prematura, manteniendo algo de precarga
             rootMargin: '100px 0px'
         }
 
@@ -111,21 +111,21 @@ export function MicroRuleTable() {
         }
     }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
-    // 打开创建规则对话框
+    // Abrir el diálogo de creación de regla
     const openCreateDialog = () => {
         setDialogMode('create')
         setSelectedRule(null)
         setRuleDialogOpen(true)
     }
 
-    // 打开更新规则对话框
+    // Abrir el diálogo de actualización de regla
     const openUpdateDialog = (rule: MicroRule) => {
         setDialogMode('update')
         setSelectedRule(rule)
         setRuleDialogOpen(true)
     }
 
-    // 打开删除对话框
+    // Abrir el diálogo de eliminación
     const openDeleteDialog = (id: string) => {
         setSelectedRuleId(id)
         setDeleteDialogOpen(true)
@@ -135,13 +135,13 @@ export function MicroRuleTable() {
         setIsRefreshAnimating(true)
         refetch()
 
-        // 停止动画，延迟1秒以匹配动画效果
+        // Detener la animación con 1 segundo de retraso para coincidir con el efecto
         setTimeout(() => {
             setIsRefreshAnimating(false)
         }, 1000)
     }
 
-    // 表格列定义
+    // Definición de columnas de tabla
     const columns: ColumnDef<MicroRule>[] = [
         {
             accessorKey: 'name',
@@ -208,7 +208,7 @@ export function MicroRuleTable() {
         },
     ]
 
-    // 初始化表格
+    // Inicializar la tabla
     const table = useReactTable({
         data: flatData,
         columns,
@@ -218,7 +218,7 @@ export function MicroRuleTable() {
     return (
         <>
             <Card className="border-none shadow-none p-6 flex flex-col h-full">
-                {/* 标题和操作按钮 - 固定在顶部 */}
+                {/* Título y botones de acción - fijados arriba */}
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-semibold text-primary dark:text-white">{t("microRule.title")}</h2>
                     <div className="flex gap-2">
@@ -248,7 +248,7 @@ export function MicroRuleTable() {
                     </div>
                 </div>
 
-                {/* 表格容器 - 设置固定高度和滚动 */}
+                {/* Contenedor de tabla - altura fija y scroll */}
                 <div className="flex-1 overflow-hidden flex flex-col">
                     <div className="overflow-auto h-full">
                         <DataTable table={table}
@@ -260,7 +260,7 @@ export function MicroRuleTable() {
                             showScrollShadows={true}
                         />
 
-                        {/* 无限滚动监测元素 - 在滚动区域内 */}
+                        {/* Elemento de detección de scroll infinito - dentro del área de scroll */}
                         {hasNextPage && <div
                             ref={sentinelRef}
                             className="h-5 flex justify-center items-center mt-4"
@@ -273,7 +273,7 @@ export function MicroRuleTable() {
                 </div>
             </Card>
 
-            {/* 规则对话框 */}
+            {/* Diálogo de regla */}
             <MicroRuleDialog
                 open={ruleDialogOpen}
                 onOpenChange={setRuleDialogOpen}
@@ -281,7 +281,7 @@ export function MicroRuleTable() {
                 rule={selectedRule}
             />
 
-            {/* 删除对话框 */}
+            {/* Diálogo de eliminación */}
             <DeleteMicroRuleDialog
                 open={deleteDialogOpen}
                 onOpenChange={setDeleteDialogOpen}

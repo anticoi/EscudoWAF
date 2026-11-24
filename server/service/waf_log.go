@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/HUAHUAI23/RuiQi/pkg/model"
-	"github.com/HUAHUAI23/RuiQi/server/dto"
-	"github.com/HUAHUAI23/RuiQi/server/repository"
+	"github.com/anticoi/EscudoWAF/pkg/model"
+	"github.com/anticoi/EscudoWAF/server/dto"
+	"github.com/anticoi/EscudoWAF/server/repository"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -72,12 +72,12 @@ func (s *WAFLogServiceImpl) GetAttackEvents(
 	}
 
 	// Sort by lastAttackTime (most recent first), then by count (high attack frequency first), then by srcIp (for stability)
-	// 按最新攻击时间优先，攻击次数多的优先，确保排序稳定性
+	// Priorizar hora de ataque más reciente, luego mayor número de ataques, para ordenación estable
 	sortStage := bson.D{
 		{Key: "$sort", Value: bson.D{
-			{Key: "lastAttackTime", Value: -1}, // 最新攻击时间优先
-			{Key: "count", Value: -1},          // 攻击次数多的优先
-			{Key: "srcIp", Value: 1},           // 确保排序稳定性
+			{Key: "lastAttackTime", Value: -1}, // Priorizar la hora de ataque más reciente
+			{Key: "count", Value: -1},          // Priorizar los de más ataques
+			{Key: "srcIp", Value: 1},           // Garantizar la estabilidad de la ordenación
 		}},
 	}
 
@@ -110,7 +110,7 @@ func (s *WAFLogServiceImpl) GetAttackEvents(
 		return nil, fmt.Errorf("error getting aggregated events: %w", err)
 	}
 
-	// 确保 results 不为 null
+	// Asegurar que results no sea null
 	if results == nil {
 		results = []dto.AttackEventAggregateResult{}
 	}

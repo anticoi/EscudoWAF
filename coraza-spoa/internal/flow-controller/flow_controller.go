@@ -14,63 +14,63 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 
-	"github.com/HUAHUAI23/RuiQi/pkg/model"
+	"github.com/anticoi/EscudoWAF/pkg/model"
 )
 
-// FlowControlConfig 定义流控配置
+// FlowControlConfig define la configuración de control de flujo
 type FlowControlConfig struct {
-	// 高频访问限制配置
+	// Configuración de límite de acceso de alta frecuencia
 	VisitLimit struct {
-		Enabled        bool          // 是否启用
-		Threshold      int64         // 阈值
-		StatDuration   time.Duration // 统计时间窗口
-		BlockDuration  time.Duration // 封禁时长
-		BurstCount     int64         // 突发请求数
-		ParamsCapacity int64         // 缓存容量
+		Enabled        bool          // Si está habilitado
+		Threshold      int64         // Umbral
+		StatDuration   time.Duration // Ventana de tiempo de estadísticas
+		BlockDuration  time.Duration // Duración del bloqueo
+		BurstCount     int64         // Número de peticiones en ráfaga
+		ParamsCapacity int64         // Capacidad de caché
 	}
 
-	// 高频攻击限制配置
+	// Configuración de límite de ataques de alta frecuencia
 	AttackLimit struct {
-		Enabled        bool          // 是否启用
-		Threshold      int64         // 阈值
-		StatDuration   time.Duration // 统计时间窗口
-		BlockDuration  time.Duration // 封禁时长
-		BurstCount     int64         // 突发请求数
-		ParamsCapacity int64         // 缓存容量
+		Enabled        bool          // Si está habilitado
+		Threshold      int64         // Umbral
+		StatDuration   time.Duration // Ventana de tiempo de estadísticas
+		BlockDuration  time.Duration // Duración del bloqueo
+		BurstCount     int64         // Número de peticiones en ráfaga
+		ParamsCapacity int64         // Capacidad de caché
 	}
 
-	// 高频错误限制配置
+	// Configuración de límite de errores de alta frecuencia
 	ErrorLimit struct {
-		Enabled        bool          // 是否启用
-		Threshold      int64         // 阈值
-		StatDuration   time.Duration // 统计时间窗口
-		BlockDuration  time.Duration // 封禁时长
-		BurstCount     int64         // 突发请求数
-		ParamsCapacity int64         // 缓存容量
+		Enabled        bool          // Si está habilitado
+		Threshold      int64         // Umbral
+		StatDuration   time.Duration // Ventana de tiempo de estadísticas
+		BlockDuration  time.Duration // Duración del bloqueo
+		BurstCount     int64         // Número de peticiones en ráfaga
+		ParamsCapacity int64         // Capacidad de caché
 	}
 }
 
-// FlowController 流控处理器
+// FlowController procesador de control de flujo
 type FlowController struct {
-	config      FlowControlConfig // 配置
-	logger      zerolog.Logger    // 日志
-	ipRecorder  IPRecorder        // IP记录器
-	initialized bool              // 是否已初始化
-	mutex       sync.Mutex        // 互斥锁
+	config      FlowControlConfig // Configuración
+	logger      zerolog.Logger    // Log
+	ipRecorder  IPRecorder        // Registrador de IPs
+	initialized bool              // Si está inicializado
+	mutex       sync.Mutex        // Mutex
 }
 
-// 资源名称常量
+// Constante de nombre de recurso
 const (
-	ResourceVisit  = "waf:visit"  // 访问资源
-	ResourceAttack = "waf:attack" // 攻击资源
-	ResourceError  = "waf:error"  // 错误资源
+	ResourceVisit  = "waf:visit"  // Acceder al recurso
+	ResourceAttack = "waf:attack" // Recursos de ataque
+	ResourceError  = "waf:error"  // Recurso de error
 )
 
-// ConvertFromModelConfig 将模型配置转换为流控配置
+// ConvertFromModelConfig convierte la configuración del modelo a configuración de control de flujo
 func ConvertFromModelConfig(modelConfig model.FlowControlConfig) FlowControlConfig {
 	config := FlowControlConfig{}
 
-	// 访问限制配置
+	// Configuración de límite de acceso
 	config.VisitLimit.Enabled = modelConfig.VisitLimit.Enabled
 	config.VisitLimit.Threshold = modelConfig.VisitLimit.Threshold
 	config.VisitLimit.StatDuration = time.Duration(modelConfig.VisitLimit.StatDuration) * time.Second
@@ -78,7 +78,7 @@ func ConvertFromModelConfig(modelConfig model.FlowControlConfig) FlowControlConf
 	config.VisitLimit.BurstCount = modelConfig.VisitLimit.BurstCount
 	config.VisitLimit.ParamsCapacity = modelConfig.VisitLimit.ParamsCapacity
 
-	// 攻击限制配置
+	// Configuración de límite de ataques
 	config.AttackLimit.Enabled = modelConfig.AttackLimit.Enabled
 	config.AttackLimit.Threshold = modelConfig.AttackLimit.Threshold
 	config.AttackLimit.StatDuration = time.Duration(modelConfig.AttackLimit.StatDuration) * time.Second
@@ -86,7 +86,7 @@ func ConvertFromModelConfig(modelConfig model.FlowControlConfig) FlowControlConf
 	config.AttackLimit.BurstCount = modelConfig.AttackLimit.BurstCount
 	config.AttackLimit.ParamsCapacity = modelConfig.AttackLimit.ParamsCapacity
 
-	// 错误限制配置
+	// Configuración de límite de errores
 	config.ErrorLimit.Enabled = modelConfig.ErrorLimit.Enabled
 	config.ErrorLimit.Threshold = modelConfig.ErrorLimit.Threshold
 	config.ErrorLimit.StatDuration = time.Duration(modelConfig.ErrorLimit.StatDuration) * time.Second
@@ -97,91 +97,91 @@ func ConvertFromModelConfig(modelConfig model.FlowControlConfig) FlowControlConf
 	return config
 }
 
-// 添加单例实例和锁
+// Añadir instancia singleton y bloqueo
 var (
 	flowControllerInstance *FlowController
 	flowControllerMutex    sync.Mutex
 )
 
-// NewFlowControllerFromMongoConfig 从Mongo配置创建新的流控处理器（单例模式）
-// @Summary 从MongoDB配置创建流控处理器
-// @Description 从MongoDB数据库中加载配置并创建或更新流控处理器，采用单例模式
-// @Param client *mongo.Client - MongoDB客户端
-// @Param database string - 数据库名称
-// @Param logger zerolog.Logger - 日志记录器
-// @Param recorder IPRecorder - IP记录器
-// @Return *FlowController - 创建的流控处理器
-// @Return error - 错误信息
+// NewFlowControllerFromMongoConfig crea un procesador de control de flujo desde la config de Mongo (singleton)
+// @Summary Crear procesador de control de flujo desde la configuración de MongoDB
+// @Description Cargar configuración desde MongoDB y crear o actualizar el procesador de control de flujo, con patrón singleton
+// @Param client *mongo.Client - cliente MongoDB
+// @Param database string - nombre de la base de datos
+// @Param logger zerolog.Logger - logger
+// @Param recorder IPRecorder - registrador de IPs
+// @Return *FlowController - procesador de control de flujo creado
+// @Return error - información del error
 func NewFlowControllerFromMongoConfig(client *mongo.Client, database string, logger zerolog.Logger, recorder IPRecorder) (*FlowController, error) {
 	flowControllerMutex.Lock()
 	defer flowControllerMutex.Unlock()
 
-	// 尝试加载配置
+	// Intentar cargar la configuración
 	config, err := loadFlowControlConfig(client, database, logger)
 	if err != nil {
 		return nil, err
 	}
 
-	// 如果实例已存在，则更新配置
+	// Si la instancia ya existe, actualizar la configuración
 	if flowControllerInstance != nil {
-		logger.Info().Msg("更新现有流控处理器配置")
+		logger.Info().Msg("Actualizar la configuración del procesador de control de flujo existente")
 		flowControllerInstance.UpdateConfig(config)
 		return flowControllerInstance, nil
 	}
 
-	// 创建新实例
-	logger.Info().Msg("创建新的流控处理器实例")
+	// Crear nueva instancia
+	logger.Info().Msg("Crear nueva instancia del procesador de control de flujo")
 	fc := NewFlowController(config, logger, recorder)
 	flowControllerInstance = fc
 	return fc, nil
 }
 
-// 从MongoDB加载流控配置
+// Cargar la configuración de control de flujo desde MongoDB
 func loadFlowControlConfig(client *mongo.Client, database string, logger zerolog.Logger) (FlowControlConfig, error) {
 	var cfg model.Config
 	db := client.Database(database)
 	collection := db.Collection(cfg.GetCollectionName())
 
-	// 查询配置
+	// Consultar la configuración
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// 查询指定名称的配置
+	// Consultar la configuración con el nombre indicado
 	err := collection.FindOne(
 		ctx,
 		bson.D{{Key: "name", Value: "AppConfig"}},
 	).Decode(&cfg)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return FlowControlConfig{}, fmt.Errorf("未找到配置记录")
+			return FlowControlConfig{}, fmt.Errorf("Registro de configuración no encontrado")
 		}
-		return FlowControlConfig{}, fmt.Errorf("获取配置失败: %w", err)
+		return FlowControlConfig{}, fmt.Errorf("Error al obtener la configuración: %w", err)
 	}
 
 	return ConvertFromModelConfig(cfg.Engine.FlowController), nil
 }
 
-// UpdateConfig 更新流控配置并重新加载规则
+// UpdateConfig actualiza la configuración de control de flujo y recarga las reglas
 func (fc *FlowController) UpdateConfig(config FlowControlConfig) {
 	fc.mutex.Lock()
 	defer fc.mutex.Unlock()
 
-	// 更新配置
+	// Actualizar configuración
 	fc.config = config
 
-	// 重新加载规则
+	// Recargar reglas
 	if fc.initialized {
-		// 清空现有规则
+		// Vaciar las reglas existentes
 		hotspot.ClearRules()
 
-		// 重新配置各类流控规则
+		// Reconfigurar los distintos tipos de reglas de control de flujo
 		fc.setupAllRules()
 
-		fc.logger.Info().Msg("流控规则已更新")
+		fc.logger.Info().Msg("Regla de control de flujo actualizada")
 	}
 }
 
-// NewFlowController 创建新的流控处理器
+// NewFlowController crea un nuevo procesador de control de flujo
 func NewFlowController(config FlowControlConfig, logger zerolog.Logger, recorder IPRecorder) *FlowController {
 	return &FlowController{
 		config:     config,
@@ -190,7 +190,7 @@ func NewFlowController(config FlowControlConfig, logger zerolog.Logger, recorder
 	}
 }
 
-// Initialize 初始化流控处理器
+// Initialize inicializa el procesador de control de flujo
 func (fc *FlowController) Initialize() error {
 	fc.mutex.Lock()
 	defer fc.mutex.Unlock()
@@ -199,25 +199,25 @@ func (fc *FlowController) Initialize() error {
 		return nil
 	}
 
-	// 创建 Sentinel 配置
+	// Crear la configuración de Sentinel
 	conf := config.NewDefaultConfig()
 
-	// 应用配置
-	conf.Sentinel.App.Name = "ruiqi-waf-flow-controller"
-	conf.Sentinel.App.Type = 1 // API Gateway 类型
+	// Configuración de la aplicación
+	conf.Sentinel.App.Name = "escudo-waf-flow-controller"
+	conf.Sentinel.App.Type = 1 // Tipo API Gateway
 
-	// 日志配置
+	// Configuración de logs
 	conf.Sentinel.Log.Dir = "/tmp/sentinel-logs"
-	conf.Sentinel.Log.UsePid = true // 使用 PID 避免多进程冲突
+	conf.Sentinel.Log.UsePid = true // Usar PID para evitar conflictos entre procesos
 
-	// 日志文件数量配置
+	// Configuración de cantidad de archivos de log
 	conf.Sentinel.Log.Metric.MaxFileCount = 3
 
-	// 度量导出配置
-	conf.Sentinel.Exporter.Metric.HttpAddr = ":8719"    // Sentinel 默认度量端口
-	conf.Sentinel.Exporter.Metric.HttpPath = "/metrics" // Prometheus 风格的度量路径
+	// Configuración de exportación de métricas
+	conf.Sentinel.Exporter.Metric.HttpAddr = ":8719"    // Puerto de métricas por defecto de Sentinel
+	conf.Sentinel.Exporter.Metric.HttpPath = "/metrics" // Ruta de métricas estilo Prometheus
 
-	// 记录配置信息
+	// Registrar información de configuración
 	fc.logger.Info().
 		Str("app_name", conf.Sentinel.App.Name).
 		Int32("app_type", conf.Sentinel.App.Type).
@@ -226,32 +226,32 @@ func (fc *FlowController) Initialize() error {
 		Uint32("log_max_files", conf.Sentinel.Log.Metric.MaxFileCount).
 		Str("metrics_addr", conf.Sentinel.Exporter.Metric.HttpAddr).
 		Str("metrics_path", conf.Sentinel.Exporter.Metric.HttpPath).
-		Msg("初始化 Sentinel 配置")
+		Msg("Inicializar configuración de Sentinel")
 
-	// 初始化 Sentinel
+	// Inicializar Sentinel
 	err := sentinel.InitWithConfig(conf)
 	if err != nil {
-		return fmt.Errorf("初始化Sentinel失败: %v", err)
+		return fmt.Errorf("Error al inicializar Sentinel: %v", err)
 	}
 
-	// 配置各类流控规则
+	// Configurar los distintos tipos de reglas de control de flujo
 	fc.setupAllRules()
 
 	fc.initialized = true
-	fc.logger.Info().Msg("流控系统初始化完成")
+	fc.logger.Info().Msg("Inicialización del sistema de control de flujo completada")
 	return nil
 }
 
 func (fc *FlowController) setupAllRules() {
 	var allRules []*hotspot.Rule
 
-	// 添加访问限制规则
+	// Añadir regla de límite de acceso
 	if fc.config.VisitLimit.Enabled {
 		allRules = append(allRules, &hotspot.Rule{
 			Resource:          ResourceVisit,
 			MetricType:        hotspot.QPS,
 			ControlBehavior:   hotspot.Reject,
-			ParamIndex:        0, // 第一个参数，即IP
+			ParamIndex:        0, // Primer parámetro, la IP
 			Threshold:         fc.config.VisitLimit.Threshold,
 			BurstCount:        fc.config.VisitLimit.BurstCount,
 			DurationInSec:     int64(fc.config.VisitLimit.StatDuration.Seconds()),
@@ -259,13 +259,13 @@ func (fc *FlowController) setupAllRules() {
 		})
 	}
 
-	// 添加攻击限制规则
+	// Añadir regla de límite de ataques
 	if fc.config.AttackLimit.Enabled {
 		allRules = append(allRules, &hotspot.Rule{
 			Resource:          ResourceAttack,
 			MetricType:        hotspot.QPS,
 			ControlBehavior:   hotspot.Reject,
-			ParamIndex:        0, // 第一个参数，即IP
+			ParamIndex:        0, // Primer parámetro, la IP
 			Threshold:         fc.config.AttackLimit.Threshold,
 			BurstCount:        fc.config.AttackLimit.BurstCount,
 			DurationInSec:     int64(fc.config.AttackLimit.StatDuration.Seconds()),
@@ -273,13 +273,13 @@ func (fc *FlowController) setupAllRules() {
 		})
 	}
 
-	// 添加错误限制规则
+	// Añadir regla de límite de errores
 	if fc.config.ErrorLimit.Enabled {
 		allRules = append(allRules, &hotspot.Rule{
 			Resource:          ResourceError,
 			MetricType:        hotspot.QPS,
 			ControlBehavior:   hotspot.Reject,
-			ParamIndex:        0, // 第一个参数，即IP
+			ParamIndex:        0, // Primer parámetro, la IP
 			Threshold:         fc.config.ErrorLimit.Threshold,
 			BurstCount:        fc.config.ErrorLimit.BurstCount,
 			DurationInSec:     int64(fc.config.ErrorLimit.StatDuration.Seconds()),
@@ -287,37 +287,37 @@ func (fc *FlowController) setupAllRules() {
 		})
 	}
 
-	// 一次性加载所有规则
+	// Cargar todas las reglas de una vez
 	_, err := hotspot.LoadRules(allRules)
 	if err != nil {
-		fc.logger.Error().Err(err).Msg("加载热点限流规则失败")
+		fc.logger.Error().Err(err).Msg("Error al cargar las reglas de limitación de hot spot")
 	} else {
-		fc.logger.Info().Msgf("所有限流规则加载成功，开启的规则数量：%d", len(allRules))
+		fc.logger.Info().Msgf("Todas las reglas de limitación cargadas, cantidad de reglas activas: %d", len(allRules))
 
 		fc.logger.Info().
 			Int64("threshold", fc.config.VisitLimit.Threshold).
 			Int64("burstCount", fc.config.VisitLimit.BurstCount).
 			Int64("durationInSec", int64(fc.config.VisitLimit.StatDuration.Seconds())).
 			Bool("enabled", fc.config.VisitLimit.Enabled).
-			Msg("访问限流规则加载成功")
+			Msg("Reglas de limitación de acceso cargadas con éxito")
 
 		fc.logger.Info().
 			Int64("threshold", fc.config.AttackLimit.Threshold).
 			Int64("burstCount", fc.config.AttackLimit.BurstCount).
 			Int64("durationInSec", int64(fc.config.AttackLimit.StatDuration.Seconds())).
 			Bool("enabled", fc.config.AttackLimit.Enabled).
-			Msg("攻击限流规则加载成功")
+			Msg("Reglas de limitación de ataques cargadas con éxito")
 
 		fc.logger.Info().
 			Int64("threshold", fc.config.ErrorLimit.Threshold).
 			Int64("burstCount", fc.config.ErrorLimit.BurstCount).
 			Int64("durationInSec", int64(fc.config.ErrorLimit.StatDuration.Seconds())).
 			Bool("enabled", fc.config.ErrorLimit.Enabled).
-			Msg("错误限流规则加载成功")
+			Msg("Reglas de limitación de errores cargadas con éxito")
 	}
 }
 
-// CheckVisit 检查IP访问请求是否被允许
+// CheckVisit comprueba si la petición de la IP está permitida
 func (fc *FlowController) CheckVisit(ip string, requestUri string) (bool, error) {
 	if !fc.initialized {
 		if err := fc.Initialize(); err != nil {
@@ -325,29 +325,29 @@ func (fc *FlowController) CheckVisit(ip string, requestUri string) (bool, error)
 		}
 	}
 
-	// 使用热点参数限流，将IP作为第一个参数传入
+	// Usar limitación por parámetro de hot spot, pasando la IP como primer parámetro
 	entry, blockError := sentinel.Entry(ResourceVisit,
 		sentinel.WithArgs(ip),
 		sentinel.WithTrafficType(base.Inbound),
 	)
 
 	if blockError != nil {
-		// 记录被限制的IP
+		// Registrar las IPs restringidas
 		fc.ipRecorder.RecordBlockedIP(ip, "high_frequency_visit", requestUri, fc.config.VisitLimit.BlockDuration)
 		fc.logger.Warn().
 			Str("ip", ip).
 			Str("reason", "high_frequency_visit").
 			Dur("block_duration", fc.config.VisitLimit.BlockDuration).
-			Msg("IP访问受限")
+			Msg("Acceso restringido por IP")
 		return false, nil
 	}
 
-	// 别忘了释放资源
+	// No olvidar liberar los recursos
 	defer entry.Exit()
 	return true, nil
 }
 
-// RecordAttack 记录IP触发的攻击检测，返回是否被限制
+// RecordAttack registra la detección de ataque de una IP, devuelve si quedó restringida
 func (fc *FlowController) RecordAttack(ip string, requestUri string) (bool, error) {
 	if !fc.initialized {
 		if err := fc.Initialize(); err != nil {
@@ -355,29 +355,29 @@ func (fc *FlowController) RecordAttack(ip string, requestUri string) (bool, erro
 		}
 	}
 
-	// 使用热点参数限流，将IP作为第一个参数传入
+	// Usar limitación por parámetro de hot spot, pasando la IP como primer parámetro
 	entry, blockError := sentinel.Entry(ResourceAttack,
 		sentinel.WithArgs(ip),
 		sentinel.WithTrafficType(base.Inbound),
 	)
 
 	if blockError != nil {
-		// 记录被限制的IP
+		// Registrar las IPs restringidas
 		fc.ipRecorder.RecordBlockedIP(ip, "high_frequency_attack", requestUri, fc.config.AttackLimit.BlockDuration)
 		fc.logger.Warn().
 			Str("ip", ip).
 			Str("reason", "high_frequency_attack").
 			Dur("block_duration", fc.config.AttackLimit.BlockDuration).
-			Msg("IP因高频攻击被限制")
+			Msg("IP restringida por ataques de alta frecuencia")
 		return true, nil
 	}
 
-	// 别忘了释放资源
+	// No olvidar liberar los recursos
 	defer entry.Exit()
 	return false, nil
 }
 
-// RecordError 记录IP返回的错误响应，返回是否被限制
+// RecordError registra una respuesta de error de una IP, devuelve si quedó restringida
 func (fc *FlowController) RecordError(ip string, requestUri string) (bool, error) {
 	if !fc.initialized {
 		if err := fc.Initialize(); err != nil {
@@ -385,53 +385,53 @@ func (fc *FlowController) RecordError(ip string, requestUri string) (bool, error
 		}
 	}
 
-	// 使用热点参数限流，将IP作为第一个参数传入
+	// Usar limitación por parámetro de hot spot, pasando la IP como primer parámetro
 	entry, blockError := sentinel.Entry(ResourceError,
 		sentinel.WithArgs(ip),
 		sentinel.WithTrafficType(base.Inbound),
 	)
 
 	if blockError != nil {
-		// 记录被限制的IP
+		// Registrar las IPs restringidas
 		fc.ipRecorder.RecordBlockedIP(ip, "high_frequency_error", requestUri, fc.config.ErrorLimit.BlockDuration)
 		fc.logger.Warn().
 			Str("ip", ip).
 			Str("reason", "high_frequency_error").
 			Dur("block_duration", fc.config.ErrorLimit.BlockDuration).
-			Msg("IP因高频错误被限制")
+			Msg("IP restringida por errores de alta frecuencia")
 		return true, nil
 	}
 
-	// 别忘了释放资源
+	// No olvidar liberar los recursos
 	defer entry.Exit()
 	return false, nil
 }
 
-// Close 关闭流控系统
-// @Summary 关闭流控系统
-// @Description 释放流控系统占用的资源，包括关闭IP记录器
-// @Return error 错误信息
+// Close Cerrar el sistema de control de flujo
+// @Summary Cerrar el sistema de control de flujo
+// @Description Liberar los recursos del sistema de control de flujo, incluyendo el cierre del registrador de IPs
+// @Return error información del error
 func (fc *FlowController) Close() error {
 	fc.mutex.Lock()
 	defer fc.mutex.Unlock()
 
-	fc.logger.Info().Msg("正在关闭流控系统")
+	fc.logger.Info().Msg("Cerrando el sistema de control de flujo")
 
-	// 清空限流规则
+	// Vaciar las reglas de limitación
 	if fc.initialized {
-		// 清空热点参数规则
+		// Vaciar las reglas de parámetros de hot spot
 		hotspot.ClearRules()
 		fc.initialized = false
 	}
 
-	// 关闭IP记录器
+	// Cerrar el registrador de IPs
 	if fc.ipRecorder != nil {
 		if err := fc.ipRecorder.Close(); err != nil {
-			fc.logger.Error().Err(err).Msg("关闭IP记录器失败")
+			fc.logger.Error().Err(err).Msg("Error al cerrar el registrador de IPs")
 			return err
 		}
 	}
 
-	fc.logger.Info().Msg("流控系统已关闭")
+	fc.logger.Info().Msg("Sistema de control de flujo cerrado")
 	return nil
 }

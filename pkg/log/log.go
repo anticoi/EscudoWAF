@@ -10,7 +10,7 @@ import (
 
 var Logger = zerolog.New(os.Stdout).With().Timestamp().Logger()
 
-// LoggerWithCaller 返回一个包含当前调用者位置信息的日志Hook
+// LoggerWithCaller devuelve un hook de log con la ubicación del llamante
 func LoggerWithCaller() zerolog.Logger {
 	pc, file, line, ok := runtime.Caller(1)
 	if !ok {
@@ -25,7 +25,7 @@ func LoggerWithCaller() zerolog.Logger {
 		Logger()
 }
 
-// Debug 创建一个带有调用位置的Debug级别日志
+// Debug crea un log de nivel Debug con ubicación de llamada
 func Debug() *zerolog.Event {
 	pc, file, line, ok := runtime.Caller(1)
 	if !ok {
@@ -39,7 +39,7 @@ func Debug() *zerolog.Event {
 		Str("func", funcName)
 }
 
-// Info 创建一个带有调用位置的Info级别日志
+// Info crea un log de nivel Info con ubicación de llamada
 func Info() *zerolog.Event {
 	pc, file, line, ok := runtime.Caller(1)
 	if !ok {
@@ -53,7 +53,7 @@ func Info() *zerolog.Event {
 		Str("func", funcName)
 }
 
-// Warn 创建一个带有调用位置的Warn级别日志
+// Warn crea un log de nivel Warn con ubicación de llamada
 func Warn() *zerolog.Event {
 	pc, file, line, ok := runtime.Caller(1)
 	if !ok {
@@ -67,7 +67,7 @@ func Warn() *zerolog.Event {
 		Str("func", funcName)
 }
 
-// Error 创建一个带有调用位置的Error级别日志
+// Error crea un log de nivel Error con ubicación de llamada
 func Error() *zerolog.Event {
 	pc, file, line, ok := runtime.Caller(1)
 	if !ok {
@@ -81,7 +81,7 @@ func Error() *zerolog.Event {
 		Str("func", funcName)
 }
 
-// Fatal 创建一个带有调用位置的Fatal级别日志
+// Fatal crea un log de nivel Fatal con ubicación de llamada
 func Fatal() *zerolog.Event {
 	pc, file, line, ok := runtime.Caller(1)
 	if !ok {

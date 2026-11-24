@@ -11,7 +11,7 @@ import { AnimatedIcon } from "../ui/animation/components/animated-icon"
 
 export function LanguageSelector() {
     const { i18n } = useTranslation()
-    const [language, setLanguage] = useState(i18n.language || 'zh')
+    const [language, setLanguage] = useState(i18n.language || 'es')
 
     const handleLanguageChange = (value: string) => {
         setLanguage(value)
@@ -19,14 +19,14 @@ export function LanguageSelector() {
         localStorage.setItem('i18nextLng', value)
     }
 
-    // 初始化时从本地存储获取语言设置
+    // Obtener la configuración de idioma del almacenamiento local al inicializar
     useEffect(() => {
         const savedLanguage = localStorage.getItem('i18nextLng')
         if (savedLanguage && savedLanguage !== language) {
             setLanguage(savedLanguage)
-            i18n.changeLanguage(savedLanguage) // 确保应用当前语言
+            i18n.changeLanguage(savedLanguage) // Asegurar que se aplique el idioma actual
         }
-    }, []) // 只在组件挂载时执行一次
+    }, []) // Ejecutar solo una vez al montar el componente
 
     return (
         <Select value={language} onValueChange={handleLanguageChange}>
@@ -36,8 +36,9 @@ export function LanguageSelector() {
                 </AnimatedIcon>
             </SelectTrigger>
             <SelectContent>
-                <SelectItem value="zh">简体中文</SelectItem>
+                <SelectItem value="es">Español</SelectItem>
                 <SelectItem value="en">English</SelectItem>
+                <SelectItem value="zh">简体中文</SelectItem>
             </SelectContent>
         </Select>
     )

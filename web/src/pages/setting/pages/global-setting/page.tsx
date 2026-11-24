@@ -11,13 +11,13 @@ import { useTranslation } from "react-i18next"
 export default function GlobalSettingPage() {
     const { t } = useTranslation()
 
-    // 获取配置数据
+    // Obtener los datos de configuración
     const { config, isLoading: isConfigLoading, error: configError, refetch: refetchConfig } = useConfigQuery()
 
-    // 获取运行器状态
+    // Obtener el estado del runner
     const { status, isLoading: isStatusLoading, error: statusError, refetch: refetchStatus } = useRunnerStatusQuery()
 
-    // 运行器控制
+    // Control del runner
     const {
         controlRunner,
         isLoading: isControlLoading,
@@ -25,14 +25,14 @@ export default function GlobalSettingPage() {
         clearError: clearControlError,
     } = useRunnerControl()
 
-    // 当页面加载时获取最新配置
+    // Obtener la configuración más reciente al cargar la página
     useEffect(() => {
-        // 页面加载时，获取最新配置和状态
+        // Al cargar la página, obtener la configuración y el estado más recientes
         refetchConfig()
         refetchStatus()
     }, [refetchConfig, refetchStatus])
 
-    // 运行器控制处理函数
+    // Función de manejo del control del runner
     const handleStart = () => {
         clearControlError()
         controlRunner("start")
@@ -54,7 +54,7 @@ export default function GlobalSettingPage() {
         controlRunner("reload")
     }
 
-    // 根据错误类型选择适当的重试函数
+    // Elegir la función de reintento adecuada según el tipo de error
     const handleRetry = () => {
         if (configError) refetchConfig()
         if (statusError) refetchStatus()
@@ -63,13 +63,13 @@ export default function GlobalSettingPage() {
     return (
         <AnimatedContainer variant="smooth" className="h-full overflow-y-auto scrollbar-none p-0">
             <div className="max-w-5xl p-6 center mx-auto">
-                {/* 错误处理：优先显示配置错误，其次显示状态错误 */}
+                {/* Manejo de errores: mostrar primero errores de configuración, luego de estado */}
                 {(configError || statusError) && (
                     <AdvancedErrorDisplay error={configError || statusError} onRetry={handleRetry} />
                 )}
                 {controlError && <AdvancedErrorDisplay error={controlError} />}
 
-                {/* 通用设置 */}
+                {/* Configuración general */}
                 <div className="bg-background rounded-xl border-none p-6 mb-6 animate-fade-in-up transition-colors duration-200">
                     <div className="space-y-3 mb-8">
                         <div className="flex items-center gap-2 pb-2 border-b border-border">
@@ -81,7 +81,7 @@ export default function GlobalSettingPage() {
                         </div>
                     </div>
 
-                    {/* 引擎状态 */}
+                    {/* Estado del motor */}
                     <div className="space-y-3 mb-8">
                         <div className="flex items-center gap-2 pb-2 border-b border-border">
                             <Info className="w-5 h-5 text-iconStroke dark:text-primary dark:text-shadow-glow-white" />
@@ -102,7 +102,7 @@ export default function GlobalSettingPage() {
                     </div>
                 </div>
 
-                {/* 配置表单 */}
+                {/* Formulario de configuración */}
                 <div
                     className="bg-background rounded-xl border-none p-6 mb-6 animate-fade-in-up"
                     style={{ animationDelay: "0.1s" }}

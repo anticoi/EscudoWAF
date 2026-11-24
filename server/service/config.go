@@ -5,30 +5,30 @@ import (
 	"context"
 	"errors"
 
-	"github.com/HUAHUAI23/RuiQi/pkg/model"
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/dto"
-	"github.com/HUAHUAI23/RuiQi/server/repository"
+	"github.com/anticoi/EscudoWAF/pkg/model"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/dto"
+	"github.com/anticoi/EscudoWAF/server/repository"
 	"github.com/rs/zerolog"
 )
 
 var (
-	ErrConfigNotFound = errors.New("配置不存在")
+	ErrConfigNotFound = errors.New("La configuración no existe")
 )
 
-// ConfigService 配置服务接口
+// ConfigService interfaz del servicio de configuración
 type ConfigService interface {
 	GetConfig(ctx context.Context) (*model.Config, error)
 	PatchConfig(ctx context.Context, req *dto.ConfigPatchRequest) (*model.Config, error)
 }
 
-// ConfigServiceImpl 配置服务实现
+// ConfigServiceImpl implementación del servicio de configuración
 type ConfigServiceImpl struct {
 	configRepo repository.ConfigRepository
 	logger     zerolog.Logger
 }
 
-// NewConfigService 创建配置服务
+// NewConfigService crea el servicio de configuración
 func NewConfigService(configRepo repository.ConfigRepository) ConfigService {
 	logger := config.GetServiceLogger("config")
 	return &ConfigServiceImpl{
@@ -37,29 +37,29 @@ func NewConfigService(configRepo repository.ConfigRepository) ConfigService {
 	}
 }
 
-// GetConfig 获取配置
+// GetConfig obtiene la configuración
 func (s *ConfigServiceImpl) GetConfig(ctx context.Context) (*model.Config, error) {
 	cfg, err := s.configRepo.GetConfig(ctx)
 	if err != nil {
 		if errors.Is(err, repository.ErrConfigNotFound) {
 			return nil, ErrConfigNotFound
 		}
-		s.logger.Error().Err(err).Msg("获取配置失败")
+		s.logger.Error().Err(err).Msg("Error al obtener la configuración")
 		return nil, err
 	}
 
 	return cfg, nil
 }
 
-// PatchConfig 补丁更新配置
+// PatchConfig actualización parcial de configuración
 func (s *ConfigServiceImpl) PatchConfig(ctx context.Context, req *dto.ConfigPatchRequest) (*model.Config, error) {
-	// 获取现有配置
+	// Obtener la configuración existente
 	cfg, err := s.configRepo.GetConfig(ctx)
 	if err != nil {
 		if errors.Is(err, repository.ErrConfigNotFound) {
 			return nil, ErrConfigNotFound
 		}
-		s.logger.Error().Err(err).Msg("获取配置失败")
+		s.logger.Error().Err(err).Msg("Error al obtener la configuración")
 		return nil, err
 	}
 
@@ -75,7 +75,7 @@ func (s *ConfigServiceImpl) PatchConfig(ctx context.Context, req *dto.ConfigPatc
 		cfg.IsK8s = *req.IsK8s
 	}
 
-	// 更新Engine配置
+	// Actualizar la configuración de Engine
 	if req.Engine != nil {
 		if req.Engine.Bind != nil {
 			cfg.Engine.Bind = *req.Engine.Bind
@@ -93,13 +93,13 @@ func (s *ConfigServiceImpl) PatchConfig(ctx context.Context, req *dto.ConfigPatc
 			cfg.Engine.CityDBPath = *req.Engine.CityDBPath
 		}
 
-		// 更新AppConfig
+		// Actualizar AppConfig
 		if len(req.Engine.AppConfig) > 0 {
 			for _, reqApp := range req.Engine.AppConfig {
-				// 找到对应的AppConfig并更新
+				// Encontrar la AppConfig correspondiente y actualizarla
 				for i, app := range cfg.Engine.AppConfig {
 					if reqApp.Name != nil && app.Name == *reqApp.Name {
-						// 更新非空字段
+						// Actualizar campos no vacíos
 						if reqApp.Directives != nil {
 							cfg.Engine.AppConfig[i].Directives = *reqApp.Directives
 						}
@@ -121,9 +121,9 @@ func (s *ConfigServiceImpl) PatchConfig(ctx context.Context, req *dto.ConfigPatc
 			}
 		}
 
-		// 更新FlowController配置
+		// Actualizar la configuración de FlowController
 		if req.Engine.FlowController != nil {
-			// 更新VisitLimit配置
+			// Actualizar la configuración de VisitLimit
 			if req.Engine.FlowController.VisitLimit != nil {
 				visitLimit := req.Engine.FlowController.VisitLimit
 				if visitLimit.Enabled != nil {
@@ -146,7 +146,7 @@ func (s *ConfigServiceImpl) PatchConfig(ctx context.Context, req *dto.ConfigPatc
 				}
 			}
 
-			// 更新AttackLimit配置
+			// Actualizar la configuración de AttackLimit
 			if req.Engine.FlowController.AttackLimit != nil {
 				attackLimit := req.Engine.FlowController.AttackLimit
 				if attackLimit.Enabled != nil {
@@ -169,7 +169,7 @@ func (s *ConfigServiceImpl) PatchConfig(ctx context.Context, req *dto.ConfigPatc
 				}
 			}
 
-			// 更新ErrorLimit配置
+			// Actualizar la configuración de ErrorLimit
 			if req.Engine.FlowController.ErrorLimit != nil {
 				errorLimit := req.Engine.FlowController.ErrorLimit
 				if errorLimit.Enabled != nil {
@@ -194,7 +194,7 @@ func (s *ConfigServiceImpl) PatchConfig(ctx context.Context, req *dto.ConfigPatc
 		}
 	}
 
-	// 更新Haproxy配置
+	// Actualizar la configuración de Haproxy
 	if req.Haproxy != nil {
 		if req.Haproxy.ConfigBaseDir != nil {
 			cfg.Haproxy.ConfigBaseDir = *req.Haproxy.ConfigBaseDir
@@ -216,13 +216,13 @@ func (s *ConfigServiceImpl) PatchConfig(ctx context.Context, req *dto.ConfigPatc
 		}
 	}
 
-	// 保存更新
+	// Guardar actualización
 	err = s.configRepo.UpdateConfig(ctx, cfg)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("更新配置失败")
+		s.logger.Error().Err(err).Msg("Error al actualizar la configuración")
 		return nil, err
 	}
 
-	s.logger.Info().Str("name", cfg.Name).Msg("配置更新成功")
+	s.logger.Info().Str("name", cfg.Name).Msg("Configuración actualizada con éxito")
 	return cfg, nil
 }

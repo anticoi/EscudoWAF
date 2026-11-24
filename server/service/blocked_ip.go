@@ -5,19 +5,19 @@ import (
 	"errors"
 	"math"
 
-	"github.com/HUAHUAI23/RuiQi/pkg/model"
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/dto"
-	"github.com/HUAHUAI23/RuiQi/server/repository"
+	"github.com/anticoi/EscudoWAF/pkg/model"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/dto"
+	"github.com/anticoi/EscudoWAF/server/repository"
 	"github.com/rs/zerolog"
 )
 
 var (
-	ErrBlockedIPNotFound = errors.New("封禁IP记录不存在")
-	ErrInvalidPageSize   = errors.New("无效的分页参数")
+	ErrBlockedIPNotFound = errors.New("El registro de IP bloqueada no existe")
+	ErrInvalidPageSize   = errors.New("Parámetros de paginación no válidos")
 )
 
-// BlockedIPService 封禁IP服务接口
+// BlockedIPService interfaz del servicio de IPs bloqueadas
 type BlockedIPService interface {
 	GetBlockedIPs(ctx context.Context, req *dto.BlockedIPListRequest) (*dto.BlockedIPListResponse, error)
 	GetBlockedIPStats(ctx context.Context) (*dto.BlockedIPStatsResponse, error)
@@ -25,13 +25,13 @@ type BlockedIPService interface {
 	CleanupExpiredBlockedIPs(ctx context.Context) (int64, error)
 }
 
-// BlockedIPServiceImpl 封禁IP服务实现
+// BlockedIPServiceImpl implementación del servicio de IPs bloqueadas
 type BlockedIPServiceImpl struct {
 	blockedIPRepo repository.BlockedIPRepository
 	logger        zerolog.Logger
 }
 
-// NewBlockedIPService 创建封禁IP服务
+// NewBlockedIPService crea el servicio de IPs bloqueadas
 func NewBlockedIPService(blockedIPRepo repository.BlockedIPRepository) BlockedIPService {
 	logger := config.GetServiceLogger("blocked_ip")
 	return &BlockedIPServiceImpl{
@@ -40,14 +40,14 @@ func NewBlockedIPService(blockedIPRepo repository.BlockedIPRepository) BlockedIP
 	}
 }
 
-// GetBlockedIPs 获取封禁IP列表
+// GetBlockedIPs Obtener lista de IPs bloqueadas
 func (s *BlockedIPServiceImpl) GetBlockedIPs(ctx context.Context, req *dto.BlockedIPListRequest) (*dto.BlockedIPListResponse, error) {
-	// 验证分页参数
+	// Validar los parámetros de paginación
 	if err := s.validatePaginationParams(req); err != nil {
 		return nil, err
 	}
 
-	// 设置默认值
+	// Establecer valores por defecto
 	s.setDefaultParams(req)
 
 	s.logger.Info().
@@ -56,19 +56,19 @@ func (s *BlockedIPServiceImpl) GetBlockedIPs(ctx context.Context, req *dto.Block
 		Str("ip", req.IP).
 		Str("reason", req.Reason).
 		Str("status", req.Status).
-		Msg("获取封禁IP列表请求")
+		Msg("Petición de lista de IPs bloqueadas")
 
-	// 调用仓库层
+	// Llamar a la capa de repositorio
 	records, total, err := s.blockedIPRepo.GetBlockedIPs(ctx, req)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("获取封禁IP列表失败")
+		s.logger.Error().Err(err).Msg("Error al obtener la lista de IPs bloqueadas")
 		return nil, err
 	}
 
-	// 转换为响应DTO
+	// Convertir a DTO de respuesta
 	items := dto.MapToResponseList(records)
 
-	// 计算总页数
+	// Calcular el total de páginas
 	pages := int(math.Ceil(float64(total) / float64(req.Size)))
 	if pages == 0 {
 		pages = 1
@@ -86,18 +86,18 @@ func (s *BlockedIPServiceImpl) GetBlockedIPs(ctx context.Context, req *dto.Block
 		Int64("total", total).
 		Int("pages", pages).
 		Int("items_count", len(items)).
-		Msg("获取封禁IP列表成功")
+		Msg("Lista de IPs bloqueadas obtenida con éxito")
 
 	return response, nil
 }
 
-// GetBlockedIPStats 获取封禁IP统计信息
+// GetBlockedIPStats Obtener estadísticas de IPs bloqueadas
 func (s *BlockedIPServiceImpl) GetBlockedIPStats(ctx context.Context) (*dto.BlockedIPStatsResponse, error) {
-	s.logger.Info().Msg("获取封禁IP统计信息请求")
+	s.logger.Info().Msg("Petición de estadísticas de IPs bloqueadas")
 
 	stats, err := s.blockedIPRepo.GetBlockedIPStats(ctx)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("获取封禁IP统计信息失败")
+		s.logger.Error().Err(err).Msg("Error al obtener las estadísticas de IPs bloqueadas")
 		return nil, err
 	}
 
@@ -107,19 +107,19 @@ func (s *BlockedIPServiceImpl) GetBlockedIPStats(ctx context.Context) (*dto.Bloc
 		Int64("expired_blocked", stats.ExpiredBlocked).
 		Int("reason_types", len(stats.ReasonStats)).
 		Int("hourly_stats", len(stats.Last24HourStats)).
-		Msg("获取封禁IP统计信息成功")
+		Msg("Estadísticas de IPs bloqueadas obtenidas con éxito")
 
 	return stats, nil
 }
 
-// CreateBlockedIP 创建封禁IP记录
+// CreateBlockedIP crea un registro de IP bloqueada
 func (s *BlockedIPServiceImpl) CreateBlockedIP(ctx context.Context, record *model.BlockedIPRecord) error {
 	if record.IP == "" {
-		return errors.New("IP地址不能为空")
+		return errors.New("La dirección IP no puede estar vacía")
 	}
 
 	if record.BlockedUntil.Before(record.BlockedAt) {
-		return errors.New("封禁结束时间不能早于开始时间")
+		return errors.New("La hora de fin del bloqueo no puede ser anterior a la de inicio")
 	}
 
 	s.logger.Info().
@@ -128,33 +128,33 @@ func (s *BlockedIPServiceImpl) CreateBlockedIP(ctx context.Context, record *mode
 		Str("request_uri", record.RequestUri).
 		Time("blocked_at", record.BlockedAt).
 		Time("blocked_until", record.BlockedUntil).
-		Msg("创建封禁IP记录请求")
+		Msg("Petición de creación de registro de IP bloqueada")
 
 	err := s.blockedIPRepo.CreateBlockedIP(ctx, record)
 	if err != nil {
-		s.logger.Error().Err(err).Str("ip", record.IP).Msg("创建封禁IP记录失败")
+		s.logger.Error().Err(err).Str("ip", record.IP).Msg("Error al crear el registro de IP bloqueada")
 		return err
 	}
 
-	s.logger.Info().Str("ip", record.IP).Str("reason", record.Reason).Msg("封禁IP记录创建成功")
+	s.logger.Info().Str("ip", record.IP).Str("reason", record.Reason).Msg("Registro de IP bloqueada creado con éxito")
 	return nil
 }
 
-// CleanupExpiredBlockedIPs 清理过期的封禁IP记录
+// CleanupExpiredBlockedIPs Limpiar registros de IPs bloqueadas expirados
 func (s *BlockedIPServiceImpl) CleanupExpiredBlockedIPs(ctx context.Context) (int64, error) {
-	s.logger.Info().Msg("开始清理过期封禁IP记录")
+	s.logger.Info().Msg("Iniciando limpieza de registros de IPs bloqueadas expirados")
 
 	deletedCount, err := s.blockedIPRepo.DeleteExpiredBlockedIPs(ctx)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("清理过期封禁IP记录失败")
+		s.logger.Error().Err(err).Msg("Error al limpiar los registros de IPs bloqueadas expirados")
 		return 0, err
 	}
 
-	s.logger.Info().Int64("deleted_count", deletedCount).Msg("清理过期封禁IP记录完成")
+	s.logger.Info().Int64("deleted_count", deletedCount).Msg("Limpieza de registros de IPs bloqueadas expirados completada")
 	return deletedCount, nil
 }
 
-// validatePaginationParams 验证分页参数
+// validatePaginationParams valida los parámetros de paginación
 func (s *BlockedIPServiceImpl) validatePaginationParams(req *dto.BlockedIPListRequest) error {
 	if req.Page < 0 {
 		return ErrInvalidPageSize
@@ -165,7 +165,7 @@ func (s *BlockedIPServiceImpl) validatePaginationParams(req *dto.BlockedIPListRe
 	return nil
 }
 
-// setDefaultParams 设置默认参数
+// setDefaultParams establece los parámetros por defecto
 func (s *BlockedIPServiceImpl) setDefaultParams(req *dto.BlockedIPListRequest) {
 	if req.Page == 0 {
 		req.Page = 1

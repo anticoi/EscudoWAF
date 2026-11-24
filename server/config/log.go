@@ -10,10 +10,10 @@ import (
 	"github.com/rs/zerolog"
 )
 
-// GlobalLogger 在 Logger 未初始化时使用
+// GlobalLogger se usa cuando Logger no está inicializado
 var GlobalLogger = zerolog.New(os.Stdout).With().Timestamp().Logger()
 
-// Logger 全局日志实例
+// Logger instancia global del logger
 var Logger zerolog.Logger
 
 type LogConfig struct {
@@ -55,31 +55,31 @@ func (lc LogConfig) newLogger() (zerolog.Logger, error) {
 				if ll, ok := i.(string); ok {
 					switch ll {
 					case "debug":
-						return "\x1b[36m[DEBUG]\x1b[0m" // 青色
+						return "\x1b[36m[DEBUG]\x1b[0m" // Cian
 					case "info":
-						return "\x1b[32m[ INFO]\x1b[0m" // 绿色
+						return "\x1b[32m[ INFO]\x1b[0m" // Verde
 					case "warn":
-						return "\x1b[33m[ WARN]\x1b[0m" // 黄色
+						return "\x1b[33m[ WARN]\x1b[0m" // Amarillo
 					case "error":
-						return "\x1b[31m[ERROR]\x1b[0m" // 红色
+						return "\x1b[31m[ERROR]\x1b[0m" // Rojo
 					case "fatal":
-						return "\x1b[35m[FATAL]\x1b[0m" // 紫色
+						return "\x1b[35m[FATAL]\x1b[0m" // Púrpura
 					}
 				}
 				return fmt.Sprintf("[%-5s]", i)
 			},
 			FormatMessage: func(i interface{}) string {
-				return fmt.Sprintf("\x1b[1m%s\x1b[0m", i) // 加粗消息
+				return fmt.Sprintf("\x1b[1m%s\x1b[0m", i) // Mensaje en negrita
 			},
 			FormatFieldName: func(i interface{}) string {
-				return fmt.Sprintf("\x1b[34m%s:\x1b[0m", i) // 蓝色字段名
+				return fmt.Sprintf("\x1b[34m%s:\x1b[0m", i) // Nombres de campo en azul
 			},
 			FormatFieldValue: func(i interface{}) string {
-				return fmt.Sprintf("\x1b[37m%s\x1b[0m", i) // 浅灰色字段值
+				return fmt.Sprintf("\x1b[37m%s\x1b[0m", i) // Valores de campo en gris claro
 			},
 		}
 	case "json":
-		// 使用默认的JSON格式
+		// Usar el formato JSON por defecto
 	default:
 		return GlobalLogger, fmt.Errorf("unknown log format: %v", lc.Format)
 	}
@@ -95,16 +95,16 @@ func (lc LogConfig) newLogger() (zerolog.Logger, error) {
 	return zerolog.New(out).Level(lvl).With().Timestamp().Logger(), nil
 }
 
-// 基于 全局 Logger 创建包含调用者信息的日志器
-// GetLogger 获取包含调用者信息的日志器
+// Crear un logger con información del llamante basado en el Logger global
+// GetLogger obtiene un logger con información del llamante
 func GetLogger() zerolog.Logger {
-	// 获取调用者信息
+	// Obtener la información del llamador
 	_, file, line, ok := runtime.Caller(1)
 	if !ok {
 		return Logger.With().Str("source", "unknown").Logger()
 	}
 
-	// 提取文件名（不含路径）
+	// Extraer el nombre de archivo (sin la ruta)
 	fileName := filepath.Base(file)
 
 	return Logger.With().
@@ -113,7 +113,7 @@ func GetLogger() zerolog.Logger {
 		Logger()
 }
 
-// GetServiceLogger 获取服务层日志器
+// GetServiceLogger obtiene el logger de la capa de servicios
 func GetServiceLogger(serviceName string) zerolog.Logger {
 	_, file, line, _ := runtime.Caller(1)
 	fileName := filepath.Base(file)
@@ -126,7 +126,7 @@ func GetServiceLogger(serviceName string) zerolog.Logger {
 		Logger()
 }
 
-// GetControllerLogger 获取控制器层日志器
+// GetControllerLogger obtiene el logger de la capa de controladores
 func GetControllerLogger(controllerName string) zerolog.Logger {
 	_, file, line, _ := runtime.Caller(1)
 	fileName := filepath.Base(file)
@@ -139,7 +139,7 @@ func GetControllerLogger(controllerName string) zerolog.Logger {
 		Logger()
 }
 
-// GetRepositoryLogger 获取数据访问层日志器
+// GetRepositoryLogger obtiene el logger de la capa de acceso a datos
 func GetRepositoryLogger(repoName string) zerolog.Logger {
 	_, file, line, _ := runtime.Caller(1)
 	fileName := filepath.Base(file)

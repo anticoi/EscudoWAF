@@ -1,6 +1,6 @@
 // src/components/ui/animation/icon-animation.ts
 import { HTMLMotionProps } from "motion/react"
-// 旋转动画 - 适用于刷新、重置图标
+// Animación de rotación - para iconos de refrescar y reiniciar
 export const spinIconAnimation: HTMLMotionProps<"div"> = {
     whileHover: {
         scale: 1.05,
@@ -30,7 +30,7 @@ export const spinIconAnimation: HTMLMotionProps<"div"> = {
     }
 }
 
-// 持续旋转动画 - 适用于加载状态
+// Animación de rotación continua - para estados de carga
 export const continuousSpinAnimation: HTMLMotionProps<"div"> = {
     animate: {
         rotate: 360,
@@ -40,7 +40,7 @@ export const continuousSpinAnimation: HTMLMotionProps<"div"> = {
             repeat: Infinity
         }
     },
-    // 点击时可暂时加快旋转速度
+    // Al hacer clic, acelerar temporalmente la rotación
     whileTap: {
         scale: 0.95,
         transition: {
@@ -51,7 +51,7 @@ export const continuousSpinAnimation: HTMLMotionProps<"div"> = {
     }
 }
 
-// 持续震动动画 - 适用于警告、错误提示状态
+// Animación de vibración continua - para estados de advertencia y errores
 export const continuousShakeAnimation: HTMLMotionProps<"div"> = {
     animate: {
         x: [-2, 2, -2, 2, -1, 1, 0],
@@ -62,7 +62,7 @@ export const continuousShakeAnimation: HTMLMotionProps<"div"> = {
             repeatDelay: 0.3
         }
     },
-    // 点击时可暂时停止震动并缩放
+    // Al hacer clic, pausar temporalmente la vibración y escalar
     whileTap: {
         scale: 0.95,
         x: 0,
@@ -75,7 +75,7 @@ export const continuousShakeAnimation: HTMLMotionProps<"div"> = {
     }
 }
 
-// 持续脉冲动画 - 适用于过滤器、搜索等处理状态
+// Animación de pulso continuo - para estados de procesamiento como filtros y búsquedas
 export const continuousPulseAnimation: HTMLMotionProps<"div"> = {
     animate: {
         scale: [1, 1.1, 1],
@@ -87,7 +87,7 @@ export const continuousPulseAnimation: HTMLMotionProps<"div"> = {
             times: [0, 0.5, 1]
         }
     },
-    // 点击时可暂时停止脉冲并缩放
+    // Al hacer clic, pausar temporalmente el pulso y escalar
     whileTap: {
         scale: 0.95,
         opacity: 1,
@@ -100,7 +100,7 @@ export const continuousPulseAnimation: HTMLMotionProps<"div"> = {
     }
 }
 
-// 震动动画 - 适用于通知、警告图标
+// Animación de vibración - para iconos de notificaciones y advertencias
 export const shakeIconAnimation: HTMLMotionProps<"div"> = {
     whileHover: {
         scale: 1.05,
@@ -132,7 +132,7 @@ export const shakeIconAnimation: HTMLMotionProps<"div"> = {
     }
 }
 
-// 弹跳动画 - 适用于交互按钮
+// Animación de rebote - para botones interactivos
 export const bounceIconAnimation: HTMLMotionProps<"div"> = {
     whileHover: {
         scale: 1.05,
@@ -165,7 +165,7 @@ export const bounceIconAnimation: HTMLMotionProps<"div"> = {
     }
 }
 
-// 脉冲动画 - 适用于强调图标
+// Animación de pulso - para iconos de énfasis
 export const pulseIconAnimation: HTMLMotionProps<"div"> = {
     whileHover: {
         scale: 1.05,
@@ -190,7 +190,7 @@ export const pulseIconAnimation: HTMLMotionProps<"div"> = {
     }
 }
 
-// 新增：通知点亮动画 - 轻触时有发光效果
+// Nuevo: animación de iluminación de notificación - efecto de brillo al tocar
 export const glowIconAnimation: HTMLMotionProps<"div"> = {
     whileHover: {
         scale: 1.08,

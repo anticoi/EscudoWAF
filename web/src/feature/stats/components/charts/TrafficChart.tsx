@@ -15,22 +15,22 @@ export function TrafficChart({ timeRange }: TrafficChartProps) {
     const { data, isLoading } = useTrafficTimeSeriesData(timeRange)
     const { theme } = useTheme()
     
-    // 判断是否为暗色模式
+    // Comprobar si es modo oscuro
     const isDarkMode = theme === 'dark'
 
-    // 使用项目的紫色主题
-    const THEME_PRIMARY = '#9d76db'         // 主色紫 (157, 118, 219)
-    const THEME_SECONDARY = '#10b981'       // 绿色 - 搭配紫色
+    // Usar el tema púrpura del proyecto
+    const THEME_PRIMARY = '#9d76db'         // Color principal púrpura (157, 118, 219)
+    const THEME_SECONDARY = '#10b981'       // Verde - combinado con púrpura
     
-    // 暗色模式下加强色彩亮度和辉光效果
-    const THEME_PRIMARY_DARK = '#b394e9'    // 更亮的紫色
-    const THEME_SECONDARY_DARK = '#34d399'  // 更亮的绿色
+    // En modo oscuro, intensificar el brillo del color y el efecto de resplandor
+    const THEME_PRIMARY_DARK = '#b394e9'    // Púrpura más brillante
+    const THEME_SECONDARY_DARK = '#34d399'  // Verde más brillante
 
-    // 获取当前主题下的颜色
+    // Obtener los colores del tema actual
     const primaryColor = isDarkMode ? THEME_PRIMARY_DARK : THEME_PRIMARY
     const secondaryColor = isDarkMode ? THEME_SECONDARY_DARK : THEME_SECONDARY
 
-    // 格式化时间
+    // Formatear la hora
     const formatTime = (timestamp: string) => {
         const date = new Date(timestamp)
 
@@ -46,7 +46,7 @@ export function TrafficChart({ timeRange }: TrafficChartProps) {
         }
     }
 
-    // 格式化流量
+    // Formatear el tráfico
     const formatTraffic = (bytes: number) => {
         if (bytes < 1024) return `${bytes} B`
         if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
@@ -54,7 +54,7 @@ export function TrafficChart({ timeRange }: TrafficChartProps) {
         return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`
     }
 
-    // 图表配置
+    // Configuración del gráfico
     const chartOptions: echarts.EChartsOption = {
         tooltip: {
             trigger: 'axis',

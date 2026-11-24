@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/model"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/model"
 	"github.com/haproxytech/client-native/v6/models"
 )
 
@@ -26,19 +26,19 @@ type HAProxyService interface {
 	Reset() error
 }
 
-// NewHAProxyService 创建一个新的HAProxy服务实例
+// NewHAProxyService crea una nueva instancia del servicio HAProxy
 func NewHAProxyService(configBaseDir, haproxyBin string, ctx context.Context) (HAProxyService, error) {
 	appConfig, err := config.GetAppConfig()
 	if err != nil {
-		return nil, fmt.Errorf("无法获取应用配置: %v", err)
+		return nil, fmt.Errorf("No se pudo obtener la configuración de la aplicación: %v", err)
 	}
 
-	// 如果未指定配置目录，使用默认目录
+	// Si no se especifica el directorio de configuración, usar el por defecto
 	if configBaseDir == "" {
 		configBaseDir = appConfig.Haproxy.ConfigBaseDir
 	}
 
-	// 如果未指定二进制路径，假设在PATH中可用
+	// Si no se especifica la ruta del binario, se asume disponible en PATH
 	if haproxyBin == "" {
 		haproxyBin = appConfig.Haproxy.HaproxyBin
 	}

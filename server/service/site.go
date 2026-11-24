@@ -4,10 +4,10 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/dto"
-	"github.com/HUAHUAI23/RuiQi/server/model"
-	"github.com/HUAHUAI23/RuiQi/server/repository"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/dto"
+	"github.com/anticoi/EscudoWAF/server/model"
+	"github.com/anticoi/EscudoWAF/server/repository"
 	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
@@ -20,13 +20,13 @@ type SiteService interface {
 	DeleteSite(ctx context.Context, id bson.ObjectID) error
 }
 
-// SiteService 站点服务
+// SiteService servicio de sitios
 type SiteServiceImpl struct {
 	siteRepo repository.SiteRepository
 	logger   zerolog.Logger
 }
 
-// NewSiteService 创建站点服务
+// NewSiteService crea el servicio de sitios
 func NewSiteService(siteRepo repository.SiteRepository) SiteService {
 	logger := config.GetServiceLogger("site")
 	return &SiteServiceImpl{
@@ -35,9 +35,9 @@ func NewSiteService(siteRepo repository.SiteRepository) SiteService {
 	}
 }
 
-// CreateSite 创建站点
+// CreateSite crea un sitio
 func (s *SiteServiceImpl) CreateSite(ctx context.Context, req *dto.CreateSiteRequest) (*model.Site, error) {
-	// 创建新站点
+	// Crear nuevo sitio
 	site := model.NewSite()
 	site.Name = req.Name
 	site.Domain = req.Domain
@@ -46,7 +46,7 @@ func (s *SiteServiceImpl) CreateSite(ctx context.Context, req *dto.CreateSiteReq
 	site.WAFEnabled = req.WAFEnabled
 	site.WAFMode = model.WAFModeFromString(req.WAFMode)
 	site.ActiveStatus = req.ActiveStatus
-	// 设置后端服务器
+	// Establecer el servidor backend
 	site.Backend.Servers = make([]model.Server, len(req.Backend.Servers))
 	for i, server := range req.Backend.Servers {
 		site.Backend.Servers[i] = model.Server{
@@ -55,7 +55,7 @@ func (s *SiteServiceImpl) CreateSite(ctx context.Context, req *dto.CreateSiteReq
 		}
 	}
 
-	// 如果启用HTTPS，设置证书信息
+	// Si HTTPS está habilitado, configurar la información del certificado
 	if req.EnableHTTPS && req.Certificate != nil {
 		site.Certificate = model.Certificate{
 			CertName:    req.Certificate.CertName,
@@ -67,30 +67,30 @@ func (s *SiteServiceImpl) CreateSite(ctx context.Context, req *dto.CreateSiteReq
 		}
 	}
 
-	// 验证站点配置
+	// Validar la configuración del sitio
 	if err := model.ValidateSite(site); err != nil {
-		s.logger.Error().Err(err).Msg("站点验证失败")
+		s.logger.Error().Err(err).Msg("Error de validación del sitio")
 		return nil, err
 	}
 
-	// 检查域名和端口是否已存在
+	// Comprobar si el dominio y puerto ya existen
 	err := s.siteRepo.CheckDomainPortExists(ctx, site)
 	if err != nil {
 		return nil, err
 	}
 
-	// 保存站点
+	// Guardar sitio
 	err = s.siteRepo.CreateSite(ctx, site)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("创建站点失败")
+		s.logger.Error().Err(err).Msg("Error al crear el sitio")
 		return nil, err
 	}
 
-	s.logger.Info().Str("name", site.Name).Str("domain", site.Domain).Msg("站点创建成功")
+	s.logger.Info().Str("name", site.Name).Str("domain", site.Domain).Msg("Sitio creado con éxito")
 	return site, nil
 }
 
-// GetSites 获取站点列表
+// GetSites Obtener lista de sitios
 func (s *SiteServiceImpl) GetSites(ctx context.Context, pageStr, sizeStr string) ([]model.Site, int64, error) {
 	page, err := strconv.ParseInt(pageStr, 10, 64)
 	if err != nil || page < 1 {
@@ -104,14 +104,14 @@ func (s *SiteServiceImpl) GetSites(ctx context.Context, pageStr, sizeStr string)
 
 	sites, total, err := s.siteRepo.GetSites(ctx, page, size)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("获取站点列表失败")
+		s.logger.Error().Err(err).Msg("Error al obtener la lista de sitios")
 		return nil, 0, err
 	}
 
 	return sites, total, nil
 }
 
-// GetSiteByID 根据ID获取站点
+// GetSiteByID obtiene un sitio por ID
 func (s *SiteServiceImpl) GetSiteByID(ctx context.Context, id bson.ObjectID) (*model.Site, error) {
 	site, err := s.siteRepo.GetSiteByID(ctx, id)
 	if err != nil {
@@ -121,7 +121,7 @@ func (s *SiteServiceImpl) GetSiteByID(ctx context.Context, id bson.ObjectID) (*m
 	return site, nil
 }
 
-// UpdateSite 更新站点
+// UpdateSite Actualizar sitio
 func (s *SiteServiceImpl) UpdateSite(ctx context.Context, id bson.ObjectID, req *dto.UpdateSiteRequest) (*model.Site, error) {
 
 	err := s.siteRepo.CheckDomainPortConflict(ctx, &model.Site{
@@ -134,13 +134,13 @@ func (s *SiteServiceImpl) UpdateSite(ctx context.Context, id bson.ObjectID, req 
 		return nil, err
 	}
 
-	// 获取现有站点
+	// Obtener el sitio existente
 	site, err := s.siteRepo.GetSiteByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	// 更新站点信息
+	// Información de actualización del sitio
 	if req.Name != "" {
 		site.Name = req.Name
 	}
@@ -151,7 +151,7 @@ func (s *SiteServiceImpl) UpdateSite(ctx context.Context, id bson.ObjectID, req 
 		site.ListenPort = req.ListenPort
 	}
 
-	// 更新HTTPS设置
+	// Actualizar la configuración de HTTPS
 	site.EnableHTTPS = req.EnableHTTPS
 	site.WAFEnabled = req.WAFEnabled
 	if req.WAFMode != "" {
@@ -159,7 +159,7 @@ func (s *SiteServiceImpl) UpdateSite(ctx context.Context, id bson.ObjectID, req 
 	}
 	site.ActiveStatus = req.ActiveStatus
 
-	// 更新后端服务器
+	// Actualizar el servidor backend
 	if req.Backend != nil && len(req.Backend.Servers) > 0 {
 		site.Backend.Servers = make([]model.Server, len(req.Backend.Servers))
 		for i, server := range req.Backend.Servers {
@@ -171,7 +171,7 @@ func (s *SiteServiceImpl) UpdateSite(ctx context.Context, id bson.ObjectID, req 
 		}
 	}
 
-	// 更新证书信息
+	// Información de actualización del certificado
 	if req.EnableHTTPS && req.Certificate != nil {
 		site.Certificate = model.Certificate{
 			CertName:    req.Certificate.CertName,
@@ -183,38 +183,38 @@ func (s *SiteServiceImpl) UpdateSite(ctx context.Context, id bson.ObjectID, req 
 		}
 	}
 
-	// 验证站点配置
+	// Validar la configuración del sitio
 	if err := model.ValidateSite(site); err != nil {
-		s.logger.Error().Err(err).Msg("站点验证失败")
+		s.logger.Error().Err(err).Msg("Error de validación del sitio")
 		return nil, err
 	}
 
-	// 保存更新
+	// Guardar actualización
 	err = s.siteRepo.UpdateSite(ctx, site)
 	if err != nil {
-		s.logger.Error().Err(err).Str("id", id.Hex()).Msg("更新站点失败")
+		s.logger.Error().Err(err).Str("id", id.Hex()).Msg("Error al actualizar el sitio")
 		return nil, err
 	}
 
-	s.logger.Info().Str("id", id.Hex()).Str("name", site.Name).Msg("站点更新成功")
+	s.logger.Info().Str("id", id.Hex()).Str("name", site.Name).Msg("Sitio actualizado con éxito")
 	return site, nil
 }
 
-// DeleteSite 删除站点
+// DeleteSite Eliminar sitio
 func (s *SiteServiceImpl) DeleteSite(ctx context.Context, id bson.ObjectID) error {
-	// 检查站点是否存在
+	// Comprobar si el sitio existe
 	site, err := s.siteRepo.GetSiteByID(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	// 删除站点
+	// Eliminar sitio
 	err = s.siteRepo.DeleteSite(ctx, id)
 	if err != nil {
-		s.logger.Error().Err(err).Str("id", id.Hex()).Msg("删除站点失败")
+		s.logger.Error().Err(err).Str("id", id.Hex()).Msg("Error al eliminar el sitio")
 		return err
 	}
 
-	s.logger.Info().Str("id", id.Hex()).Str("name", site.Name).Msg("站点删除成功")
+	s.logger.Info().Str("id", id.Hex()).Str("name", site.Name).Msg("Sitio eliminado con éxito")
 	return nil
 }

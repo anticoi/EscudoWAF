@@ -3,21 +3,21 @@ import { useRealtimeQPS } from '@/feature/stats/hooks/useStats'
 import * as echarts from 'echarts'
 
 /**
- * 大屏专用实时QPS图表组件
- * 适配底部布局，使用更多数据点
- * 优化版本：增强发光效果和视觉体验
+ * Componente de gráfico QPS en tiempo real para pantalla grande
+ * Adaptar al layout inferior, usar más puntos de datos
+ * Versión optimizada: efecto de brillo y experiencia visual mejorados
  */
 export function DashboardQPSChart() {
     const chartRef = useRef<HTMLDivElement>(null)
     const chartInstanceRef = useRef<echarts.ECharts | null>(null)
 
-    // 使用120个数据点，适合大屏展示
+    // Usar 120 puntos de datos, adecuado para pantallas grandes
     const { localData, isInitialized } = useRealtimeQPS(120)
 
-    // 当前QPS值 - 取最新的数据点值
+    // Valor QPS actual - tomar el punto de datos más reciente
     const currentQPS = localData.length > 0 ? localData[localData.length - 1].value : 0
 
-    // 格式化时间戳 - 显示时:分:秒
+    // Formatear la marca de tiempo - mostrar hora:minutos:segundos
     const formatTimeLabel = (timestamp: string) => {
         const date = new Date(timestamp)
         return date.toLocaleTimeString([], {
@@ -27,16 +27,16 @@ export function DashboardQPSChart() {
         })
     }
 
-    // 初始化和更新图表
+    // Inicializar y actualizar el gráfico
     useEffect(() => {
         if (!chartRef.current) return
 
-        // 如果已经有图表实例，则不需要重新创建
+        // Si ya existe una instancia del gráfico, no es necesario recrearla
         if (!chartInstanceRef.current) {
             chartInstanceRef.current = echarts.init(chartRef.current)
         }
 
-        // 如果没有数据，显示空图表
+        // Si no hay datos, mostrar gráfico vacío
         if (localData.length === 0) {
             chartInstanceRef.current.setOption({
                 grid: {
@@ -76,19 +76,19 @@ export function DashboardQPSChart() {
             return
         }
 
-        // 大屏专用颜色配置 - 增强版
-        const CHART_PRIMARY_COLOR = '#a071da' // 紫色主题
-        const CHART_SECONDARY_COLOR = 'rgba(160, 113, 218, 0.3)' // 半透明紫色
-        const CHART_GLOW_COLOR = 'rgba(160, 113, 218, 0.8)' // 发光颜色
-        const CHART_BRIGHT_COLOR = '#c299f0' // 更亮的紫色用于渐变顶部
+        // Configuración de colores para pantalla grande - versión mejorada
+        const CHART_PRIMARY_COLOR = '#a071da' // Tema púrpura
+        const CHART_SECONDARY_COLOR = 'rgba(160, 113, 218, 0.3)' // Púrpura semitransparente
+        const CHART_GLOW_COLOR = 'rgba(160, 113, 218, 0.8)' // Color de brillo
+        const CHART_BRIGHT_COLOR = '#c299f0' // Púrpura más brillante para la parte superior del degradado
 
-        // 处理数据，确保0值也显示小柱子
+        // Procesar los datos, asegurar que los valores 0 también muestren pequeñas barras
         const processedData = localData.map(item => {
-            // 如果值为0，给一个最小值0.1以便显示发光效果
+            // Si el valor es 0, usar un mínimo de 0.1 para mostrar el efecto de brillo
             return item.value === 0 ? 0.1 : item.value
         })
 
-        // 设置图表选项
+        // Establecer las opciones del gráfico
         const option: echarts.EChartsOption = {
             tooltip: {
                 trigger: 'axis',
@@ -106,7 +106,7 @@ export function DashboardQPSChart() {
                     const dataIndex = params[0].dataIndex
                     if (typeof dataIndex === 'number' && dataIndex >= 0 && dataIndex < localData.length) {
                         const item = localData[dataIndex]
-                        // 显示实际值，而不是处理后的值
+                        // Mostrar el valor real en lugar del procesado
                         return `<div style="text-shadow: 0 0 8px rgba(160, 113, 218, 0.8);">${formatTimeLabel(item.timestamp)}: <span style="font-weight: bold; color: ${CHART_BRIGHT_COLOR}; text-shadow: 0 0 10px rgba(160, 113, 218, 1);">${item.value}</span> QPS</div>`
                     }
                     return ''
@@ -135,7 +135,7 @@ export function DashboardQPSChart() {
                     show: true,
                     color: 'rgba(255, 255, 255, 0.8)',
                     fontSize: 10,
-                    interval: Math.floor(localData.length / 8) // 显示8个左右的标签
+                    interval: Math.floor(localData.length / 8) // Mostrar unas 8 etiquetas
                 },
                 axisLine: {
                     show: true,
@@ -165,7 +165,7 @@ export function DashboardQPSChart() {
                     show: false
                 },
                 max: function (value) {
-                    // 让图表顶部有一些留白，最大值上浮20%
+                    // Dejar un margen superior en el gráfico, valor máximo +20%
                     return Math.max(10, value.max * 1.2)
                 },
                 min: 0
@@ -181,14 +181,14 @@ export function DashboardQPSChart() {
                             { offset: 0.3, color: CHART_PRIMARY_COLOR },
                             { offset: 1, color: CHART_SECONDARY_COLOR }
                         ]),
-                        borderRadius: [4, 4, 0, 0], // 增加圆角
-                        // 增强发光效果 - 多层阴影
+                        borderRadius: [4, 4, 0, 0], // Aumentar el redondeo de esquinas
+                        // Efecto de brillo mejorado - sombras multicapa
                         shadowColor: CHART_GLOW_COLOR,
-                        shadowBlur: 20, // 增加模糊半径
+                        shadowBlur: 20, // Aumentar el radio de desenfoque
                         shadowOffsetY: 0,
                         shadowOffsetX: 0
                     },
-                    // 添加强调状态的发光效果
+                    // Añadir efecto de brillo para el estado de énfasis
                     emphasis: {
                         itemStyle: {
                             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
@@ -197,7 +197,7 @@ export function DashboardQPSChart() {
                                 { offset: 1, color: 'rgba(160, 113, 218, 0.5)' }
                             ]),
                             shadowColor: CHART_GLOW_COLOR,
-                            shadowBlur: 30, // 悬停时更强的发光
+                            shadowBlur: 30, // Brillo más intenso al pasar el cursor
                             shadowOffsetY: 0,
                             shadowOffsetX: 0,
                             borderColor: CHART_BRIGHT_COLOR,
@@ -212,10 +212,10 @@ export function DashboardQPSChart() {
             animation: true
         }
 
-        // 应用选项
+        // Opciones de la aplicación
         chartInstanceRef.current.setOption(option)
 
-        // 调整窗口大小时重绘图表
+        // Redibujar el gráfico al cambiar el tamaño de la ventana
         const handleResize = () => {
             if (chartInstanceRef.current) {
                 chartInstanceRef.current.resize()
@@ -224,13 +224,13 @@ export function DashboardQPSChart() {
 
         window.addEventListener('resize', handleResize)
 
-        // 清理函数
+        // Función de limpieza
         return () => {
             window.removeEventListener('resize', handleResize)
         }
     }, [localData, isInitialized])
 
-    // 组件卸载时清理图表实例
+    // Limpiar la instancia del gráfico al desmontar el componente
     useEffect(() => {
         return () => {
             if (chartInstanceRef.current) {

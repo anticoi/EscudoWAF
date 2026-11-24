@@ -1,0 +1,646 @@
+{
+    "sidebar": {
+        "title": "EscudoWAF",
+        "monitor": "Monitor",
+        "logs": "Registros",
+        "rules": "Reglas",
+        "settings": "Configuración",
+        "logout": "Cerrar sesión"
+    },
+    "breadcrumb": {
+        "logs": {
+            "attack": "Eventos de ataque",
+            "protect": "Registros de protección"
+        },
+        "monitor": {
+            "overview": "Monitor",
+            "dashboard": "Panel de seguridad"
+        },
+        "rules": {
+            "system": "Reglas del sistema",
+            "user": "Reglas personalizadas",
+            "ipGroup": "Gestión de grupos de IPs",
+            "flowControl": "Limitación de velocidad"
+        },
+        "settings": {
+            "settings": "Configuración",
+            "siteManager": "Gestión de sitios",
+            "certManager": "Gestión de certificados"
+        }
+    },
+    "common": {
+        "loading": "Cargando...",
+        "language": "Seleccionar idioma",
+        "copied": "Copiado",
+        "save": "Guardar",
+        "create": "Crear",
+        "delete": "Eliminar",
+        "cancel": "Cancelar",
+        "submitting": "Enviando..."
+    },
+    "error": {
+        "title": "Se produjo un error",
+        "code": "Código de error",
+        "appProblem": "La aplicación encontró un problema inesperado",
+        "unexpected": "Se produjo un error inesperado",
+        "refresh": "Actualizar página",
+        "returnHome": "Volver al inicio",
+        "loading": "Error al cargar los datos",
+        "message": "Mensaje de error",
+        "details": "Detalles del error",
+        "requestId": "ID de la petición",
+        "cannotParse": "No se pueden procesar los detalles del error",
+        "viewDetails": "Ver detalles",
+        "hideDetails": "Ocultar detalles",
+        "retry": "Reintentar",
+        "network": {
+            "title": "Error de conexión de red",
+            "description": "No se puede conectar al servidor. Compruebe su conexión de red."
+        },
+        "timeout": {
+            "title": "Tiempo de espera agotado",
+            "description": "El servidor tarda demasiado en responder. Inténtelo más tarde."
+        },
+        "forbidden": {
+            "title": "Acceso denegado",
+            "description": "No tiene permiso para acceder a este recurso."
+        },
+        "unauthorized": {
+            "title": "Acceso no autorizado",
+            "description": "Su sesión no es válida. Inicie sesión de nuevo."
+        },
+        "server": {
+            "title": "Error del servidor",
+            "description": "El servidor no puede procesar su solicitud temporalmente. Inténtelo más tarde."
+        },
+        "client": {
+            "title": "Error de solicitud",
+            "description": "Los parámetros o el formato de la solicitud son incorrectos."
+        },
+        "validation": {
+            "title": "Error de validación de datos",
+            "description": "Los datos enviados no superaron la validación."
+        },
+        "unknown": {
+            "title": "Se produjo un error",
+            "description": "Se produjo un error desconocido al cargar los datos."
+        }
+    },
+    "auth": {
+        "login": "Iniciar sesión",
+        "loginDescription": "Introduzca su nombre de usuario y contraseña",
+        "username": "Nombre de usuario",
+        "usernamePlaceholder": "Introduzca el nombre de usuario",
+        "password": "Contraseña",
+        "passwordPlaceholder": "Introduzca la contraseña",
+        "loggingIn": "Iniciando sesión...",
+        "resetPassword": "Restablecer contraseña",
+        "firstLoginReset": "El primer inicio de sesión requiere restablecer la contraseña",
+        "enterOldAndNewPassword": "Introduzca su contraseña actual y la nueva",
+        "currentPassword": "Contraseña actual",
+        "enterCurrentPassword": "Introduzca la contraseña actual",
+        "newPassword": "Nueva contraseña",
+        "enterNewPassword": "Introduzca la nueva contraseña",
+        "confirmNewPassword": "Confirmar nueva contraseña",
+        "enterNewPasswordAgain": "Introduzca la nueva contraseña de nuevo",
+        "submitting": "Enviando...",
+        "passwordRequirement": "La contraseña debe tener al menos 6 caracteres"
+    },
+    "filter": "Filtrar",
+    "reset": "Restablecer",
+    "search": "Buscar",
+    "domain": "Dominio",
+    "dstPort": "Puerto de destino",
+    "srcIp": "IP de origen",
+    "attackCount": "Número de ataques",
+    "firstAttackTime": "Hora del primer ataque",
+    "lastAttackTime": "Hora del último ataque",
+    "status": "Estado del ataque",
+    "attackEnded": "El ataque ha finalizado",
+    "noOngoingAttack": "No hay ataques en curso actualmente",
+    "ongoing": "El ataque está en curso",
+    "attackDuration": "Duración",
+    "autoRefresh": "Sondeo",
+    "interval": "Intervalo",
+    "second": "Segundo",
+    "refresh": "Actualizar",
+    "domainPlaceholder": "Introduzca el nombre de dominio",
+    "dstIp": "IP de destino",
+    "srcPort": "Puerto de origen",
+    "portPlaceholder": "Introduzca el puerto",
+    "ipPlaceholder": "Introduzca la IP",
+    "startTime": "Hora de inicio",
+    "endTime": "Hora de fin",
+    "ruleId": "ID de regla",
+    "ruleIdPlaceholder": "Introduzca el ID de la regla",
+    "requestId": "ID de petición",
+    "requestIdPlaceholder": "Introduzca el ID de la petición",
+    "attackTarget": "Objetivo",
+    "createdAt": "Fecha de creación",
+    "detail": "Detalles",
+    "noResult": "Sin datos",
+    "attackDetail": {
+        "title": "Detalles del registro de ataque",
+        "highRiskAttack": "Ataque de alto riesgo",
+        "overview": "Detalle del ataque",
+        "target": "Objetivo del ataque",
+        "message": "Información del ataque",
+        "viewRuleDetail": "Ver detalles de la regla",
+        "attackTime": "Hora del ataque",
+        "detectedPayload": "Carga detectada",
+        "attackSource": "Origen del ataque",
+        "blockThisIp": "Bloquear esta IP",
+        "location": "Ubicación",
+        "noLocationInfo": "Sin información de ubicación",
+        "targetInfo": "Información del objetivo",
+        "technicalDetails": "Detalles",
+        "copyCurl": "Copiar cURL",
+        "encoding": "Codificación",
+        "request": "Petición",
+        "response": "Respuesta",
+        "logs": "Registros",
+        "copyAll": "Copiar todo",
+        "noResponse": "Sin datos"
+    },
+    "globalSetting": {
+        "title": "Configuración general",
+        "description": "Algunos ajustes requieren reiniciar el motor para aplicarse, como cambios de sitios y configuraciones del motor",
+        "engine": {
+            "management": "Gestión del motor",
+            "setting": "Configuración del motor",
+            "status": "Estado del motor",
+            "currentStatus": "Estado actual:",
+            "loading": "Cargando...",
+            "running": "En ejecución",
+            "stopped": "Detenido",
+            "processing": "Procesando...",
+            "start": "Iniciar",
+            "stop": "Detener",
+            "restart": "Reiniciar",
+            "forceStop": "Detención forzada",
+            "reload": "Recarga en caliente",
+            "operationSuccess": "Operación exitosa",
+            "operationCompleted": "La operación de control del motor se completó con éxito",
+            "operationFailed": "Operación fallida",
+            "operationError": "Se produjo un error durante el control del motor"
+        },
+        "config": {
+            "generalConfig": "Configuración general",
+            "engineThreads": "Hilos del motor",
+            "threadsDescription": "Establece el número de hilos de HAProxy, rango 0-256, requiere reinicio",
+            "threadsWarning": "Con 0, el sistema asignará hilos automáticamente según los núcleos de CPU",
+            "responseCheck": "Inspección de respuestas",
+            "responseCheckDescription": "Habilita la inspección WAF del contenido de las respuestas, requiere reinicio",
+            "debugMode": "Modo de depuración",
+            "debugModeDescription": "Habilita el modo de depuración, genera registros más detallados, requiere reinicio",
+            "engineDirectives": "Directivas del motor",
+            "engineDirectivesPlaceholder": "Introduzca la configuración de directivas del motor...",
+            "engineDirectivesDescription": "Configura las directivas principales del motor WAF con sintaxis de directivas, requiere reinicio",
+            "haproxyConfigDir": "Directorio raíz de configuración de HAProxy",
+            "haproxyConfigDirDescription": "Directorio raíz donde se almacenan los archivos de configuración de HAProxy, requiere reinicio",
+            "haproxyBinPath": "Ruta del ejecutable de HAProxy",
+            "haproxyBinPathDescription": "Ruta al binario ejecutable de HAProxy, requiere reinicio",
+            "internationalization": "Internacionalización",
+            "internationalizationDescription": "Establece el idioma de la interfaz del sistema",
+            "theme": "Tema",
+            "themeDescription": "Alterna entre los modos de tema claro y oscuro",
+            "saving": "Guardando...",
+            "saveSettings": "Guardar configuración",
+            "updateSuccess": "Actualización exitosa",
+            "systemConfigUpdated": "La configuración del sistema se actualizó correctamente",
+            "updateFailed": "Actualización fallida",
+            "updateError": "Se produjo un error al actualizar la configuración"
+        }
+    },
+    "certificate": {
+        "management": "Gestión de certificados",
+        "refresh": "Actualizar",
+        "add": "Añadir certificado",
+        "name": "Nombre del certificado",
+        "domains": "Dominios",
+        "issuerAndExpiry": "Emisor y fecha de expiración",
+        "issuer": "Emisor",
+        "expiryDate": "Fecha de expiración: ",
+        "expiringSoon": "Próximo a expirar",
+        "expired": "Expirado",
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "dialog": {
+            "createTitle": "Crear nuevo certificado",
+            "updateTitle": "Actualizar certificado",
+            "createDescription": "Complete la información del certificado y suba los archivos de clave pública y privada, o pegue el contenido directamente. El sistema analizará automáticamente la información del certificado.",
+            "updateDescription": "Edite la información del certificado, los cambios se guardarán automáticamente.",
+            "parseFailed": "Error al analizar el certificado: ",
+            "unknownError": "Error desconocido",
+            "fileReadFailed": "Error al leer el archivo: ",
+            "certName": "Nombre del certificado",
+            "description": "Descripción (opcional)",
+            "descriptionPlaceholder": "Introduzca la descripción del certificado",
+            "publicKeyFile": "Archivo de clave pública",
+            "uploadPublicKey": "Subir clave pública",
+            "publicKeyContent": "Contenido de la clave pública",
+            "publicKeyPlaceholder": "Introduzca el contenido de la clave pública en formato PEM",
+            "privateKeyFile": "Archivo de clave privada",
+            "uploadPrivateKey": "Subir clave privada",
+            "privateKeyContent": "Contenido de la clave privada",
+            "privateKeyPlaceholder": "Introduzca el contenido de la clave privada en formato PEM",
+            "orEnterContent": "o introduzca el contenido directamente",
+            "parsedInfo": "Información del certificado analizado",
+            "issuer": "Emisor",
+            "expiryDate": "Fecha de expiración",
+            "fingerprint": "Huella digital",
+            "domains": "Dominios",
+            "submitting": "Enviando...",
+            "create": "Crear",
+            "update": "Actualizar"
+        },
+        "deleteDialog": {
+            "confirmTitle": "Confirmar eliminación",
+            "confirmDescription": "¿Está seguro de que desea eliminar este certificado? Esta acción no se puede deshacer.",
+            "cancel": "Cancelar",
+            "deleting": "Eliminando...",
+            "delete": "Eliminar"
+        },
+        "toast": {
+            "createSuccess": "Creado con éxito",
+            "certificateCreated": "El certificado se ha creado correctamente",
+            "createFailed": "Error al crear",
+            "createError": "Se produjo un error al crear el certificado",
+            "updateSuccess": "Actualizado con éxito",
+            "certificateUpdated": "El certificado se ha actualizado correctamente",
+            "updateFailed": "Error al actualizar",
+            "updateError": "Se produjo un error al actualizar el certificado",
+            "deleteSuccess": "Eliminado con éxito",
+            "certificateDeleted": "El certificado se ha eliminado correctamente",
+            "deleteFailed": "Error al eliminar",
+            "deleteError": "Se produjo un error al eliminar el certificado"
+        }
+    },
+    "site": {
+        "management": "Gestión de sitios",
+        "refresh": "Actualizar",
+        "add": "Añadir sitio",
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "name": "Nombre del sitio",
+        "domain": "Dominio",
+        "listenPort": "Puerto de escucha",
+        "backend": "Servidores backend",
+        "https": "HTTPS",
+        "status": "Estado del sitio",
+        "wafStatus": "Estado del WAF",
+        "enabled": "Habilitado",
+        "disabled": "Deshabilitado",
+        "active": "Activo",
+        "inactive": "Inactivo",
+        "noData": "Sin datos de sitios",
+        "dialog": {
+            "createTitle": "Crear nuevo sitio",
+            "updateTitle": "Actualizar sitio",
+            "createDescription": "Complete la información del sitio, incluyendo información básica, configuración HTTPS, servidores backend y ajustes del WAF.",
+            "updateDescription": "Edite la información del sitio, los cambios se guardarán automáticamente.",
+            "basicInfo": "Información básica",
+            "siteName": "Nombre del sitio",
+            "siteNamePlaceholder": "Introduzca el nombre del sitio",
+            "domainPlaceholder": "Introduzca el dominio",
+            "siteStatus": "Estado del sitio",
+            "siteActive": "El sitio está activo",
+            "httpsSettings": "Configuración HTTPS",
+            "enableHttps": "Habilitar HTTPS",
+            "httpsDescription": "Es necesario configurar certificados tras habilitarlo",
+            "selectCertificate": "Seleccionar certificado",
+            "uploadNewCert": "Subir nuevo certificado",
+            "selectedCertInfo": "Información del certificado seleccionado",
+            "backendServers": "Servidores backend",
+            "addServer": "Añadir servidor",
+            "server": "Servidor",
+            "hostAddress": "Dirección del host",
+            "hostPlaceholder": "p. ej. 192.168.1.1 o backend.com",
+            "port": "Puerto",
+            "enableSsl": "Habilitar SSL",
+            "backendHttps": "El backend usa HTTPS",
+            "wafSettings": "Configuración del WAF",
+            "enableWaf": "Habilitar WAF",
+            "wafDescription": "Firewall de aplicaciones web",
+            "wafMode": "Modo del WAF",
+            "selectWafMode": "Seleccionar modo del WAF",
+            "observationMode": "Modo observación",
+            "observationDescription": "Solo registra, sin bloquear",
+            "protectionMode": "Modo protección",
+            "protectionDescription": "Registra y bloquea ataques",
+            "submitting": "Enviando...",
+            "createSite": "Crear sitio",
+            "updateSite": "Actualizar sitio"
+        },
+        "deleteDialog": {
+            "confirmTitle": "Confirmar eliminación",
+            "confirmDescription": "¿Está seguro de que desea eliminar este sitio? Esta acción no se puede deshacer y puede afectar a los servicios que usan este sitio.",
+            "cancel": "Cancelar",
+            "deleting": "Eliminando...",
+            "delete": "Eliminar"
+        },
+        "toast": {
+            "createSuccess": "Creado con éxito",
+            "siteCreated": "El sitio se ha creado correctamente",
+            "createFailed": "Error al crear",
+            "createError": "Se produjo un error al crear el sitio",
+            "updateSuccess": "Actualizado con éxito",
+            "siteUpdated": "El sitio se ha actualizado correctamente",
+            "updateFailed": "Error al actualizar",
+            "updateError": "Se produjo un error al actualizar el sitio",
+            "deleteSuccess": "Eliminado con éxito",
+            "siteDeleted": "El sitio se ha eliminado correctamente",
+            "deleteFailed": "Error al eliminar",
+            "deleteError": "Se produjo un error al eliminar el sitio"
+        },
+        "view": {
+            "cardView": "Vista de tarjetas",
+            "tableView": "Vista de tabla"
+        },
+        "card": {
+            "upstreamServers": "Servidores upstream:",
+            "certInfo": "Información del certificado:"
+        }
+    },
+    "table": {
+        "selected": "{{selected}} de {{total}} fila(s) seleccionada(s).",
+        "rowsPerPage": "Filas por página",
+        "pageInfo": "Página {{current}} de {{total}}",
+        "firstPage": "Ir a la primera página",
+        "previousPage": "Ir a la página anterior",
+        "nextPage": "Ir a la página siguiente",
+        "lastPage": "Ir a la última página"
+    },
+    "ipGroup": {
+        "title": "Gestión de grupos de IPs",
+        "createButton": "Crear grupo de IPs",
+        "table": {
+            "name": "Nombre del grupo",
+            "ipAddresses": "Direcciones IP",
+            "actions": "Acciones"
+        },
+        "form": {
+            "name": "Nombre del grupo",
+            "namePlaceholder": "Introduzca el nombre del grupo",
+            "ipAddresses": "Direcciones IP",
+            "ipAddressPlaceholder": "Introduzca una dirección IP o CIDR (p. ej. 192.168.1.1 o 10.0.0.0/24)",
+            "noIpAddresses": "No se han añadido direcciones IP"
+        },
+        "dialog": {
+            "createTitle": "Crear grupo de IPs",
+            "editTitle": "Editar grupo de IPs",
+            "createDescription": "Cree un nuevo grupo de direcciones IP para la coincidencia de reglas",
+            "editDescription": "Edite el grupo de direcciones IP seleccionado y sus miembros"
+        },
+        "deleteDialog": {
+            "title": "Eliminar grupo de IPs",
+            "description": "¿Está seguro de que desea eliminar el grupo de IPs {{name}}? Esta acción no se puede deshacer."
+        },
+        "validation": {
+            "nameRequired": "El nombre del grupo es obligatorio",
+            "nameMaxLength": "El nombre del grupo no puede superar los 50 caracteres",
+            "ipItemRequired": "La dirección IP es obligatoria",
+            "ipItemInvalid": "Formato de dirección IP o CIDR inválido",
+            "ipItemDuplicate": "Esta dirección IP ya está añadida",
+            "itemsRequired": "Se requiere al menos una dirección IP"
+        },
+        "toast": {
+            "createSuccess": "Grupo de IPs creado",
+            "ipGroupCreated": "El grupo de IPs se ha creado correctamente",
+            "createFailed": "Error al crear",
+            "createError": "Se produjo un error al crear el grupo de IPs",
+            "updateSuccess": "Grupo de IPs actualizado",
+            "ipGroupUpdated": "El grupo de IPs se ha actualizado correctamente",
+            "updateFailed": "Error al actualizar",
+            "updateError": "Se produjo un error al actualizar el grupo de IPs",
+            "deleteSuccess": "Grupo de IPs eliminado",
+            "ipGroupDeleted": "El grupo de IPs se ha eliminado correctamente",
+            "deleteFailed": "Error al eliminar",
+            "deleteError": "Se produjo un error al eliminar el grupo de IPs",
+            "blockSuccess": "IP bloqueada",
+            "ipBlocked": "La dirección IP {{ip}} se ha añadido a la lista negra",
+            "blockFailed": "Error al bloquear",
+            "blockError": "Se produjo un error al bloquear la dirección IP"
+        }
+    },
+    "microRule": {
+        "title": "Gestión de reglas personalizadas",
+        "refresh": "Actualizar",
+        "add": "Añadir regla",
+        "table": {
+            "name": "Nombre de la regla",
+            "type": "Tipo de regla",
+            "status": "Estado",
+            "priority": "Prioridad",
+            "edit": "Editar",
+            "delete": "Eliminar"
+        },
+        "form": {
+            "name": "Nombre de la regla",
+            "namePlaceholder": "Introduzca el nombre de la regla",
+            "type": "Tipo de regla",
+            "selectType": "Seleccione el tipo de regla",
+            "whitelist": "Lista blanca",
+            "blacklist": "Lista negra",
+            "status": "Estado",
+            "selectStatus": "Seleccione el estado",
+            "enabled": "Habilitada",
+            "disabled": "Deshabilitada",
+            "priority": "Prioridad",
+            "priorityPlaceholder": "Introduzca la prioridad (0-9999)",
+            "condition": "Condición de la regla"
+        },
+        "condition": {
+            "conditionType": "Tipo de condición",
+            "selectConditionType": "Seleccione el tipo de condición",
+            "simpleCondition": "Condición simple",
+            "compositeCondition": "Condición compuesta",
+            "target": "Objetivo de coincidencia",
+            "selectTarget": "Seleccione el objetivo de coincidencia",
+            "sourceIp": "IP de origen",
+            "url": "URL",
+            "path": "Ruta",
+            "matchType": "Tipo de coincidencia",
+            "selectMatchType": "Seleccione el tipo de coincidencia",
+            "matchValue": "Valor de coincidencia",
+            "enterMatchValue": "Introduzca el valor de coincidencia",
+            "operator": "Operador lógico",
+            "selectOperator": "Seleccione el operador lógico",
+            "and": "Y",
+            "or": "O",
+            "conditionGroup": "Grupo de condiciones",
+            "addSimpleCondition": "Añadir condición",
+            "addCompositeCondition": "Añadir grupo de condiciones",
+            "addNestedCondition": "Añadir condición anidada"
+        },
+        "matchTypes": {
+            "equal": "Igual",
+            "not_equal": "Distinto",
+            "fuzzy": "Coincidencia difusa",
+            "in_cidr": "En rango CIDR",
+            "not_in_cidr": "Fuera de rango CIDR",
+            "in_ipgroup": "En grupo de IPs",
+            "not_in_ipgroup": "Fuera de grupo de IPs",
+            "include": "Incluye",
+            "contains": "Contiene",
+            "not_contains": "No contiene",
+            "prefix_keyword": "Comienza con",
+            "regex": "Expresión regular"
+        },
+        "dialog": {
+            "createTitle": "Crear nueva regla",
+            "updateTitle": "Actualizar regla",
+            "createDescription": "Cree una regla WAF personalizada para proteger su sitio",
+            "updateDescription": "Edite la información de la regla, los cambios se guardarán automáticamente"
+        },
+        "deleteDialog": {
+            "confirmTitle": "Confirmar eliminación",
+            "confirmDescription": "¿Está seguro de que desea eliminar esta regla? Esta acción no se puede deshacer y puede afectar su configuración de seguridad.",
+            "cancel": "Cancelar",
+            "deleting": "Eliminando...",
+            "delete": "Eliminar"
+        },
+        "toast": {
+            "createSuccess": "Creada con éxito",
+            "microRuleCreated": "La regla se ha creado correctamente",
+            "createFailed": "Error al crear",
+            "createError": "Se produjo un error al crear la regla",
+            "updateSuccess": "Actualizada con éxito",
+            "microRuleUpdated": "La regla se ha actualizado correctamente",
+            "updateFailed": "Error al actualizar",
+            "updateError": "Se produjo un error al actualizar la regla",
+            "deleteSuccess": "Eliminada con éxito",
+            "microRuleDeleted": "La regla se ha eliminado correctamente",
+            "deleteFailed": "Error al eliminar",
+            "deleteError": "Se produjo un error al eliminar la regla"
+        }
+    },
+    "stats": {
+        "title": "Estadísticas",
+        "overview": "Métricas principales",
+        "timeRange": {
+            "24h": "24 horas",
+            "7d": "7 días",
+            "30d": "30 días"
+        },
+        "totalRequests": "Peticiones totales",
+        "inboundTraffic": "Tráfico entrante",
+        "outboundTraffic": "Tráfico saliente",
+        "maxQPS": "QPS máximo",
+        "4xxErrors": "Errores 4xx",
+        "5xxErrors": "Errores 5xx",
+        "blockCount": "Bloqueos",
+        "attackIPCount": "IPs atacantes",
+        "realtimeQPS": "QPS en tiempo real",
+        "trafficTrend": "Tendencia de tráfico",
+        "requestsAndBlocks": "Tendencia de peticiones y bloqueos",
+        "requests": "Peticiones",
+        "blocks": "Bloqueos"
+    },
+    "flowControl": {
+        "blockIpList": "Lista de IPs bloqueadas",
+        "title": "Control de flujo",
+        "pageTitle": "Gestión del control de flujo",
+        "pageDescription": "Gestione los límites de frecuencia de acceso por IP y la lista de IPs bloqueadas",
+        "configSettings": "Configuración del control de flujo",
+        "refresh": "Actualizar",
+        "cleanup": "Limpiar registros expirados",
+        "cleaning": "Limpiando...",
+        "filters": "Filtros",
+        "filterByIP": "Filtrar por dirección IP",
+        "filterByReason": "Filtrar por motivo de bloqueo",
+        "clearFilters": "Limpiar",
+        "expired": "Expirado",
+        "untilUnblock": "hasta el desbloqueo",
+        "hours": " horas ",
+        "minutes": " minutos ",
+        "seconds": " segundos",
+        "table": {
+            "ip": "Dirección IP",
+            "reason": "Motivo del bloqueo",
+            "requestUri": "Ruta de la petición",
+            "blockedAt": "Bloqueada el",
+            "status": "Estado"
+        },
+        "status": {
+            "placeholder": "Estado",
+            "all": "Todos",
+            "active": "Activo",
+            "expired": "Expirado"
+        },
+        "reason": {
+            "all": "Todos los motivos",
+            "highFrequencyVisit": "Visita de alta frecuencia",
+            "highFrequencyAttack": "Ataque de alta frecuencia",
+            "highFrequencyError": "Error de alta frecuencia"
+        },
+        "pagination": {
+            "info": "Página {{current}} de {{total}}, {{count}} registros en total",
+            "previous": "Anterior",
+            "next": "Siguiente"
+        },
+        "dialog": {
+            "title": "Configuración del control de flujo",
+            "description": "Configure los límites de frecuencia de acceso, ataques y errores por IP para proteger el sistema de ataques maliciosos"
+        },
+        "visitLimit": {
+            "title": "Límite de frecuencia de visitas",
+            "description": "Limita el número de visitas desde una IP dentro de una ventana de tiempo para evitar accesos de alta frecuencia"
+        },
+        "attackLimit": {
+            "title": "Límite de frecuencia de ataques",
+            "description": "Limita el número de ataques desde una IP dentro de una ventana de tiempo para evitar ataques maliciosos"
+        },
+        "errorLimit": {
+            "title": "Límite de frecuencia de errores",
+            "description": "Limita el número de respuestas de error desde una IP dentro de una ventana de tiempo para evitar sondeos maliciosos"
+        },
+        "enabled": "Habilitar límite",
+        "enabledDescription": "Habilita esta regla de límite",
+        "threshold": "Umbral de activación",
+        "thresholdDescription": "Número máximo de peticiones dentro de la ventana de tiempo estadística",
+        "attackThresholdDescription": "Número máximo de ataques dentro de la ventana de tiempo estadística",
+        "errorThresholdDescription": "Número máximo de errores dentro de la ventana de tiempo estadística",
+        "statDuration": "Ventana de tiempo estadística",
+        "statDurationDescription": "Duración de la ventana de tiempo estadística (segundos)",
+        "blockDuration": "Duración del bloqueo",
+        "blockDurationDescription": "Duración del bloqueo tras superar el límite (segundos)",
+        "burstCount": "Cantidad en ráfaga",
+        "burstCountDescription": "Número de peticiones en ráfaga permitidas",
+        "paramsCapacity": "Capacidad de caché",
+        "paramsCapacityDescription": "Número máximo de IPs a cachear",
+        "updating": "Actualizando...",
+        "updateConfig": "Actualizar configuración",
+        "toast": {
+            "updateSuccess": "Actualización exitosa",
+            "configUpdated": "La configuración del control de flujo se actualizó correctamente",
+            "updateFailed": "Actualización fallida",
+            "updateError": "Se produjo un error al actualizar la configuración",
+            "cleanupSuccess": "Limpieza exitosa",
+            "cleanupMessage": "{{count}} registros expirados eliminados",
+            "cleanupFailed": "Error en la limpieza",
+            "cleanupError": "Se produjo un error al limpiar los registros expirados"
+        }
+    },
+    "securityDashboard": {
+        "title": "Panel de protección de seguridad",
+        "stats": {
+            "blockCount24h": "Bloqueos en 24h",
+            "attackIPCount24h": "IPs atacantes en 24h",
+            "totalRequests24h": "Peticiones totales en 24h"
+        },
+        "attackIPList": {
+            "title": "IPs atacantes en 24h",
+            "noData": "Sin datos de IPs atacantes",
+            "attackCount": "veces"
+        },
+        "realtimeAttacks": {
+            "title": "Ataques en tiempo real",
+            "noData": "Sin datos de ataques en tiempo real"
+        },
+        "qpsChart": {
+            "title": "Monitor de QPS en tiempo real",
+            "tooltip": "{{time}}: {{value}} QPS"
+        }
+    }
+}

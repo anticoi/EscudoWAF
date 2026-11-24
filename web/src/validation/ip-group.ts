@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-// IP组创建/编辑表单验证
+// Validación del formulario de creación/edición de grupos de IPs
 export const ipGroupFormSchema = z.object({
     name: z
         .string()
@@ -17,7 +17,7 @@ export const ipGroupFormSchema = z.object({
         .min(1, { message: 'ipGroup.validation.itemsRequired' })
 })
 
-// 查询参数验证
+// Validación de parámetros de consulta
 export const ipGroupQuerySchema = z.object({
     page: z.number().optional().default(1),
     pageSize: z.number().optional().default(10)

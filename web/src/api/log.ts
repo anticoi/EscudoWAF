@@ -6,26 +6,26 @@ import {
   AttackLogQuery
 } from '@/types/log'
 
-// WAF基础路径
+// Ruta base del WAF
 const BASE_URL = '/log'
 
 /**
- * WAF相关API服务
+ * Servicios de API relacionados con el WAF
  */
 export const logApi = {
   /**
-   * 获取攻击事件（按客户端IP和域名聚合）
-   * @param query 查询参数
-   * @returns 攻击事件响应数据
+   * Obtener eventos de ataque (agregados por IP de cliente y dominio)
+   * @param query parámetros de consulta
+   * @returns datos de respuesta de eventos de ataque
    */
   getAttackEvents: (query: AttackEventQuery): Promise<AttackEventResponse> => {
     return get<AttackEventResponse>(`${BASE_URL}/event`, { params: query })
   },
 
   /**
-   * 获取攻击日志详情
-   * @param query 查询参数
-   * @returns 攻击日志响应数据
+   * Obtener el detalle del log de ataque
+   * @param query parámetros de consulta
+   * @returns datos de respuesta de logs de ataque
    */
   getAttackLogs: (query: AttackLogQuery): Promise<AttackLogResponse> => {
     return get<AttackLogResponse>(`${BASE_URL}`, { params: query })

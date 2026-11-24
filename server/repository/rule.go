@@ -6,8 +6,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/HUAHUAI23/RuiQi/pkg/model"
-	"github.com/HUAHUAI23/RuiQi/server/config"
+	"github.com/anticoi/EscudoWAF/pkg/model"
+	"github.com/anticoi/EscudoWAF/server/config"
 	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -15,10 +15,10 @@ import (
 )
 
 var (
-	ErrRuleNotFound = errors.New("规则不存在")
+	ErrRuleNotFound = errors.New("La regla no existe")
 )
 
-// MicroRuleRepository 微规则仓库接口
+// MicroRuleRepository interfaz del repositorio de microrreglas
 type MicroRuleRepository interface {
 	CreateMicroRule(ctx context.Context, rule *model.MicroRule) error
 	GetMicroRules(ctx context.Context, page, size int64) ([]model.MicroRule, int64, error)
@@ -29,29 +29,29 @@ type MicroRuleRepository interface {
 	CheckMicroRuleNameExists(ctx context.Context, name string, excludeID bson.ObjectID) (bool, error)
 }
 
-// MongoMicroRuleRepository MongoDB实现的微规则仓库
+// MongoMicroRuleRepository repositorio de microrreglas implementado en MongoDB
 type MongoMicroRuleRepository struct {
 	collection *mongo.Collection
 	logger     zerolog.Logger
 }
 
-// NewMicroRuleRepository 创建微规则仓库
+// NewMicroRuleRepository crea el repositorio de microrreglas
 func NewMicroRuleRepository(db *mongo.Database) MicroRuleRepository {
 	var rule model.MicroRule
 	collection := db.Collection(rule.GetCollectionName())
 	logger := config.GetRepositoryLogger("microrule")
 
-	// 创建索引
+	// Crear índices
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// 规则名称唯一索引
+	// Índice único de nombre de regla
 	_, err := collection.Indexes().CreateOne(ctx, mongo.IndexModel{
 		Keys:    bson.D{{Key: "name", Value: 1}},
 		Options: options.Index().SetUnique(true),
 	})
 	if err != nil {
-		logger.Error().Err(err).Msg("创建规则名称索引失败")
+		logger.Error().Err(err).Msg("Error al crear el índice de nombres de reglas")
 	}
 
 	return &MongoMicroRuleRepository{
@@ -60,12 +60,12 @@ func NewMicroRuleRepository(db *mongo.Database) MicroRuleRepository {
 	}
 }
 
-// CreateMicroRule 创建微规则
+// CreateMicroRule Crear microrregla
 func (r *MongoMicroRuleRepository) CreateMicroRule(ctx context.Context, rule *model.MicroRule) error {
-	// 插入新微规则
+	// Insertar nueva microrregla
 	result, err := r.collection.InsertOne(ctx, rule)
 	if err != nil {
-		r.logger.Error().Err(err).Str("name", rule.Name).Msg("插入微规则时出错")
+		r.logger.Error().Err(err).Str("name", rule.Name).Msg("Error al insertar la microrregla")
 		return err
 	}
 
@@ -73,43 +73,43 @@ func (r *MongoMicroRuleRepository) CreateMicroRule(ctx context.Context, rule *mo
 	return nil
 }
 
-// GetMicroRules 获取微规则列表
+// GetMicroRules Obtener lista de microrreglas
 func (r *MongoMicroRuleRepository) GetMicroRules(ctx context.Context, page, size int64) ([]model.MicroRule, int64, error) {
-	// 计算分页
+	// Calcular la paginación
 	skip := (page - 1) * size
 
-	// 设置查询选项，按优先级降序排序
+	// Establecer opciones de consulta, ordenar por prioridad descendente
 	findOptions := options.Find().
 		SetSkip(skip).
 		SetLimit(size).
 		SetSort(bson.D{{Key: "priority", Value: -1}})
 
-	// 执行查询
+	// Ejecutar la consulta
 	cursor, err := r.collection.Find(ctx, bson.D{}, findOptions)
 	if err != nil {
-		r.logger.Error().Err(err).Msg("查询微规则列表时出错")
+		r.logger.Error().Err(err).Msg("Error al consultar la lista de microrreglas")
 		return nil, 0, err
 	}
 	defer cursor.Close(ctx)
 
-	// 解析结果
+	// Resultado del análisis
 	var rules []model.MicroRule
 	if err = cursor.All(ctx, &rules); err != nil {
-		r.logger.Error().Err(err).Msg("解析微规则列表时出错")
+		r.logger.Error().Err(err).Msg("Error al analizar la lista de microrreglas")
 		return nil, 0, err
 	}
 
-	// 获取总数
+	// Obtener el total
 	total, err := r.collection.CountDocuments(ctx, bson.D{})
 	if err != nil {
-		r.logger.Error().Err(err).Msg("获取微规则总数时出错")
+		r.logger.Error().Err(err).Msg("Error al obtener el total de microrreglas")
 		return nil, 0, err
 	}
 
 	return rules, total, nil
 }
 
-// GetMicroRuleByID 根据ID获取微规则
+// GetMicroRuleByID obtiene una microrregla por ID
 func (r *MongoMicroRuleRepository) GetMicroRuleByID(ctx context.Context, id bson.ObjectID) (*model.MicroRule, error) {
 	var rule model.MicroRule
 	err := r.collection.FindOne(ctx, bson.D{{Key: "_id", Value: id}}).Decode(&rule)
@@ -117,14 +117,14 @@ func (r *MongoMicroRuleRepository) GetMicroRuleByID(ctx context.Context, id bson
 		if err == mongo.ErrNoDocuments {
 			return nil, ErrRuleNotFound
 		}
-		r.logger.Error().Err(err).Str("id", id.Hex()).Msg("查询微规则时出错")
+		r.logger.Error().Err(err).Str("id", id.Hex()).Msg("Error al consultar la microrregla")
 		return nil, err
 	}
 
 	return &rule, nil
 }
 
-// GetMicroRuleByName 根据名称获取微规则
+// GetMicroRuleByName obtiene una microrregla por nombre
 func (r *MongoMicroRuleRepository) GetMicroRuleByName(ctx context.Context, name string) (*model.MicroRule, error) {
 	var rule model.MicroRule
 	err := r.collection.FindOne(ctx, bson.D{{Key: "name", Value: name}}).Decode(&rule)
@@ -132,16 +132,16 @@ func (r *MongoMicroRuleRepository) GetMicroRuleByName(ctx context.Context, name 
 		if err == mongo.ErrNoDocuments {
 			return nil, ErrRuleNotFound
 		}
-		r.logger.Error().Err(err).Str("name", name).Msg("按名称查询微规则时出错")
+		r.logger.Error().Err(err).Str("name", name).Msg("Error al consultar la microrregla por nombre")
 		return nil, err
 	}
 
 	return &rule, nil
 }
 
-// UpdateMicroRule 更新微规则
+// UpdateMicroRule Actualizar microrregla
 func (r *MongoMicroRuleRepository) UpdateMicroRule(ctx context.Context, rule *model.MicroRule) error {
-	// 更新微规则
+	// Actualizar microrregla
 	_, err := r.collection.ReplaceOne(
 		ctx,
 		bson.D{{Key: "_id", Value: rule.ID}},
@@ -149,18 +149,18 @@ func (r *MongoMicroRuleRepository) UpdateMicroRule(ctx context.Context, rule *mo
 	)
 
 	if err != nil {
-		r.logger.Error().Err(err).Str("id", rule.ID.Hex()).Msg("更新微规则时出错")
+		r.logger.Error().Err(err).Str("id", rule.ID.Hex()).Msg("Error al actualizar la microrregla")
 		return err
 	}
 
 	return nil
 }
 
-// DeleteMicroRule 删除微规则
+// DeleteMicroRule Eliminar microrregla
 func (r *MongoMicroRuleRepository) DeleteMicroRule(ctx context.Context, id bson.ObjectID) error {
 	result, err := r.collection.DeleteOne(ctx, bson.D{{Key: "_id", Value: id}})
 	if err != nil {
-		r.logger.Error().Err(err).Str("id", id.Hex()).Msg("删除微规则时出错")
+		r.logger.Error().Err(err).Str("id", id.Hex()).Msg("Error al eliminar la microrregla")
 		return err
 	}
 
@@ -171,18 +171,18 @@ func (r *MongoMicroRuleRepository) DeleteMicroRule(ctx context.Context, id bson.
 	return nil
 }
 
-// CheckMicroRuleNameExists 检查微规则名称是否已存在
+// CheckMicroRuleNameExists comprueba si el nombre de la microrregla ya existe
 func (r *MongoMicroRuleRepository) CheckMicroRuleNameExists(ctx context.Context, name string, excludeID bson.ObjectID) (bool, error) {
 	filter := bson.D{{Key: "name", Value: name}}
 
-	// 如果是更新操作，需要排除当前规则ID
+	// Si es una actualización, excluir el ID de la regla actual
 	if excludeID != bson.NilObjectID {
 		filter = append(filter, bson.E{Key: "_id", Value: bson.D{{Key: "$ne", Value: excludeID}}})
 	}
 
 	count, err := r.collection.CountDocuments(ctx, filter)
 	if err != nil {
-		r.logger.Error().Err(err).Str("name", name).Msg("检查微规则名称是否存在时出错")
+		r.logger.Error().Err(err).Str("name", name).Msg("Error al comprobar si el nombre de la microrregla existe")
 		return false, err
 	}
 

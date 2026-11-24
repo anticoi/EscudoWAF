@@ -13,7 +13,7 @@ export function TabsAnimationProvider({
     currentView,
     animationVariant = "slide"
 }: TabsAnimationProviderProps) {
-    // 根据选择的变体选择相应的动画
+    // Elegir la animación correspondiente según la variante seleccionada
     const getAnimationProps = () => {
         switch (animationVariant) {
             case "fade":

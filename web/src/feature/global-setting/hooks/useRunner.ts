@@ -9,12 +9,12 @@ import { getConstant } from '@/constant'
 import { ConstantCategory } from '@/constant'
 import { useTranslation } from 'react-i18next'
 
-// 获取运行器状态查询hook
+// Hook de consulta del estado del runner
 export const useRunnerStatusQuery = () => {
     const query = useQuery({
         queryKey: ['runner-status'],
         queryFn: runnerApi.getStatus,
-        // refetchInterval: 5000 // 每5秒自动刷新一次
+        // refetchInterval: 5000 // recarga automática cada 5 segundos
     })
 
     return {
@@ -25,7 +25,7 @@ export const useRunnerStatusQuery = () => {
     }
 }
 
-// 控制运行器mutation hook
+// Hook de mutación de control del runner
 export const useRunnerControl = () => {
     const queryClient = useQueryClient()
     const { toast } = useToast()
@@ -36,18 +36,18 @@ export const useRunnerControl = () => {
         mutationFn: (action: RunnerAction) => runnerApi.control({ action }),
         onSuccess: (data) => {
             toast({
-                title: t("globalSetting.engine.operationSuccess", "操作成功"),
-                description: data.message || t("globalSetting.engine.operationCompleted", "运行器控制操作已成功执行"),
+                title: t("globalSetting.engine.operationSuccess", "Operación exitosa"),
+                description: data.message || t("globalSetting.engine.operationCompleted", "La operación de control del runner se ejecutó con éxito"),
                 duration: getConstant(ConstantCategory.FEATURE, 'TOAST_DURATION', 3000),
             })
             queryClient.invalidateQueries({ queryKey: ['runner-status'] })
         },
         onError: (error: ApiError) => {
-            console.error('控制运行器失败:', error)
-            setError(error.message || "控制运行器时出现错误")
+            console.error('Error al controlar el runner:', error)
+            setError(error.message || "Se produjo un error al controlar el runner")
             toast({
-                title: t("globalSetting.engine.operationFailed", "操作失败"),
-                description: error.message || t("globalSetting.engine.operationError", "控制运行器时出现错误"),
+                title: t("globalSetting.engine.operationFailed", "Operación fallida"),
+                description: error.message || t("globalSetting.engine.operationError", "Se produjo un error al controlar el runner"),
                 variant: "destructive",
                 duration: getConstant(ConstantCategory.FEATURE, 'TOAST_DURATION', 3000),
             })

@@ -4,15 +4,15 @@ import (
 	"context"
 	"time"
 
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/model"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/model"
 	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
-// UserRepository 用户仓库接口
+// UserRepository interfaz del repositorio de usuarios
 type UserRepository interface {
 	FindByID(ctx context.Context, id bson.ObjectID) (*model.User, error)
 	FindByUsername(ctx context.Context, username string) (*model.User, error)
@@ -23,29 +23,29 @@ type UserRepository interface {
 	InitAdminUser() error
 }
 
-// MongoUserRepository MongoDB实现的用户仓库
+// MongoUserRepository repositorio de usuarios implementado en MongoDB
 type MongoUserRepository struct {
 	collection *mongo.Collection
 	logger     zerolog.Logger
 }
 
-// NewUserRepository 创建用户仓库
+// NewUserRepository crea el repositorio de usuarios
 func NewUserRepository(db *mongo.Database) UserRepository {
 	var user model.User
 	collection := db.Collection(user.GetCollectionName())
 	logger := config.GetRepositoryLogger("user")
 
-	// 创建索引
+	// Crear índices
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// 用户名唯一索引
+	// Índice único de nombre de usuario
 	_, err := collection.Indexes().CreateOne(ctx, mongo.IndexModel{
 		Keys:    bson.D{{Key: "username", Value: 1}},
 		Options: options.Index().SetUnique(true),
 	})
 	if err != nil {
-		logger.Error().Err(err).Msg("创建用户名索引失败")
+		logger.Error().Err(err).Msg("Error al crear el índice de nombres de usuario")
 	}
 
 	repo := &MongoUserRepository{
@@ -53,15 +53,15 @@ func NewUserRepository(db *mongo.Database) UserRepository {
 		logger:     logger,
 	}
 
-	// 初始化管理员用户
+	// Inicializar el usuario administrador
 	if err := repo.InitAdminUser(); err != nil {
-		logger.Error().Err(err).Msg("初始化管理员用户失败")
+		logger.Error().Err(err).Msg("Error al inicializar el usuario administrador")
 	}
 
 	return repo
 }
 
-// FindByID 根据ID查找用户
+// FindByID busca un usuario por ID
 func (r *MongoUserRepository) FindByID(ctx context.Context, id bson.ObjectID) (*model.User, error) {
 	var user model.User
 	err := r.collection.FindOne(ctx, bson.D{{Key: "_id", Value: id}}).Decode(&user)
@@ -69,13 +69,13 @@ func (r *MongoUserRepository) FindByID(ctx context.Context, id bson.ObjectID) (*
 		if err == mongo.ErrNoDocuments {
 			return nil, nil
 		}
-		r.logger.Error().Err(err).Str("id", id.Hex()).Msg("查询用户失败")
+		r.logger.Error().Err(err).Str("id", id.Hex()).Msg("Error al consultar el usuario")
 		return nil, err
 	}
 	return &user, nil
 }
 
-// FindByUsername 根据用户名查找用户
+// FindByUsername busca un usuario por nombre de usuario
 func (r *MongoUserRepository) FindByUsername(ctx context.Context, username string) (*model.User, error) {
 	var user model.User
 	err := r.collection.FindOne(ctx, bson.D{{Key: "username", Value: username}}).Decode(&user)
@@ -83,30 +83,30 @@ func (r *MongoUserRepository) FindByUsername(ctx context.Context, username strin
 		if err == mongo.ErrNoDocuments {
 			return nil, nil
 		}
-		r.logger.Error().Err(err).Str("username", username).Msg("查询用户失败")
+		r.logger.Error().Err(err).Str("username", username).Msg("Error al consultar el usuario")
 		return nil, err
 	}
 	return &user, nil
 }
 
-// Create 创建用户
+// Create crea un usuario
 func (r *MongoUserRepository) Create(ctx context.Context, user *model.User) error {
-	// 设置时间
+	// Establecer la hora
 	now := time.Now()
 	user.CreatedAt = now
 	user.UpdatedAt = now
 
-	// 不设置ID，让MongoDB自动生成ObjectID
-	// MongoDB会在插入时自动创建_id字段
+	// No establecer ID, dejar que MongoDB genere el ObjectID
+	// MongoDB crea automáticamente el campo _id al insertar
 
-	// 插入数据
+	// Insertar datos
 	result, err := r.collection.InsertOne(ctx, user)
 	if err != nil {
-		r.logger.Error().Err(err).Str("username", user.Username).Msg("创建用户失败")
+		r.logger.Error().Err(err).Str("username", user.Username).Msg("Error al crear el usuario")
 		return err
 	}
 
-	// 将生成的ObjectID赋值给用户ID
+	// Asignar el ObjectID generado al ID de usuario
 	if oid, ok := result.InsertedID.(bson.ObjectID); ok {
 		user.ID = oid
 	}
@@ -114,18 +114,18 @@ func (r *MongoUserRepository) Create(ctx context.Context, user *model.User) erro
 	return nil
 }
 
-// Update 更新用户
+// Update actualiza un usuario
 func (r *MongoUserRepository) Update(ctx context.Context, user *model.User) error {
 	user.UpdatedAt = time.Now()
 	_, err := r.collection.ReplaceOne(ctx, bson.D{{Key: "_id", Value: user.ID}}, user)
 	if err != nil {
-		r.logger.Error().Err(err).Str("id", user.ID.Hex()).Msg("更新用户失败")
+		r.logger.Error().Err(err).Str("id", user.ID.Hex()).Msg("Error al actualizar el usuario")
 		return err
 	}
 	return nil
 }
 
-// UpdateLastLogin 更新最后登录时间
+// UpdateLastLogin actualiza la hora del último inicio de sesión
 func (r *MongoUserRepository) UpdateLastLogin(ctx context.Context, id bson.ObjectID) error {
 	_, err := r.collection.UpdateOne(
 		ctx,
@@ -136,110 +136,110 @@ func (r *MongoUserRepository) UpdateLastLogin(ctx context.Context, id bson.Objec
 		}}},
 	)
 	if err != nil {
-		r.logger.Error().Err(err).Str("id", id.Hex()).Msg("更新登录时间失败")
+		r.logger.Error().Err(err).Str("id", id.Hex()).Msg("Error al actualizar la hora de inicio de sesión")
 		return err
 	}
 	return nil
 }
 
-// FindAll 查找所有用户
+// FindAll busca todos los usuarios
 func (r *MongoUserRepository) FindAll(ctx context.Context) ([]*model.User, error) {
 	cursor, err := r.collection.Find(ctx, bson.D{})
 	if err != nil {
-		r.logger.Error().Err(err).Msg("查询所有用户失败")
+		r.logger.Error().Err(err).Msg("Error al consultar todos los usuarios")
 		return nil, err
 	}
 
 	var users []*model.User
 	if err := cursor.All(ctx, &users); err != nil {
-		r.logger.Error().Err(err).Msg("解析用户列表失败")
+		r.logger.Error().Err(err).Msg("Error al analizar la lista de usuarios")
 		return nil, err
 	}
 
 	return users, nil
 }
 
-// InitAdminUser 初始化管理员用户
+// InitAdminUser inicializa el usuario administrador
 func (r *MongoUserRepository) InitAdminUser() error {
-	// 检查是否已有管理员用户
+	// Comprobar si ya existe un usuario administrador
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	count, err := r.collection.CountDocuments(ctx, bson.D{{Key: "role", Value: model.RoleAdmin}})
 	if err != nil {
-		r.logger.Error().Err(err).Msg("查询管理员用户失败")
+		r.logger.Error().Err(err).Msg("Error al consultar el usuario administrador")
 		return err
 	}
 
-	// 如果没有管理员用户，创建一个
+	// Si no hay usuario administrador, crear uno
 	if count == 0 {
-		// 创建默认管理员用户
+		// Crear el usuario administrador por defecto
 		adminUser := &model.User{
 			Username:  model.RoleAdmin,
-			Password:  "admin123", // 初始密码
+			Password:  "admin123", // Contraseña inicial
 			Role:      model.RoleAdmin,
-			NeedReset: true, // 需要重置密码
+			NeedReset: true, // Se requiere restablecer la contraseña
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 		}
 
-		// 哈希密码
+		// Generar hash de la contraseña
 		if err := adminUser.HashPassword(); err != nil {
-			r.logger.Error().Err(err).Msg("哈希管理员密码失败")
+			r.logger.Error().Err(err).Msg("Error al generar el hash de la contraseña del administrador")
 			return err
 		}
 
-		// 保存用户
+		// Guardar usuario
 		if err := r.Create(ctx, adminUser); err != nil {
-			r.logger.Error().Err(err).Msg("创建管理员用户失败")
+			r.logger.Error().Err(err).Msg("Error al crear el usuario administrador")
 			return err
 		}
 
-		// 创建审计员用户
+		// Crear el usuario auditor
 		auditorUser := &model.User{
 			Username:  model.RoleAuditor,
-			Password:  "auditor123", // 初始密码
+			Password:  "auditor123", // Contraseña inicial
 			Role:      model.RoleAuditor,
-			NeedReset: true, // 需要重置密码
+			NeedReset: true, // Se requiere restablecer la contraseña
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 		}
 
-		// 哈希密码
+		// Generar hash de la contraseña
 		if err := auditorUser.HashPassword(); err != nil {
-			r.logger.Error().Err(err).Msg("哈希审计员密码失败")
+			r.logger.Error().Err(err).Msg("Error al generar el hash de la contraseña del auditor")
 			return err
 		}
 
-		// 保存用户
+		// Guardar usuario
 		if err := r.Create(ctx, auditorUser); err != nil {
-			r.logger.Error().Err(err).Msg("创建审计员用户失败")
+			r.logger.Error().Err(err).Msg("Error al crear el usuario auditor")
 			return err
 		}
 
-		// 创建配置管理员用户
+		// Crear usuario administrador de configuración
 		configUser := &model.User{
 			Username:  model.RoleConfigurator,
-			Password:  "config123", // 初始密码
+			Password:  "config123", // Contraseña inicial
 			Role:      model.RoleConfigurator,
-			NeedReset: true, // 需要重置密码
+			NeedReset: true, // Se requiere restablecer la contraseña
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 		}
 
-		// 哈希密码
+		// Generar hash de la contraseña
 		if err := configUser.HashPassword(); err != nil {
-			r.logger.Error().Err(err).Msg("哈希配置管理员密码失败")
+			r.logger.Error().Err(err).Msg("Error al generar el hash de la contraseña del administrador de configuración")
 			return err
 		}
 
-		// 保存用户
+		// Guardar usuario
 		if err := r.Create(ctx, configUser); err != nil {
-			r.logger.Error().Err(err).Msg("创建配置管理员用户失败")
+			r.logger.Error().Err(err).Msg("Error al crear el usuario administrador de configuración")
 			return err
 		}
 
-		r.logger.Info().Msg("已创建默认用户")
+		r.logger.Info().Msg("Usuario por defecto creado")
 	}
 
 	return nil

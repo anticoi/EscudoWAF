@@ -3,50 +3,50 @@ import { statsApi } from '@/api/services'
 import { TimeRange } from '@/types/stats'
 import { useState, useRef, useEffect } from 'react'
 
-const REFRESH_INTERVAL = 60000 // 60秒
-const QPS_REFRESH_INTERVAL = 5000 // 5秒
-const QPS_STALETIME = 4000 // 4秒
+const REFRESH_INTERVAL = 60000 // 60 segundos
+const QPS_REFRESH_INTERVAL = 5000 // 5 segundos
+const QPS_STALETIME = 4000 // 4 segundos
 
-// 定义QPS数据点类型
+// Definición del tipo de punto de datos QPS
 export interface QPSDataPoint {
     timestamp: string
     value: number
 }
 
-// 统计概览数据hook
+// Hook de datos del resumen estadístico
 export const useOverviewStats = (timeRange: TimeRange) => {
     return useQuery({
         queryKey: ['stats', 'overview', timeRange],
         queryFn: () => statsApi.getOverviewStats(timeRange),
-        refetchInterval: REFRESH_INTERVAL, // 使用常量
+        refetchInterval: REFRESH_INTERVAL, // Usar constantes
     })
 }
 
-// 实时QPS数据hook - 增量更新滚动版本
+// Hook de datos QPS en tiempo real - versión de actualización incremental con scroll
 export const useRealtimeQPS = (limit: number = 30) => {
-    // 本地状态存储
+    // Almacenamiento de estado local
     const [localQPSData, setLocalQPSData] = useState<QPSDataPoint[]>([])
     const lastTimestampRef = useRef<string | null>(null)
     const isInitializedRef = useRef(false)
     const shouldScrollRef = useRef(true)
 
-    // 查询API数据
+    // Consultar datos de la API
     const queryResult = useQuery({
         queryKey: ['stats', 'realtimeQPS', limit],
         queryFn: () => statsApi.getRealtimeQPS(limit),
-        refetchInterval: QPS_REFRESH_INTERVAL, // 使用常量
-        refetchIntervalInBackground: true, // 页面不活跃时也继续更新
-        staleTime: QPS_STALETIME, // 数据保持新鲜状态的时间
-        refetchOnWindowFocus: false, // 窗口获得焦点时不自动刷新
+        refetchInterval: QPS_REFRESH_INTERVAL, // Usar constantes
+        refetchIntervalInBackground: true, // Seguir actualizando aunque la página esté inactiva
+        staleTime: QPS_STALETIME, // Tiempo que los datos permanecen frescos
+        refetchOnWindowFocus: false, // No recargar automáticamente cuando la ventana recibe el foco
     })
 
-    // 数据处理
+    // Procesamiento de datos
     useEffect(() => {
         if (!queryResult.data?.data || queryResult.data.data.length === 0) return
 
         const apiData = queryResult.data.data
 
-        // 如果数据为空或首次加载
+        // Si los datos están vacíos o es la primera carga
         if (localQPSData.length === 0 || !isInitializedRef.current) {
             setLocalQPSData(apiData)
             lastTimestampRef.current = apiData[apiData.length - 1].timestamp
@@ -54,66 +54,66 @@ export const useRealtimeQPS = (limit: number = 30) => {
             return
         }
 
-        // 获取最新的时间戳
+        // Obtener la marca de tiempo más reciente
         const newestTimestamp = apiData[apiData.length - 1].timestamp
 
-        // 如果有新数据
+        // Si hay datos nuevos
         if (newestTimestamp !== lastTimestampRef.current && shouldScrollRef.current) {
-            // 找到增量数据
+            // Encontrar los datos incrementales
             const lastIndex = apiData.findIndex(item => item.timestamp === lastTimestampRef.current)
 
             if (lastIndex !== -1 && lastIndex < apiData.length - 1) {
-                // 有新数据
+                // Hay datos nuevos
                 const newPoints = apiData.slice(lastIndex + 1)
 
                 setLocalQPSData(prevData => {
                     const newData = [...prevData, ...newPoints]
-                    return newData.slice(-limit) // 保持数据量在限制范围内
+                    return newData.slice(-limit) // Mantener la cantidad de datos dentro del límite
                 })
             } else {
-                // 数据结构变化，完全替换
+                // La estructura de datos cambió, reemplazar completamente
                 setLocalQPSData(apiData)
             }
 
-            // 更新最后时间戳
+            // Actualizar la última marca de tiempo
             lastTimestampRef.current = newestTimestamp
         }
     }, [queryResult.data, limit, localQPSData.length])
 
-    // 暂停/恢复滚动更新
+    // Pausar/reanudar actualizaciones de scroll
     const toggleScroll = (shouldScroll: boolean) => {
         shouldScrollRef.current = shouldScroll
     }
 
-    // 返回扩展的结果对象
+    // Devolver el objeto de resultado extendido
     return {
         ...queryResult,
         localData: localQPSData,
         isInitialized: isInitializedRef.current,
-        toggleScroll, // 暴露控制滚动的方法
-        refreshInterval: QPS_REFRESH_INTERVAL // 暴露刷新间隔
+        toggleScroll, // Exponer métodos para controlar el scroll
+        refreshInterval: QPS_REFRESH_INTERVAL // Exponer el intervalo de actualización
     }
 }
 
-// 流量时间序列数据hook
+// Hook de datos de series temporales de tráfico
 export const useTrafficTimeSeriesData = (timeRange: TimeRange) => {
     return useQuery({
         queryKey: ['stats', 'trafficTimeSeries', timeRange],
         queryFn: () => statsApi.getTrafficTimeSeriesData(timeRange),
-        refetchInterval: REFRESH_INTERVAL, // 使用常量
+        refetchInterval: REFRESH_INTERVAL, // Usar constantes
     })
 }
 
-// 请求和拦截组合时间序列数据hook
+// Hook de datos de series temporales combinadas de peticiones y bloqueos
 export const useCombinedTimeSeriesData = (timeRange: TimeRange) => {
     return useQuery({
         queryKey: ['stats', 'combinedTimeSeries', timeRange],
         queryFn: () => statsApi.getCombinedTimeSeriesData(timeRange),
-        refetchInterval: REFRESH_INTERVAL, // 使用常量
+        refetchInterval: REFRESH_INTERVAL, // Usar constantes
     })
 }
 
-// 时间范围选择hook
+// Hook de selección de rango de tiempo
 export const useTimeRangeSelector = (initialRange: TimeRange = '24h') => {
     const [timeRange, setTimeRange] = useState<TimeRange>(initialRange)
 

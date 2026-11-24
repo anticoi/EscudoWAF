@@ -7,19 +7,19 @@ import (
 	"github.com/rs/zerolog"
 )
 
-// LoggerWrapper 是对zerolog.Logger的包装
+// LoggerWrapper es un wrapper de zerolog.Logger
 type LoggerWrapper struct {
 	logger zerolog.Logger
 }
 
-// NewLoggerWrapper 创建一个新的LoggerWrapper
+// NewLoggerWrapper crea un nuevo LoggerWrapper
 func NewLoggerWrapper(logger zerolog.Logger) *LoggerWrapper {
 	return &LoggerWrapper{
 		logger: logger,
 	}
 }
 
-// Debug 创建Debug级别的日志，并添加调用位置信息
+// Debug crea un log de nivel Debug con información de la ubicación de la llamada
 func (lw *LoggerWrapper) Debug() *zerolog.Event {
 	pc, file, line, ok := runtime.Caller(1)
 	if !ok {
@@ -33,7 +33,7 @@ func (lw *LoggerWrapper) Debug() *zerolog.Event {
 		Str("func", funcName)
 }
 
-// Info 创建Info级别的日志，并添加调用位置信息
+// Info crea un log de nivel Info con información de la ubicación de la llamada
 func (lw *LoggerWrapper) Info() *zerolog.Event {
 	pc, file, line, ok := runtime.Caller(1)
 	if !ok {
@@ -47,7 +47,7 @@ func (lw *LoggerWrapper) Info() *zerolog.Event {
 		Str("func", funcName)
 }
 
-// Warn 创建Warn级别的日志，并添加调用位置信息
+// Warn crea un log de nivel Warn con información de la ubicación de la llamada
 func (lw *LoggerWrapper) Warn() *zerolog.Event {
 	pc, file, line, ok := runtime.Caller(1)
 	if !ok {
@@ -61,7 +61,7 @@ func (lw *LoggerWrapper) Warn() *zerolog.Event {
 		Str("func", funcName)
 }
 
-// Error 创建Error级别的日志，并添加调用位置信息
+// Error crea un log de nivel Error con información de la ubicación de la llamada
 func (lw *LoggerWrapper) Error() *zerolog.Event {
 	pc, file, line, ok := runtime.Caller(1)
 	if !ok {
@@ -75,7 +75,7 @@ func (lw *LoggerWrapper) Error() *zerolog.Event {
 		Str("func", funcName)
 }
 
-// Fatal 创建Fatal级别的日志，并添加调用位置信息
+// Fatal crea un log de nivel Fatal con información de la ubicación de la llamada
 func (lw *LoggerWrapper) Fatal() *zerolog.Event {
 	pc, file, line, ok := runtime.Caller(1)
 	if !ok {

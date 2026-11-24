@@ -2,35 +2,35 @@ import { useOverviewStats } from '@/feature/stats/hooks/useStats'
 import { useAttackEvents } from '@/feature/log/hook/useAttackEvents'
 import { useMemo, useRef, useEffect, useState } from 'react'
 
-const POLLING_INTERVAL = 5000 // 5秒轮询
+const POLLING_INTERVAL = 5000 // Sondeo cada 5 segundos
 
 /**
- * 安全大屏数据管理 Hook
- * 提供统计数据和实时攻击事件数据
+ * Hook de gestión de datos de la pantalla grande de seguridad
+ * Proporcionar estadísticas y datos de eventos de ataque en tiempo real
  */
 export const useSecurityDashboard = () => {
     const pollingTimerRef = useRef<number | null>(null)
     
-    // 使用状态管理时间参数，确保每次轮询都能更新
+    // Gestionar los parámetros de tiempo en el estado para que cada sondeo los actualice
     const [timeParams, setTimeParams] = useState(() => ({
         startTime: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
         endTime: new Date().toISOString()
     }))
 
-    // 获取24小时统计概览数据
+    // Obtener datos del resumen estadístico de 24 horas
     const overviewStats = useOverviewStats('24h')
 
-    // 使用状态中的时间参数构建查询参数
+    // Construir parámetros de consulta con los parámetros de tiempo del estado
     const attackEventsParams = useMemo(() => ({
-        pageSize: 50, // 获取更多数据用于展示
+        pageSize: 50, // Obtener más datos para mostrar
         startTime: timeParams.startTime,
         endTime: timeParams.endTime
     }), [timeParams.startTime, timeParams.endTime])
 
-    // 获取24小时攻击事件数据
+    // Obtener datos de eventos de ataque de 24 horas
     const attackEvents = useAttackEvents(attackEventsParams)
 
-    // 更新时间参数的函数
+    // Función para actualizar los parámetros de tiempo
     const updateTimeParams = () => {
         setTimeParams({
             startTime: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
@@ -38,25 +38,25 @@ export const useSecurityDashboard = () => {
         })
     }
 
-    // 设置5秒轮询
+    // Establecer sondeo de 5 segundos
     useEffect(() => {
-        // 清除现有的轮询
+        // Limpiar el sondeo existente
         if (pollingTimerRef.current !== null) {
             clearInterval(pollingTimerRef.current)
             pollingTimerRef.current = null
         }
 
-        // 设置新的轮询 - 5秒间隔
+        // Establecer un nuevo sondeo - intervalo de 5 segundos
         pollingTimerRef.current = window.setInterval(() => {
-            // 更新时间参数以获取最新的24小时数据
-            // 时间参数更新会自动触发 useAttackEvents 重新请求，无需手动 refetch
+            // Actualizar los parámetros de tiempo para obtener los datos de las últimas 24 horas
+            // La actualización de parámetros de tiempo dispara automáticamente una nueva petición de useAttackEvents, sin refetch manual
             updateTimeParams()
             
-            // 只需要手动刷新统计数据，因为它不依赖时间参数
+            // Solo es necesario refrescar las estadísticas manualmente, no dependen de parámetros de tiempo
             overviewStats.refetch()
         }, POLLING_INTERVAL)
 
-        // 组件卸载时清除轮询
+        // Limpiar el sondeo al desmontar el componente
         return () => {
             if (pollingTimerRef.current !== null) {
                 clearInterval(pollingTimerRef.current)
@@ -64,41 +64,41 @@ export const useSecurityDashboard = () => {
         }
     }, [overviewStats.refetch])
 
-    // 过滤有地理位置信息的攻击事件，用于实时攻击列表
+    // Filtrar eventos de ataque con geolocalización, para la lista de ataques en tiempo real
     const realtimeAttacks = useMemo(() => {
         if (!attackEvents.data?.results) return []
 
         return attackEvents.data.results
-            .filter(event => event.srcIpInfo?.city && event.srcIpInfo?.city?.nameZh && event.srcIpInfo?.city?.nameEn) // 只显示有城市信息的攻击
-            .slice(0, 9) // 只显示最新的10条
+            .filter(event => event.srcIpInfo?.city && event.srcIpInfo?.city?.nameZh && event.srcIpInfo?.city?.nameEn) // Mostrar solo ataques con información de ciudad
+            .slice(0, 9) // Mostrar solo los 10 más recientes
     }, [attackEvents.data])
 
-    // 攻击IP列表，用于左侧卡片4
+    // Lista de IPs atacantes, para la tarjeta izquierda 4
     const attackIPs = useMemo(() => {
         if (!attackEvents.data?.results) return []
 
         return attackEvents.data.results
-            .filter(event => event.srcIpInfo?.city) // 只显示有城市信息的攻击
-            .slice(0, 5) // 只显示最新的5条
+            .filter(event => event.srcIpInfo?.city) // Mostrar solo ataques con información de ciudad
+            .slice(0, 5) // Mostrar solo los 5 más recientes
     }, [attackEvents.data])
 
     return {
-        // 统计数据
+        // Datos estadísticos
         overviewStats: {
             data: overviewStats.data,
             isLoading: overviewStats.isLoading,
             error: overviewStats.error
         },
-        // 攻击事件数据
+        // Datos de eventos de ataque
         attackEvents: {
             data: attackEvents.data,
             isLoading: attackEvents.isLoading,
             error: attackEvents.error
         },
-        // 处理后的数据
+        // Datos procesados
         realtimeAttacks,
         attackIPs,
-        // 轮询间隔
+        // Intervalo de sondeo
         pollingInterval: POLLING_INTERVAL
     }
 } 

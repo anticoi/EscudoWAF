@@ -5,7 +5,7 @@ import { BlockedIPListRequest } from '@/types/blocked-ip'
 import { useToast } from '@/hooks/use-toast'
 import { useTranslation } from 'react-i18next'
 
-// 获取封禁IP列表查询hook
+// Hook de consulta de lista de IPs bloqueadas
 export const useBlockedIPsQuery = (params: BlockedIPListRequest) => {
     const query = useQuery({
         queryKey: ['blocked-ips', params],
@@ -20,7 +20,7 @@ export const useBlockedIPsQuery = (params: BlockedIPListRequest) => {
     }
 }
 
-// 获取封禁IP统计查询hook
+// Hook de consulta de estadísticas de IPs bloqueadas
 export const useBlockedIPStatsQuery = () => {
     const query = useQuery({
         queryKey: ['blocked-ip-stats'],
@@ -35,7 +35,7 @@ export const useBlockedIPStatsQuery = () => {
     }
 }
 
-// 清理过期封禁IP mutation hook
+// Hook de mutación de limpieza de IPs bloqueadas expiradas
 export const useCleanupExpiredBlockedIPs = () => {
     const queryClient = useQueryClient()
     const { toast } = useToast()
@@ -46,18 +46,18 @@ export const useCleanupExpiredBlockedIPs = () => {
         mutationFn: blockedIPApi.cleanupExpiredBlockedIPs,
         onSuccess: (data) => {
             toast({
-                title: t('flowControl.toast.cleanupSuccess', '清理成功'),
-                description: t('flowControl.toast.cleanupMessage', `已清理 ${data.deletedCount} 条过期记录`),
+                title: t('flowControl.toast.cleanupSuccess', 'Limpieza exitosa'),
+                description: t('flowControl.toast.cleanupMessage', `Se limpiaron ${data.deletedCount} registros expirados`),
             })
             queryClient.invalidateQueries({ queryKey: ['blocked-ips'] })
             queryClient.invalidateQueries({ queryKey: ['blocked-ip-stats'] })
         },
         onError: (error: ApiError) => {
-            console.error('清理过期封禁IP失败:', error)
-            setError(error.message || t('flowControl.toast.cleanupError', '清理过期记录时出现错误'))
+            console.error('Error al limpiar IPs bloqueadas expiradas:', error)
+            setError(error.message || t('flowControl.toast.cleanupError', 'Se produjo un error al limpiar los registros expirados'))
             toast({
-                title: t('flowControl.toast.cleanupFailed', '清理失败'),
-                description: error.message || t('flowControl.toast.cleanupError', '清理过期记录时出现错误'),
+                title: t('flowControl.toast.cleanupFailed', 'Error de limpieza'),
+                description: error.message || t('flowControl.toast.cleanupError', 'Se produjo un error al limpiar los registros expirados'),
                 variant: "destructive",
             })
         }

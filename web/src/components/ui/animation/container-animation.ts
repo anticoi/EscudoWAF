@@ -1,6 +1,6 @@
 import { HTMLMotionProps } from "motion/react"
 
-// 基础容器动画 - 使用弹性动画效果
+// Animación del contenedor base - con efecto elástico
 export const containerAnimation: HTMLMotionProps<"div"> = {
     layout: true,
     transition: {
@@ -12,7 +12,7 @@ export const containerAnimation: HTMLMotionProps<"div"> = {
     }
 }
 
-// 平滑容器动画 - 使用补间动画，更均匀的过渡
+// Animación de contenedor suave - usa tweening para transiciones más uniformes
 export const smoothContainerAnimation: HTMLMotionProps<"div"> = {
     layout: true,
     transition: {
@@ -24,7 +24,7 @@ export const smoothContainerAnimation: HTMLMotionProps<"div"> = {
     }
 }
 
-// 优化的滚动容器动画 - 减少过渡时间，提高响应性
+// Animación del contenedor de scroll optimizada - menos tiempo de transición, más respuesta
 export const scrollContainerAnimation: HTMLMotionProps<"div"> = {
     layout: true,
     layoutRoot: true,
@@ -37,7 +37,7 @@ export const scrollContainerAnimation: HTMLMotionProps<"div"> = {
     }
 }
 
-// 高性能布局根动画 - 适用于复杂列表和表格
+// Animación de raíz de layout de alto rendimiento - para listas y tablas complejas
 export const layoutRootAnimation: HTMLMotionProps<"div"> = {
     layout: true,
     layoutRoot: true,

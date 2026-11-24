@@ -7,20 +7,20 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// 扩展用户模型，添加角色ID字段
+// Modelo de usuario extendido, con campo de ID de rol añadido
 type User struct {
 	ID          bson.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
 	Username    string        `bson:"username" json:"username"`
-	Password    string        `bson:"password" json:"-"`                        // 密码不返回给客户端
-	Role        string        `bson:"role" json:"role"`                         // 用户角色
-	Permissions []string      `bson:"permissions" json:"permissions,omitempty"` // 额外权限
-	NeedReset   bool          `bson:"needReset" json:"needReset"`               // 是否需要重置密码
+	Password    string        `bson:"password" json:"-"`                        // La contraseña no se devuelve al cliente
+	Role        string        `bson:"role" json:"role"`                         // Rol del usuario
+	Permissions []string      `bson:"permissions" json:"permissions,omitempty"` // Permisos adicionales
+	NeedReset   bool          `bson:"needReset" json:"needReset"`               // Si se requiere restablecer la contraseña
 	CreatedAt   time.Time     `bson:"createdAt" json:"createdAt"`
 	UpdatedAt   time.Time     `bson:"updatedAt" json:"updatedAt"`
 	LastLogin   time.Time     `bson:"lastLogin" json:"lastLogin"`
 }
 
-// HashPassword 对密码进行哈希处理
+// HashPassword genera el hash de la contraseña
 func (u *User) HashPassword() error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -30,13 +30,13 @@ func (u *User) HashPassword() error {
 	return nil
 }
 
-// CheckPassword 验证密码是否正确
+// CheckPassword verifica si la contraseña es correcta
 func (u *User) CheckPassword(password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 	return err == nil
 }
 
-// GetCollectionName 返回集合名称
+// GetCollectionName devuelve el nombre de la colección
 func (u *User) GetCollectionName() string {
 	return "user"
 }

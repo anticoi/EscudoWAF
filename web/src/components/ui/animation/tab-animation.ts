@@ -1,7 +1,7 @@
 // src/components/ui/animations/tabs-animations.tsx
 import { HTMLMotionProps } from "motion/react"
 
-// 标签内容切换动画 - 水平滑动效果
+// Animación de cambio de contenido de pestañas - efecto de deslizamiento horizontal
 export const tabContentAnimation: HTMLMotionProps<"div"> = {
     initial: {
         opacity: 0,
@@ -24,7 +24,7 @@ export const tabContentAnimation: HTMLMotionProps<"div"> = {
     }
 }
 
-// 标签内容淡入淡出动画 - 没有位移只有透明度变化
+// Animación de fundido de contenido de pestañas - solo cambio de opacidad sin desplazamiento
 export const tabFadeAnimation: HTMLMotionProps<"div"> = {
     initial: {
         opacity: 0
@@ -43,7 +43,7 @@ export const tabFadeAnimation: HTMLMotionProps<"div"> = {
     }
 }
 
-// 标签内容缩放动画 - 带有轻微的缩放效果
+// Animación de escala de contenido de pestañas - con ligero efecto de zoom
 export const tabScaleAnimation: HTMLMotionProps<"div"> = {
     initial: {
         opacity: 0,

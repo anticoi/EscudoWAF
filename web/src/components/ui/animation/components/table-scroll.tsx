@@ -19,11 +19,11 @@ export function TableScrollContainer({
     const { scrollYProgress } = useScroll({ container: containerRef })
     const [canScroll, setCanScroll] = useState(false)
 
-    // 顶部和底部阴影透明度
+    // Opacidad de sombras superior e inferior
     const topShadowOpacity = useTransform(scrollYProgress, [0, 0.1], [0, shadowOpacity])
     const bottomShadowOpacity = useTransform(scrollYProgress, [0.9, 1], [shadowOpacity, 0])
 
-    // 检查内容是否可滚动
+    // Comprobar si el contenido es desplazable
     useEffect(() => {
         const checkScrollability = () => {
             if (containerRef.current) {
@@ -34,14 +34,14 @@ export function TableScrollContainer({
 
         checkScrollability()
 
-        // 添加窗口大小变化的监听
+        // Añadir listener de cambios de tamaño de ventana
         window.addEventListener('resize', checkScrollability)
         return () => window.removeEventListener('resize', checkScrollability)
     }, [])
 
     return (
         <div className={`relative w-full h-full ${className}`}>
-            {/* 顶部滚动阴影 */}
+            {/* Sombra de scroll superior */}
             {showShadows && canScroll && (
                 <motion.div
                     className="absolute top-0 left-0 right-0 h-4 pointer-events-none z-10"
@@ -52,14 +52,14 @@ export function TableScrollContainer({
                 />
             )}
 
-            {/* 滚动容器 */}
+            {/* Contenedor de scroll */}
             <motion.div
                 ref={containerRef}
                 className="overflow-auto h-full w-full scroll-smooth"
                 style={{
-                    // 添加平滑滚动效果
+                    // Añadir efecto de scroll suave
                     scrollBehavior: 'smooth',
-                    // 优化移动端滚动
+                    // Scroll en móvil optimizado
                     WebkitOverflowScrolling: 'touch'
                 }}
                 {...containerAnimation}
@@ -67,7 +67,7 @@ export function TableScrollContainer({
                 {children}
             </motion.div>
 
-            {/* 底部滚动阴影 */}
+            {/* Sombra de scroll inferior */}
             {showShadows && canScroll && (
                 <motion.div
                     className="absolute bottom-0 left-0 right-0 h-4 pointer-events-none z-10"

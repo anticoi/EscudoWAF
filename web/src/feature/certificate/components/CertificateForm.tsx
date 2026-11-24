@@ -41,13 +41,13 @@ export function CertificateForm({
 }: CertificateFormProps) {
     const { t } = useTranslation()
 
-    // 状态管理
+    // Gestión de estado
     const [parsedInfo, setParsedInfo] = useState<ParsedCertificate | null>(null)
     const [publicKeyFile, setPublicKeyFile] = useState<string | null>(null)
     const [privateKeyFile, setPrivateKeyFile] = useState<string | null>(null)
     const [parseError, setParseError] = useState<string | null>(null)
 
-    // API钩子
+    // Hooks de la API
     const {
         createCertificate,
         isLoading: isCreating,
@@ -62,18 +62,18 @@ export function CertificateForm({
         clearError: clearUpdateError
     } = useUpdateCertificate()
 
-    // 动态状态
+    // Estado dinámico
     const isLoading = mode === 'create' ? isCreating : isUpdating
     const error = mode === 'create' ? createError : updateError
     const clearError = mode === 'create' ? clearCreateError : clearUpdateError
 
-    // 表单设置
+    // Configuración del formulario
     const form = useForm<CertificateCreateRequest>({
         resolver: zodResolver(certificateFormSchema),
         defaultValues,
     })
 
-    // 尝试解析证书内容
+    // Intentar analizar el contenido del certificado
     const tryParseCertificate = useCallback((content: string) => {
         if (!content) {
             setParsedInfo(null)
@@ -86,15 +86,15 @@ export function CertificateForm({
             setParsedInfo(parsed)
             setParseError(null)
 
-            // 如果之前有解析错误，清除相关表单错误
+            // Si hubo errores de análisis previos, limpiar los errores del formulario
             form.clearErrors('publicKey')
         } catch (error) {
-            console.error('证书解析错误:', error)
+            console.error('Error de análisis del certificado:', error)
 
-            // 清除已解析信息
+            // Limpiar la información ya analizada
             setParsedInfo(null)
 
-            // 设置错误信息，但不阻止表单提交
+            // Establecer el mensaje de error sin bloquear el envío del formulario
             if (error instanceof Error) {
                 setParseError(`${t("certificate.dialog.parseFailed")}${error.message}`)
             } else {
@@ -103,7 +103,7 @@ export function CertificateForm({
         }
     }, [form, t])
 
-    // 处理公钥文件上传
+    // Manejar la subida del archivo de clave pública
     const handlePublicKeyFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const file = e.target.files[0]
@@ -111,16 +111,16 @@ export function CertificateForm({
             try {
                 const content = await readFileAsText(file)
 
-                // 更新表单和UI状态
+                // Actualizar el formulario y el estado de la UI
                 form.setValue('publicKey', content)
                 setPublicKeyFile(file.name)
 
-                // 尝试解析证书
+                // Intentar analizar el certificado
                 tryParseCertificate(content)
             } catch (error) {
-                console.error('文件读取错误:', error)
+                console.error('Error de lectura de archivo:', error)
 
-                // 文件读取错误显示在表单上
+                // Los errores de lectura del archivo se muestran en el formulario
                 const errorMessage = error instanceof Error ? error.message : t("certificate.dialog.unknownError")
                 form.setError('publicKey', {
                     type: 'manual',
@@ -130,7 +130,7 @@ export function CertificateForm({
         }
     }, [form, tryParseCertificate, t])
 
-    // 处理私钥文件上传
+    // Manejar la subida del archivo de clave privada
     const handlePrivateKeyFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const file = e.target.files[0]
@@ -138,13 +138,13 @@ export function CertificateForm({
             try {
                 const content = await readFileAsText(file)
 
-                // 更新表单和UI状态
+                // Actualizar el formulario y el estado de la UI
                 form.setValue('privateKey', content)
                 setPrivateKeyFile(file.name)
             } catch (error) {
-                console.error('文件读取错误:', error)
+                console.error('Error de lectura de archivo:', error)
 
-                // 文件读取错误显示在表单上
+                // Los errores de lectura del archivo se muestran en el formulario
                 const errorMessage = error instanceof Error ? error.message : t("certificate.dialog.unknownError")
                 form.setError('privateKey', {
                     type: 'manual',
@@ -154,7 +154,7 @@ export function CertificateForm({
         }
     }, [form, t])
 
-    // 清除公钥文件
+    // Borrar el archivo de clave pública
     const clearPublicKeyFile = useCallback(() => {
         setPublicKeyFile(null)
         form.setValue('publicKey', '')
@@ -162,54 +162,54 @@ export function CertificateForm({
         setParseError(null)
     }, [form])
 
-    // 清除私钥文件
+    // Borrar el archivo de clave privada
     const clearPrivateKeyFile = useCallback(() => {
         setPrivateKeyFile(null)
         form.setValue('privateKey', '')
     }, [form])
 
-    // 处理公钥文本框变更
+    // Manejar el cambio del cuadro de texto de la clave pública
     const handlePublicKeyTextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.target.value
         tryParseCertificate(value)
     }, [tryParseCertificate])
 
-    // 表单提交处理
+    // Manejo del envío del formulario
     const handleFormSubmit = useCallback((data: CertificateCreateRequest) => {
-        // 清除之前的错误
+        // Limpiar los errores anteriores
         if (clearError) clearError()
 
-        // 合并解析出来的证书信息
+        // Fusionar la información del certificado analizada
         const finalData = {
             ...data,
             ...(parsedInfo || {}),
         }
 
-        // 根据模式执行创建或更新操作
+        // Ejecutar creación o actualización según el modo
         if (mode === 'create') {
             createCertificate(finalData, {
                 onSuccess: () => {
-                    // 重置表单
+                    // Restablecer el formulario
                     form.reset()
                     setPublicKeyFile(null)
                     setPrivateKeyFile(null)
                     setParsedInfo(null)
                     setParseError(null)
-                    // 通知父组件成功
+                    // Notificar éxito al componente padre
                     if (onSuccess) onSuccess()
                 }
             })
         } else if (mode === 'update' && certificateId) {
             updateCertificate({ id: certificateId, data: finalData }, {
                 onSuccess: () => {
-                    // 通知父组件成功
+                    // Notificar éxito al componente padre
                     if (onSuccess) onSuccess()
                 }
             })
         }
     }, [mode, certificateId, clearError, parsedInfo, createCertificate, updateCertificate, form, onSuccess])
 
-    // 渲染已解析的证书信息
+    // Renderizar la información del certificado analizada
     const renderParsedInfo = useCallback(() => {
         if (!parsedInfo) return null
 
@@ -242,7 +242,7 @@ export function CertificateForm({
         <AnimatedContainer>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
-                    {/* API错误提示 */}
+                    {/* Aviso de error de API */}
                     {error && (
                         <Alert variant="destructive">
                             <AlertCircle className="h-4 w-4" />
@@ -250,7 +250,7 @@ export function CertificateForm({
                         </Alert>
                     )}
 
-                    {/* 证书解析错误提示 */}
+                    {/* Aviso de error de análisis de certificado */}
                     {parseError && (
                         <Alert variant="default" className="bg-yellow-50 border-yellow-200">
                             <Info className="h-4 w-4 text-yellow-800" />
@@ -258,7 +258,7 @@ export function CertificateForm({
                         </Alert>
                     )}
 
-                    {/* 基本信息字段 */}
+                    {/* Campos de información básica */}
                     <FormField
                         control={form.control}
                         name="name"
@@ -291,7 +291,7 @@ export function CertificateForm({
                         )}
                     />
 
-                    {/* 公钥文件上传 */}
+                    {/* Subida del archivo de clave pública */}
                     <div className="space-y-2">
                         <FormLabel className="dark:text-shadow-glow-white">{t("certificate.dialog.publicKeyFile")}</FormLabel>
                         {publicKeyFile ? (
@@ -308,7 +308,7 @@ export function CertificateForm({
                         )}
                     </div>
 
-                    {/* 公钥内容 */}
+                    {/* Contenido de la clave pública */}
                     <FormField
                         control={form.control}
                         name="publicKey"
@@ -331,7 +331,7 @@ export function CertificateForm({
                         )}
                     />
 
-                    {/* 私钥文件上传 */}
+                    {/* Subida del archivo de clave privada */}
                     <div className="space-y-2">
                         <FormLabel className='dark:text-shadow-glow-white'>{t("certificate.dialog.privateKeyFile")}</FormLabel>
                         {privateKeyFile ? (
@@ -348,7 +348,7 @@ export function CertificateForm({
                         )}
                     </div>
 
-                    {/* 私钥内容 */}
+                    {/* Contenido de la clave privada */}
                     <FormField
                         control={form.control}
                         name="privateKey"
@@ -367,10 +367,10 @@ export function CertificateForm({
                         )}
                     />
 
-                    {/* 证书解析信息 */}
+                    {/* Información del certificado analizado */}
                     {renderParsedInfo()}
 
-                    {/* 提交按钮 */}
+                    {/* Botón de envío */}
                     <div className="flex justify-end">
                         <AnimatedButton>
                             <Button type="submit" disabled={isLoading}>
@@ -384,7 +384,7 @@ export function CertificateForm({
     )
 }
 
-// 辅助组件：信息行
+// Componente auxiliar: fila de información
 interface InfoRowProps {
     label: string
     value: string
@@ -400,7 +400,7 @@ export function InfoRow({ label, value, className = '' }: InfoRowProps) {
     )
 }
 
-// 辅助组件：文件预览
+// Componente auxiliar: vista previa de archivos
 interface FilePreviewProps {
     filename: string
     onClear: () => void
@@ -423,7 +423,7 @@ function FilePreview({ filename, onClear }: FilePreviewProps) {
     )
 }
 
-// 辅助组件：文件上传
+// Componente auxiliar: subida de archivos
 interface FileUploadProps {
     label: string
     accept: string

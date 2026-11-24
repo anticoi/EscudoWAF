@@ -1,11 +1,11 @@
 package router
 
 import (
-	"github.com/HUAHUAI23/RuiQi/server/controller"
-	"github.com/HUAHUAI23/RuiQi/server/middleware"
-	"github.com/HUAHUAI23/RuiQi/server/model"
-	"github.com/HUAHUAI23/RuiQi/server/repository"
-	"github.com/HUAHUAI23/RuiQi/server/service"
+	"github.com/anticoi/EscudoWAF/server/controller"
+	"github.com/anticoi/EscudoWAF/server/middleware"
+	"github.com/anticoi/EscudoWAF/server/model"
+	"github.com/anticoi/EscudoWAF/server/repository"
+	"github.com/anticoi/EscudoWAF/server/service"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -13,13 +13,13 @@ import (
 
 // Setup configures all the routes for the application
 func Setup(route *gin.Engine, db *mongo.Database) {
-	// 基础中间件
+	// Middleware base
 	route.Use(middleware.RequestID())
 	route.Use(middleware.Logger())
 	route.Use(middleware.Cors())
 	route.Use(gin.CustomRecovery(middleware.CustomErrorHandler))
 
-	// 创建仓库
+	// Crear los repositorios
 	userRepo := repository.NewUserRepository(db)
 	roleRepo := repository.NewRoleRepository(db)
 	siteRepo := repository.NewSiteRepository(db)
@@ -30,7 +30,7 @@ func Setup(route *gin.Engine, db *mongo.Database) {
 	ruleRepo := repository.NewMicroRuleRepository(db)
 	blockedIPRepo := repository.NewBlockedIPRepository(db)
 
-	// 创建服务
+	// Crear los servicios
 	authService := service.NewAuthService(userRepo, roleRepo)
 	siteService := service.NewSiteService(siteRepo)
 	wafLogService := service.NewWAFLogService(wafLogRepo)
@@ -41,7 +41,7 @@ func Setup(route *gin.Engine, db *mongo.Database) {
 	ruleService := service.NewMicroRuleService(ruleRepo)
 	statsService := service.NewStatsService(wafLogRepo)
 	blockedIPService := service.NewBlockedIPService(blockedIPRepo)
-	// 创建控制器
+	// Crear los controladores
 	authController := controller.NewAuthController(authService)
 	siteController := controller.NewSiteController(siteService)
 	wafLogController := controller.NewWAFLogController(wafLogService)
@@ -52,77 +52,77 @@ func Setup(route *gin.Engine, db *mongo.Database) {
 	ruleController := controller.NewMicroRuleController(ruleService)
 	statsController := controller.NewStatsController(runnerService, statsService)
 	blockedIPController := controller.NewBlockedIPController(blockedIPService)
-	// 将仓库添加到上下文中，供中间件使用
+	// Añadir los repositorios al contexto para uso del middleware
 	route.Use(func(c *gin.Context) {
 		c.Set("userRepo", userRepo)
 		c.Set("roleRepo", roleRepo)
 		c.Next()
 	})
 
-	// 健康检查端点
+	// Endpoint de health check
 	route.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})
 	})
 
-	// API v1 路由
+	// Rutas de API v1
 	api := route.Group("/api/v1")
 
-	// 认证相关路由 - 不需要权限检查
+	// Rutas de autenticación - no requieren verificación de permisos
 	auth := api.Group("/auth")
 	{
 		auth.POST("/login", authController.Login)
 
-		// 需要认证的路由
+		// Rutas que requieren autenticación
 		authRequired := auth.Group("")
 		authRequired.Use(middleware.JWTAuth())
 		{
-			// 密码重置接口 - 任何已认证用户都可访问
+			// Interfaz de restablecimiento de contraseña - accesible a cualquier usuario autenticado
 			authRequired.POST("/reset-password", authController.ResetPassword)
 
-			// 需要密码重置检查的路由
+			// Rutas que requieren comprobación de restablecimiento de contraseña
 			passwordChecked := authRequired.Group("")
 			passwordChecked.Use(middleware.PasswordResetRequired())
 			{
-				// 获取个人信息 - 任何已认证用户都可访问
+				// Obtener información personal - accesible para cualquier usuario autenticado
 				passwordChecked.GET("/me", authController.GetUserInfo)
 			}
 		}
 	}
 
-	// 需要认证和密码重置检查的API路由
+	// Rutas de API que requieren autenticación y comprobación de restablecimiento de contraseña
 	authenticated := api.Group("")
 	authenticated.Use(middleware.JWTAuth())
 	authenticated.Use(middleware.PasswordResetRequired())
 
-	// 用户管理模块
+	// Módulo de gestión de usuarios
 	userRoutes := authenticated.Group("/users")
 	{
-		// 创建用户 - 需要user:create权限
+		// Crear usuario - requiere permiso user:create
 		userRoutes.POST("", middleware.HasPermission(model.PermUserCreate), authController.CreateUser)
-		// 获取用户列表 - 需要user:read权限
+		// Obtener la lista de usuarios - requiere permiso user:read
 		userRoutes.GET("", middleware.HasPermission(model.PermUserRead), authController.GetUsers)
-		// 更新用户 - 需要user:update权限
+		// Actualizar usuario - requiere permiso user:update
 		userRoutes.PUT("/:id", middleware.HasPermission(model.PermUserUpdate), authController.UpdateUser)
-		// 删除用户 - 需要user:delete权限
+		// Eliminar usuario - requiere permiso user:delete
 		userRoutes.DELETE("/:id", middleware.HasPermission(model.PermUserDelete), authController.DeleteUser)
 	}
 
-	// 站点管理模块
+	// Módulo de gestión de sitios
 	siteRoutes := authenticated.Group("/site")
 	{
-		// 创建站点 - 需要site:create权限
+		// Crear sitio - requiere permiso site:create
 		siteRoutes.POST("", middleware.HasPermission(model.PermSiteCreate), siteController.CreateSite)
-		// 获取站点列表 - 需要site:read权限
+		// Obtener lista de sitios - requiere permiso site:read
 		siteRoutes.GET("", middleware.HasPermission(model.PermSiteRead), siteController.GetSites)
-		// 获取单个站点 - 需要site:read权限
+		// Obtener un sitio - requiere permiso site:read
 		siteRoutes.GET("/:id", middleware.HasPermission(model.PermSiteRead), siteController.GetSiteByID)
-		// 更新站点 - 需要site:update权限
+		// Actualizar sitio - requiere permiso site:update
 		siteRoutes.PUT("/:id", middleware.HasPermission(model.PermSiteUpdate), siteController.UpdateSite)
-		// 删除站点 - 需要site:delete权限
+		// Eliminar sitio - requiere permiso site:delete
 		siteRoutes.DELETE("/:id", middleware.HasPermission(model.PermSiteDelete), siteController.DeleteSite)
 	}
 
-	// 证书管理路由
+	// Rutas de gestión de certificados
 	certRoutes := authenticated.Group("/certificate")
 	{
 		certRoutes.POST("", middleware.HasPermission(model.PermCertCreate), certController.CreateCertificate)
@@ -132,7 +132,7 @@ func Setup(route *gin.Engine, db *mongo.Database) {
 		certRoutes.DELETE("/:id", middleware.HasPermission(model.PermCertDelete), certController.DeleteCertificate)
 	}
 
-	// IP组管理路由
+	// Rutas de gestión de grupos de IPs
 	ipGroupRoutes := authenticated.Group("/ip-groups")
 	{
 		ipGroupRoutes.POST("", middleware.HasPermission(model.PermConfigUpdate), ipGroupController.CreateIPGroup)
@@ -140,11 +140,11 @@ func Setup(route *gin.Engine, db *mongo.Database) {
 		ipGroupRoutes.GET("/:id", middleware.HasPermission(model.PermConfigRead), ipGroupController.GetIPGroupByID)
 		ipGroupRoutes.PUT("/:id", middleware.HasPermission(model.PermConfigUpdate), ipGroupController.UpdateIPGroup)
 		ipGroupRoutes.DELETE("/:id", middleware.HasPermission(model.PermConfigUpdate), ipGroupController.DeleteIPGroup)
-		// 添加IP到系统默认黑名单
+		// Añadir IP a la lista negra por defecto del sistema
 		ipGroupRoutes.POST("/blacklist/add", middleware.HasPermission(model.PermConfigUpdate), ipGroupController.AddIPToBlacklist)
 	}
 
-	// rule 管理路由
+	// Rutas de gestión de reglas
 	ruleRoutes := authenticated.Group("/micro-rules")
 	{
 		ruleRoutes.POST("", middleware.HasPermission(model.PermConfigUpdate), ruleController.CreateMicroRule)
@@ -154,47 +154,47 @@ func Setup(route *gin.Engine, db *mongo.Database) {
 		ruleRoutes.DELETE("/:id", middleware.HasPermission(model.PermConfigUpdate), ruleController.DeleteMicroRule)
 	}
 
-	// 日志
+	// Log
 	wafLogRoutes := authenticated.Group("/log")
 	{
-		// 获取攻击事件 - 需要logs:read权限
+		// Obtener eventos de ataque - requiere permiso logs:read
 		wafLogRoutes.GET("/event", middleware.HasPermission(model.PermWAFLogRead), wafLogController.GetAttackEvents)
-		// 获取攻击日志 - 需要logs:read权限
+		// Obtener logs de ataque - requiere permiso logs:read
 		wafLogRoutes.GET("", middleware.HasPermission(model.PermWAFLogRead), wafLogController.GetAttackLogs)
 	}
 
-	// 统计信息路由
+	// Rutas de información estadística
 	statsRoutes := authenticated.Group("/stats")
 	{
-		// 获取概览统计 - 需要config:read权限
+		// Obtener estadísticas de resumen - requiere permiso config:read
 		statsRoutes.GET("/overview", middleware.HasPermission(model.PermWAFLogRead), statsController.GetOverviewStats)
-		// 获取实时QPS - 需要config:read权限
+		// Obtener QPS en tiempo real - requiere permiso config:read
 		statsRoutes.GET("/realtime-qps", middleware.HasPermission(model.PermWAFLogRead), statsController.GetRealtimeQPS)
-		// 获取时间序列数据 - 需要config:read权限
+		// Obtener datos de series temporales - requiere permiso config:read
 		statsRoutes.GET("/time-series", middleware.HasPermission(model.PermWAFLogRead), statsController.GetTimeSeriesData)
-		// 获取组合时间序列数据 - 需要config:read权限
+		// Obtener datos de series temporales combinadas - requiere permiso config:read
 		statsRoutes.GET("/combined-time-series", middleware.HasPermission(model.PermWAFLogRead), statsController.GetCombinedTimeSeriesData)
-		// 获取流量时间序列数据 - 需要config:read权限
+		// Obtener datos de series temporales de tráfico - requiere permiso config:read
 		statsRoutes.GET("/traffic-time-series", middleware.HasPermission(model.PermWAFLogRead), statsController.GetTrafficTimeSeriesData)
 	}
 
-	// 配置管理模块
+	// Módulo de gestión de configuración
 	runnerRoutes := authenticated.Group("/runner")
 	{
-		// 获取配置 - 需要config:read权限
+		// Obtener la configuración - requiere permiso config:read
 		runnerRoutes.GET("/status", middleware.HasPermission(model.PermConfigRead), runnerController.GetStatus)
-		// 更新配置 - 需要config:update权限
+		// Actualizar configuración - requiere permiso config:update
 		runnerRoutes.POST("/control", middleware.HasPermission(model.PermConfigUpdate), runnerController.Control)
 	}
 	configRoutes := authenticated.Group("/config")
 	{
-		// 获取配置 - 需要config:read权限
+		// Obtener la configuración - requiere permiso config:read
 		configRoutes.GET("", middleware.HasPermission(model.PermConfigRead), configController.GetConfig)
-		// 更新配置 - 需要config:update权限
+		// Actualizar configuración - requiere permiso config:update
 		configRoutes.PATCH("", middleware.HasPermission(model.PermConfigUpdate), configController.PatchConfig)
 	}
 
-	// 封禁IP管理模块
+	// Módulo de gestión de IPs bloqueadas
 	blockedIPRoutes := authenticated.Group("/blocked-ips")
 	{
 		blockedIPRoutes.GET("", middleware.HasPermission(model.PermConfigRead), blockedIPController.GetBlockedIPs)
@@ -202,22 +202,22 @@ func Setup(route *gin.Engine, db *mongo.Database) {
 		blockedIPRoutes.DELETE("/cleanup", middleware.HasPermission(model.PermConfigUpdate), blockedIPController.CleanupExpiredBlockedIPs)
 	}
 
-	// 审计日志模块
+	// Módulo de logs de auditoría
 	auditRoutes := authenticated.Group("/audit")
 	{
-		// 获取审计日志 - 需要audit:read权限
+		// Obtener logs de auditoría - requiere permiso audit:read
 		auditRoutes.GET("", middleware.HasPermission(model.PermAuditRead), nil)
 	}
 
-	// 系统管理模块
+	// Módulo de administración del sistema
 	systemRoutes := authenticated.Group("/system")
 	{
-		// 获取系统状态 - 需要system:status权限
+		// Obtener el estado del sistema - requiere permiso system:status
 		systemRoutes.GET("/status", middleware.HasPermission(model.PermSystemStatus), nil)
-		// 重启系统 - 需要system:restart权限
+		// Reiniciar el sistema - requiere permiso system:restart
 		systemRoutes.POST("/restart", middleware.HasPermission(model.PermSystemRestart), nil)
 	}
 
-	// ===== 前端静态资源托管 =====
+	// ===== Alojamiento de recursos estáticos del frontend =====
 	SetStaticFileRouter(route)
 }

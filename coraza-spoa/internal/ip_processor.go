@@ -5,85 +5,85 @@ import (
 	"net"
 	"sync"
 
-	"github.com/HUAHUAI23/RuiQi/pkg/model"
+	"github.com/anticoi/EscudoWAF/pkg/model"
 	"github.com/oschwald/geoip2-golang"
 	"github.com/rs/zerolog"
 )
 
-// IPProcessor 是IP地理位置信息处理器接口
+// IPProcessor es la interfaz del procesador de geolocalización de IPs
 type IPProcessor interface {
-	// GetIPInfo 根据IP地址字符串获取地理位置信息
+	// GetIPInfo obtiene información de geolocalización a partir de una cadena de dirección IP
 	GetIPInfo(ipStr string) *model.IPInfo
 
-	// Close 关闭处理器并释放资源
+	// Close cierra el procesador y libera recursos
 	Close()
 }
 
-// GeoIP2Processor 是基于MaxMind GeoIP2数据库的IP处理器实现
+// GeoIP2Processor es una implementación de procesador de IP basada en la base de datos MaxMind GeoIP2
 type GeoIP2Processor struct {
-	cityDB *geoip2.Reader  // 城市数据库
-	asnDB  *geoip2.Reader  // ASN数据库
-	logger zerolog.Logger  // 日志记录器
-	mutex  sync.RWMutex    // 读写锁
-	ctx    context.Context // 上下文
-	closed bool            // 是否已关闭
+	cityDB *geoip2.Reader  // Base de datos de ciudades
+	asnDB  *geoip2.Reader  // Base de datos ASN
+	logger zerolog.Logger  // Logger
+	mutex  sync.RWMutex    // Bloqueo de lectura-escritura
+	ctx    context.Context // Contexto
+	closed bool            // Si está cerrado
 }
 
-// GeoIP2Options 包含GeoIP2处理器的配置选项
+// GeoIP2Options contiene las opciones de configuración del procesador GeoIP2
 type GeoIP2Options struct {
-	CityDBPath string // City数据库路径
-	ASNDBPath  string // ASN数据库路径
+	CityDBPath string // Ruta de la base de datos de ciudades
+	ASNDBPath  string // Ruta de la base de datos ASN
 }
 
-// NewGeoIP2Processor 创建一个新的GeoIP2处理器实例
+// NewGeoIP2Processor crea una nueva instancia del procesador GeoIP2
 func NewGeoIP2Processor(ctx context.Context, options GeoIP2Options, logger zerolog.Logger) (IPProcessor, error) {
 	processor := &GeoIP2Processor{
 		logger: logger,
 		ctx:    ctx,
 	}
 
-	// 尝试打开City数据库
+	// Intentar abrir la base de datos de ciudades
 	if options.CityDBPath != "" {
 		cityDB, err := geoip2.Open(options.CityDBPath)
 		if err != nil {
-			logger.Error().Err(err).Str("path", options.CityDBPath).Msg("打开城市数据库失败")
+			logger.Error().Err(err).Str("path", options.CityDBPath).Msg("Error al abrir la base de datos de ciudades")
 		} else {
 			processor.cityDB = cityDB
 		}
 	} else {
-		logger.Warn().Msg("未提供城市数据库路径，地理位置功能将不可用")
+		logger.Warn().Msg("No se proporcionó la ruta de la base de datos de ciudades, la geolocalización no estará disponible")
 	}
 
-	// 尝试打开ASN数据库
+	// Intentar abrir la base de datos ASN
 	if options.ASNDBPath != "" {
 		asnDB, err := geoip2.Open(options.ASNDBPath)
 		if err != nil {
-			logger.Warn().Err(err).Str("path", options.ASNDBPath).Msg("打开ASN数据库失败，ASN信息将不可用")
+			logger.Warn().Err(err).Str("path", options.ASNDBPath).Msg("Error al abrir la base de datos ASN, la información ASN no estará disponible")
 		} else {
 			processor.asnDB = asnDB
 		}
 	} else {
-		logger.Warn().Msg("未提供ASN数据库路径，ASN信息将不可用")
+		logger.Warn().Msg("No se proporcionó la ruta de la base de datos ASN, la información ASN no estará disponible")
 	}
 
-	// 如果两个数据库都无法打开，返回空实现
+	// Si no se puede abrir ninguna base de datos, devolver implementación vacía
 	if processor.cityDB == nil && processor.asnDB == nil {
 		return NewNullIPProcessor(), nil
 	}
 
-	// 启动后台监听上下文取消信号的goroutine
+	// Iniciar en segundo plano la goroutine que escucha la señal de cancelación del contexto
 	go processor.watchContext()
 
 	return processor, nil
 }
 
-// watchContext 监听上下文取消信号，当上下文取消时自动释放资源
+// watchContext escucha la señal de cancelación del contexto y libera recursos automáticamente
 func (p *GeoIP2Processor) watchContext() {
 	<-p.ctx.Done()
 	p.closeResources()
 }
 
-// closeResources 关闭数据库并标记处理器为已关闭
+// closeResources cierra la base de datos y marca el procesador como cerrado
 func (p *GeoIP2Processor) closeResources() {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
@@ -92,7 +92,7 @@ func (p *GeoIP2Processor) closeResources() {
 		return
 	}
 
-	// 关闭数据库
+	// Cerrar la base de datos
 	if p.cityDB != nil {
 		p.cityDB.Close()
 		p.cityDB = nil
@@ -104,32 +104,32 @@ func (p *GeoIP2Processor) closeResources() {
 	}
 
 	p.closed = true
-	p.logger.Debug().Msg("IP处理器资源已释放")
+	p.logger.Debug().Msg("Recursos del procesador de IP liberados")
 }
 
-// Close 手动关闭IP处理器
+// Close cierra manualmente el procesador de IP
 func (p *GeoIP2Processor) Close() {
 	p.closeResources()
 }
 
-// GetIPInfo 根据IP地址字符串获取地理位置信息
+// GetIPInfo obtiene información de geolocalización a partir de una cadena de dirección IP
 func (p *GeoIP2Processor) GetIPInfo(ipStr string) *model.IPInfo {
-	// 快速检查IP格式有效性
+	// Comprobación rápida de validez del formato de IP
 	ip := net.ParseIP(ipStr)
 	if ip == nil {
-		p.logger.Warn().Str("ip", ipStr).Msg("无效的IP地址")
+		p.logger.Warn().Str("ip", ipStr).Msg("Dirección IP no válida")
 		return nil
 	}
 
-	// 检查上下文是否已取消
+	// Comprobar si el contexto fue cancelado
 	select {
 	case <-p.ctx.Done():
 		return nil
 	default:
-		// 继续处理
+		// Continuar el procesamiento
 	}
 
-	// 如果处理器已关闭，直接返回nil
+	// Si el procesador está cerrado, devolver nil directamente
 	if p.closed || (p.cityDB == nil && p.asnDB == nil) {
 		return nil
 	}
@@ -137,15 +137,15 @@ func (p *GeoIP2Processor) GetIPInfo(ipStr string) *model.IPInfo {
 	ipInfo := &model.IPInfo{}
 	hasInfo := false
 
-	// 查询城市信息
+	// Consultar información de la ciudad
 	if p.cityDB != nil {
 		cityRecord, err := p.cityDB.City(ip)
 		if err != nil {
-			p.logger.Warn().Str("ip", ipStr).Err(err).Msg("查询城市信息失败")
+			p.logger.Warn().Str("ip", ipStr).Err(err).Msg("Error al consultar la información de la ciudad")
 		} else {
 			hasInfo = true
 
-			// 填充城市信息
+			// Rellenar la información de la ciudad
 			if len(cityRecord.City.Names) > 0 {
 				if name, exists := cityRecord.City.Names["zh-CN"]; exists {
 					ipInfo.City.NameZH = name
@@ -155,7 +155,7 @@ func (p *GeoIP2Processor) GetIPInfo(ipStr string) *model.IPInfo {
 				}
 			}
 
-			// 填充省/州信息
+			// Rellenar la información de provincia/estado
 			if len(cityRecord.Subdivisions) > 0 {
 				subdivision := cityRecord.Subdivisions[0]
 				if name, exists := subdivision.Names["zh-CN"]; exists {
@@ -167,7 +167,7 @@ func (p *GeoIP2Processor) GetIPInfo(ipStr string) *model.IPInfo {
 				ipInfo.Subdivision.IsoCode = subdivision.IsoCode
 			}
 
-			// 填充国家信息
+			// Rellenar la información del país
 			if name, exists := cityRecord.Country.Names["zh-CN"]; exists {
 				ipInfo.Country.NameZH = name
 			}
@@ -176,7 +176,7 @@ func (p *GeoIP2Processor) GetIPInfo(ipStr string) *model.IPInfo {
 			}
 			ipInfo.Country.IsoCode = cityRecord.Country.IsoCode
 
-			// 填充大洲信息
+			// Rellenar la información del continente
 			if len(cityRecord.Continent.Names) > 0 {
 				if name, exists := cityRecord.Continent.Names["zh-CN"]; exists {
 					ipInfo.Continent.NameZH = name
@@ -186,18 +186,18 @@ func (p *GeoIP2Processor) GetIPInfo(ipStr string) *model.IPInfo {
 				}
 			}
 
-			// 填充位置信息
+			// Rellenar la información de ubicación
 			ipInfo.Location.Longitude = cityRecord.Location.Longitude
 			ipInfo.Location.Latitude = cityRecord.Location.Latitude
 			ipInfo.Location.TimeZone = cityRecord.Location.TimeZone
 		}
 	}
 
-	// 查询ASN信息
+	// Consultar información ASN
 	if p.asnDB != nil {
 		asnRecord, err := p.asnDB.ASN(ip)
 		if err != nil {
-			p.logger.Warn().Str("ip", ipStr).Err(err).Msg("查询ASN信息失败")
+			p.logger.Warn().Str("ip", ipStr).Err(err).Msg("Error al consultar la información ASN")
 		} else {
 			hasInfo = true
 			ipInfo.ASN.Number = asnRecord.AutonomousSystemNumber
@@ -205,7 +205,7 @@ func (p *GeoIP2Processor) GetIPInfo(ipStr string) *model.IPInfo {
 		}
 	}
 
-	// 如果没有获取到任何信息，则返回nil
+	// Si no se obtuvo información, devolver nil
 	if !hasInfo {
 		return nil
 	}
@@ -213,34 +213,34 @@ func (p *GeoIP2Processor) GetIPInfo(ipStr string) *model.IPInfo {
 	return ipInfo
 }
 
-// NewIPProcessor 创建新的IP处理器实例的工厂方法
+// NewIPProcessor método fábrica para crear instancias del procesador de IP
 func NewIPProcessor(ctx context.Context, cityDBPath, asnDBPath string, logger zerolog.Logger) (IPProcessor, error) {
 	if cityDBPath == "" && asnDBPath == "" {
-		// 如果没有提供任何数据库路径，则返回空实现
+		// Si no se proporcionó ninguna ruta de base de datos, devolver implementación vacía
 		return NewNullIPProcessor(), nil
 	}
 
-	// 创建处理器
+	// Crear el procesador
 	return NewGeoIP2Processor(ctx, GeoIP2Options{
 		CityDBPath: cityDBPath,
 		ASNDBPath:  asnDBPath,
 	}, logger)
 }
 
-// NullIPProcessor 是IP处理器接口的空实现
+// NullIPProcessor es la implementación vacía de la interfaz IPProcessor
 type NullIPProcessor struct{}
 
-// NewNullIPProcessor 创建一个空实现的IP处理器
+// NewNullIPProcessor crea un procesador de IP con implementación vacía
 func NewNullIPProcessor() IPProcessor {
 	return &NullIPProcessor{}
 }
 
-// GetIPInfo 返回nil，空实现始终返回nil
+// GetIPInfo devuelve nil; la implementación vacía siempre devuelve nil
 func (p *NullIPProcessor) GetIPInfo(ipStr string) *model.IPInfo {
 	return nil
 }
 
-// Close 空实现不需要做任何事
+// Close implementación vacía, no hace nada
 func (p *NullIPProcessor) Close() {
-	// 无需任何操作
+	// No requiere ninguna acción
 }

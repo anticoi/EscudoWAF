@@ -4,34 +4,34 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-// RuleType 规则类型
+// RuleType tipo de regla
 //
-//	@Description	规则类型，表示规则是白名单还是黑名单
+//	@Description	Tipo de regla, indica si es lista blanca o lista negra
 type RuleType string
 
 const (
-	WhitelistRule RuleType = "whitelist" // 白名单规则
-	BlacklistRule RuleType = "blacklist" // 黑名单规则
+	WhitelistRule RuleType = "whitelist" // Reglas de lista blanca
+	BlacklistRule RuleType = "blacklist" // Reglas de lista negra
 )
 
-// RuleStatus 规则状态
+// RuleStatus estado de la regla
 //
-//	@Description	规则状态，表示规则是启用还是禁用
+//	@Description	Estado de la regla, indica si está habilitada o deshabilitada
 type RuleStatus string
 
 const (
-	RuleEnabled  RuleStatus = "enabled"  // 规则已启用
-	RuleDisabled RuleStatus = "disabled" // 规则已禁用
+	RuleEnabled  RuleStatus = "enabled"  // Regla habilitada
+	RuleDisabled RuleStatus = "disabled" // Regla deshabilitada
 )
 
-// MicroRule 表示WAF微规则信息
-// @Description WAF微规则信息，包含规则名称、类型、状态、优先级和条件
+// MicroRule representa la información de una microrregla del WAF
+// @Description Información de microrregla WAF, con nombre, tipo, estado, prioridad y condiciones
 type MicroRule struct {
-	ID       bson.ObjectID `bson:"_id,omitempty" json:"id,omitempty" example:"60d21b4367d0d8992e89e964"` // 规则唯一标识符
-	Name     string        `json:"name" bson:"name" example:"SQL注入防护规则"`                                 // 规则名称
-	Type     RuleType      `json:"type" bson:"type" example:"blacklist"`                                 // 规则类型
-	Status   RuleStatus    `json:"status" bson:"status" example:"enabled"`                               // 规则状态
-	Priority int           `json:"priority" bson:"priority" example:"100"`                               // 优先级字段，数字越大优先级越高
+	ID       bson.ObjectID `bson:"_id,omitempty" json:"id,omitempty" example:"60d21b4367d0d8992e89e964"` // Identificador único de la regla
+	Name     string        `json:"name" bson:"name" example:"Regla de protección contra inyección SQL"`                                 // Nombre de la regla
+	Type     RuleType      `json:"type" bson:"type" example:"blacklist"`                                 // Tipo de regla
+	Status   RuleStatus    `json:"status" bson:"status" example:"enabled"`                               // Estado de la regla
+	Priority int           `json:"priority" bson:"priority" example:"100"`                               // Campo de prioridad; a mayor número, mayor prioridad
 	// @Schema(type=object, example={"type":"composite","operator":"AND","conditions":[{"type":"simple","target":"source_ip","match_type":"in_ipgroup","match_value":"blocked_ips"},{"type":"simple","target":"path","match_type":"regex","match_value":"^/admin/.*$"}]})
 	Condition bson.Raw `json:"condition" bson:"condition" swaggertype:"object"`
 }

@@ -5,25 +5,25 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	cornjob "github.com/HUAHUAI23/RuiQi/server/service/cornjob/haproxy"
-	"github.com/HUAHUAI23/RuiQi/server/service/daemon"
+	"github.com/anticoi/EscudoWAF/server/config"
+	cornjob "github.com/anticoi/EscudoWAF/server/service/cornjob/haproxy"
+	"github.com/anticoi/EscudoWAF/server/service/daemon"
 	"github.com/haproxytech/client-native/v6/models"
 	"github.com/rs/zerolog"
 )
 
-// 定义错误
+// Definición de errores
 var (
-	ErrRunnerNotRunning     = errors.New("运行器未在运行")
-	ErrRunnerAlreadyRunning = errors.New("运行器已在运行")
+	ErrRunnerNotRunning     = errors.New("El runner no está en ejecución")
+	ErrRunnerAlreadyRunning = errors.New("El runner ya está en ejecución")
 )
 
-// RunnerService 运行器服务接口
+// RunnerService interfaz del servicio del runner
 type RunnerService interface {
-	// 获取运行器状态
+	// Obtener el estado del runner
 	GetStatus(ctx context.Context) (daemon.ServiceState, error)
 
-	// 运行器操作
+	// Operación del runner
 	Start(ctx context.Context) error
 	Stop(ctx context.Context) error
 	Restart(ctx context.Context) error
@@ -33,21 +33,21 @@ type RunnerService interface {
 	GetStats() (models.NativeStats, error)
 }
 
-// RunnerServiceImpl 运行器服务实现
+// RunnerServiceImpl implementación del servicio del runner
 type RunnerServiceImpl struct {
 	logger zerolog.Logger
 	runner daemon.ServiceRunner
 }
 
-// NewRunnerService 创建运行器服务
+// NewRunnerService crea el servicio del runner
 func NewRunnerService() (RunnerService, error) {
 	logger := config.GetServiceLogger("runner")
 
-	// 获取ServiceRunner服务
+	// Obtener el servicio ServiceRunner
 	runner, err := daemon.GetRunnerService()
 	if err != nil {
-		logger.Error().Err(err).Msg("获取ServiceRunner失败")
-		return nil, fmt.Errorf("初始化运行器服务失败: %w", err)
+		logger.Error().Err(err).Msg("Error al obtener ServiceRunner")
+		return nil, fmt.Errorf("Error al inicializar el servicio runner: %w", err)
 	}
 
 	return &RunnerServiceImpl{
@@ -56,19 +56,19 @@ func NewRunnerService() (RunnerService, error) {
 	}, nil
 }
 
-// GetStatus 获取运行器状态
+// GetStatus obtiene el estado del runner
 func (s *RunnerServiceImpl) GetStatus(ctx context.Context) (daemon.ServiceState, error) {
 	return s.runner.GetState(), nil
 }
 
-// Start 启动运行器
+// Start inicia el runner
 func (s *RunnerServiceImpl) Start(ctx context.Context) error {
-	// 检查当前状态
+	// Comprobar el estado actual
 	if s.runner.GetState() == daemon.ServiceRunning {
 		return ErrRunnerAlreadyRunning
 	}
 
-	// 更新 haproxy 服务打点数据列表
+	// Actualizar la lista de datos de métricas del servicio haproxy
 	targetList, err := cornjob.GetLatestTargetList()
 	if err != nil {
 		return fmt.Errorf("failed to get target list: %w", err)
@@ -80,36 +80,36 @@ func (s *RunnerServiceImpl) Start(ctx context.Context) error {
 	}
 	cronJobService.UpdateTargetList(targetList)
 
-	// 启动服务
+	// Iniciar el servicio
 	err = s.runner.StartServices()
 	if err != nil {
-		s.logger.Error().Err(err).Msg("启动运行器失败")
-		return fmt.Errorf("启动运行器失败: %w", err)
+		s.logger.Error().Err(err).Msg("Error al iniciar el runner")
+		return fmt.Errorf("Error al iniciar el runner: %w", err)
 	}
 
 	return nil
 }
 
-// Stop 停止运行器
+// Stop detiene el runner
 func (s *RunnerServiceImpl) Stop(ctx context.Context) error {
-	// 检查当前状态
+	// Comprobar el estado actual
 	if s.runner.GetState() != daemon.ServiceRunning {
 		return ErrRunnerNotRunning
 	}
 
-	// 停止服务
+	// Detener servicio
 	err := s.runner.StopServices()
 	if err != nil {
-		s.logger.Error().Err(err).Msg("停止运行器失败")
-		return fmt.Errorf("停止运行器失败: %w", err)
+		s.logger.Error().Err(err).Msg("Error al detener el runner")
+		return fmt.Errorf("Error al detener el runner: %w", err)
 	}
 
 	return nil
 }
 
-// Restart 重启运行器
+// Restart reinicia el runner
 func (s *RunnerServiceImpl) Restart(ctx context.Context) error {
-	// 更新 haproxy 服务打点数据列表
+	// Actualizar la lista de datos de métricas del servicio haproxy
 	targetList, err := cornjob.GetLatestTargetList()
 	if err != nil {
 		return fmt.Errorf("failed to get target list: %w", err)
@@ -121,31 +121,31 @@ func (s *RunnerServiceImpl) Restart(ctx context.Context) error {
 	}
 	cronJobService.UpdateTargetList(targetList)
 
-	// 重启服务
+	// Reiniciar el servicio
 	err = s.runner.Restart()
 	if err != nil {
-		s.logger.Error().Err(err).Msg("重启运行器失败")
-		return fmt.Errorf("重启运行器失败: %w", err)
+		s.logger.Error().Err(err).Msg("Error al reiniciar el runner")
+		return fmt.Errorf("Error al reiniciar el runner: %w", err)
 	}
 
 	return nil
 }
 
-// ForceStop 强制停止运行器
+// ForceStop detiene forzosamente el runner
 func (s *RunnerServiceImpl) ForceStop(ctx context.Context) error {
-	// 强制停止服务
+	// Detener forzosamente el servicio
 	s.runner.ForceStop()
 	return nil
 }
 
-// Reload 热重载运行器
+// Reload recarga en caliente del runner
 func (s *RunnerServiceImpl) Reload(ctx context.Context) error {
-	// 检查当前状态
+	// Comprobar el estado actual
 	if s.runner.GetState() != daemon.ServiceRunning {
 		return ErrRunnerNotRunning
 	}
 
-	// 更新 haproxy 服务打点数据列表
+	// Actualizar la lista de datos de métricas del servicio haproxy
 	targetList, err := cornjob.GetLatestTargetList()
 	if err != nil {
 		return fmt.Errorf("failed to get target list: %w", err)
@@ -157,11 +157,11 @@ func (s *RunnerServiceImpl) Reload(ctx context.Context) error {
 	}
 	cronJobService.UpdateTargetList(targetList)
 
-	// 热重载服务
+	// Recarga en caliente del servicio
 	err = s.runner.HotReload()
 	if err != nil {
-		s.logger.Error().Err(err).Msg("热重载运行器失败")
-		return fmt.Errorf("热重载运行器失败: %w", err)
+		s.logger.Error().Err(err).Msg("Error en la recarga en caliente del runner")
+		return fmt.Errorf("Error en la recarga en caliente del runner: %w", err)
 	}
 
 	return nil

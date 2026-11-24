@@ -26,7 +26,7 @@ export function StatsCard({
 }: StatsCardProps) {
     const navigate = useNavigate()
 
-    // 用于格式化流量数据
+    // Para formatear datos de tráfico
     const formatTraffic = (bytes: number): string => {
         if (bytes < 1024) return `${bytes} B`
         if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`
@@ -34,7 +34,7 @@ export function StatsCard({
         return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
     }
 
-    // 颜色处理
+    // Procesamiento de colores
     const getTrendColor = () => {
         if (!trend) return 'text-muted-foreground'
         return trend === 'up'
@@ -52,11 +52,11 @@ export function StatsCard({
     const handleCardClick = () => {
         if (!link) return
         
-        // 检查是否为外部链接
+        // Comprobar si es un enlace externo
         if (link.startsWith('http://') || link.startsWith('https://')) {
             window.open(link, '_blank')
         } else {
-            // 内部路由跳转
+            // Navegación de rutas interna
             navigate(link)
         }
     }

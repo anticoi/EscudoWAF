@@ -1,125 +1,126 @@
-# RuiQi WAF Frontend
+# EscudoWAF Frontend
 
-A modern web application interface for RuiQi Web Application Firewall (WAF) system built with React, TypeScript, and Vite.
+Interfaz web moderna para el sistema de firewall de aplicaciones web (WAF) EscudoWAF, construida con React, TypeScript y Vite.
 
-## Features
+## Funcionalidades
 
-- **Authentication System**: Secure login and password reset functionality
-- **Dashboard Monitoring**: Real-time monitoring of web application security threats
-- **Log Analysis**: Detailed logs for attack detection and protection events
-- **Rules Management**: Configure and manage WAF security rules
-- **Site Management**: Manage protected websites and domains
-- **Certificate Management**: SSL/TLS certificate management
-- **Multi-language Support**: Internationalization with both Chinese and English languages
+- **Sistema de autenticación**: inicio de sesión seguro y restablecimiento de contraseña
+- **Monitorización en panel**: seguimiento en tiempo real de amenazas de seguridad web
+- **Análisis de registros**: registros detallados de detección de ataques y eventos de protección
+- **Gestión de reglas**: configuración y administración de reglas de seguridad del WAF
+- **Gestión de sitios**: administración de sitios web y dominios protegidos
+- **Gestión de certificados**: administración de certificados SSL/TLS
+- **Soporte multi-idioma**: internacionalización en español, inglés y chino
 
-## Tech Stack
+## Stack tecnológico
 
-- **Core**: React + TypeScript + Vite
-- **Styling**: TailwindCSS + Shadcn UI
-- **Routing**: React Router v7
-- **State Management**: Zustand
-- **Form Handling**: React Hook Form + Zod validation
-- **Data Fetching**: TanStack Query (React Query v4)
-- **Tables**: TanStack Table
-- **Internationalization**: react-i18next with i18next-http-backend and i18next-browser-languagedetector
-- **Icons**: Lucide React
+- **Núcleo**: React + TypeScript + Vite
+- **Estilos**: TailwindCSS + Shadcn UI
+- **Enrutamiento**: React Router v7
+- **Gestión de estado**: Zustand
+- **Formularios**: React Hook Form + validación Zod
+- **Obtención de datos**: TanStack Query (React Query v4)
+- **Tablas**: TanStack Table
+- **Internacionalización**: react-i18next con i18next-http-backend y i18next-browser-languagedetector
+- **Iconos**: Lucide React
 
-## Project Structure
+## Estructura del proyecto
 
 ```
-├── public/                # Static assets
-│   └── locales/           # Internationalization files
-│       ├── en/            # English translations
-│       └── zh/            # Chinese translations
+├── public/                # Recursos estáticos
+│   └── locales/           # Archivos de internacionalización
+│       ├── es/            # Traducciones al español
+│       ├── en/            # Traducciones al inglés
+│       └── zh/            # Traducciones al chino
 ├── src/
-│   ├── api/               # API services and request handling
-│   ├── assets/            # Project static assets
-│   ├── components/        # UI components
-│   │   ├── common/        # Common shared components
-│   │   ├── layout/        # Layout components
-│   │   ├── table/         # Table components (TanStack Table wrappers)
-│   │   └── ui/            # Shadcn UI components
-│   ├── feature/           # Feature modules
-│   │   └── auth/          # Authentication feature components and hooks
-│   ├── hooks/             # Custom React hooks
-│   ├── lib/               # Utility libraries
-│   ├── pages/             # Application pages
-│   │   ├── auth/          # Authentication pages
-│   │   ├── logs/          # Log analysis pages
-│   │   ├── monitor/       # Monitoring dashboard pages
-│   │   ├── rule/          # Rules management pages
-│   │   └── setting/       # Settings pages
-│   ├── routes/            # Routing configuration
-│   ├── store/             # Zustand state management
-│   ├── types/             # TypeScript type definitions
-│   ├── utils/             # Utility functions
-│   ├── validation/        # Form validation schemas (Zod)
-│   ├── App.tsx            # Main App component
-│   ├── i18n.ts            # i18n configuration
-│   ├── index.css          # Global styles
-│   └── main.tsx           # Application entry point
-├── .eslintrc.js           # ESLint configuration
-├── components.json        # Shadcn components configuration
-├── package.json           # Dependencies and scripts
-├── tailwind.config.js     # Tailwind CSS configuration
-├── tsconfig.json          # TypeScript configuration
-└── vite.config.ts         # Vite configuration
+│   ├── api/               # Servicios de API y manejo de peticiones
+│   ├── assets/            # Recursos estáticos del proyecto
+│   ├── components/        # Componentes de UI
+│   │   ├── common/        # Componentes comunes compartidos
+│   │   ├── layout/        # Componentes de layout
+│   │   ├── table/         # Componentes de tabla (wrappers de TanStack Table)
+│   │   └── ui/            # Componentes de Shadcn UI
+│   ├── feature/           # Módulos de funcionalidad
+│   │   └── auth/          # Componentes y hooks de autenticación
+│   ├── hooks/             # Hooks personalizados de React
+│   ├── lib/               # Librerías de utilidades
+│   ├── pages/             # Páginas de la aplicación
+│   │   ├── auth/          # Páginas de autenticación
+│   │   ├── logs/          # Páginas de análisis de registros
+│   │   ├── monitor/       # Páginas del panel de monitorización
+│   │   ├── rule/          # Páginas de gestión de reglas
+│   │   └── setting/       # Páginas de configuración
+│   ├── routes/            # Configuración de enrutamiento
+│   ├── store/             # Gestión de estado con Zustand
+│   ├── types/             # Definiciones de tipos TypeScript
+│   ├── utils/             # Funciones de utilidad
+│   ├── validation/        # Esquemas de validación de formularios (Zod)
+│   ├── App.tsx            # Componente principal de la app
+│   ├── i18n.ts            # Configuración de i18n
+│   ├── index.css          # Estilos globales
+│   └── main.tsx           # Punto de entrada de la aplicación
+├── .eslintrc.js           # Configuración de ESLint
+├── components.json        # Configuración de componentes Shadcn
+├── package.json           # Dependencias y scripts
+├── tailwind.config.js     # Configuración de Tailwind CSS
+├── tsconfig.json          # Configuración de TypeScript
+└── vite.config.ts         # Configuración de Vite
 ```
 
-## Getting Started
+## Primeros pasos
 
-### Prerequisites
+### Requisitos previos
 
-- Node.js 22+ 
-- pnpm (recommended package manager)
+- Node.js 22+
+- pnpm (gestor de paquetes recomendado)
 
-### Installation
+### Instalación
 
-1. Clone the repository:
+1. Clonar el repositorio:
    ```bash
-   git clone https://github.com/HUAHUAI23/RuiQi.git
+   git clone https://github.com/anticoi/EscudoWAF.git
    cd web
    ```
 
-2. Install dependencies:
+2. Instalar dependencias:
    ```bash
    pnpm install
    ```
 
-3. Start the development server:
+3. Iniciar el servidor de desarrollo:
    ```bash
    pnpm dev
    ```
 
-4. Build for production:
+4. Compilar para producción:
    ```bash
    pnpm build
    ```
 
-## Key Features
+## Funcionalidades clave
 
-### Layout Structure
-- Left sidebar for main navigation
-- Right content area with breadcrumb for sub-navigation
-- Different breadcrumb paths based on selected sidebar navigation
+### Estructura del layout
+- Barra lateral izquierda para la navegación principal
+- Área de contenido derecha con migas de pan para la subnavegación
+- Rutas de migas de pan según la navegación seleccionada en la barra lateral
 
-### Authentication
-- Login with username/password
-- Forced password reset for first-time users
-- Protected routes requiring authentication
+### Autenticación
+- Inicio de sesión con usuario/contraseña
+- Restablecimiento de contraseña obligatorio para nuevos usuarios
+- Rutas protegidas que requieren autenticación
 
-### Internationalization
-- Multi-language support (English and Chinese)
-- Default language detection
-- Language switcher
+### Internacionalización
+- Soporte multi-idioma (español, inglés y chino)
+- Detección automática del idioma
+- Selector de idioma
 
-## Contributing
+## Contribuir
 
-1. Follow the project's code structure and naming conventions
-2. Ensure code is properly formatted and commented
-3. Write tests for new features
-4. Create a pull request with a clear description of changes
+1. Seguir la estructura del código y las convenciones de nomenclatura del proyecto
+2. Asegurar que el código esté correctamente formateado y comentado
+3. Escribir tests para las nuevas funcionalidades
+4. Crear un pull request con una descripción clara de los cambios
 
-## License
+## Licencia
 
-Copyright © 2025 RuiQi WAF. All rights reserved.
+Copyright © 2025 huahua (RuiQi) / anticoi (EscudoWAF). Licencia MIT.

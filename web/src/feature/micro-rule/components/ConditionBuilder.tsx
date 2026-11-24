@@ -258,7 +258,7 @@ export function ConditionBuilder({
                                                     target === "source_ip" ? "e.g: 192.168.10.10" : t("microRule.condition.enterMatchValue")
                                                 }
                                                 {...field}
-                                                // 确保 match_value 是字符串类型
+                                                // Asegurar que match_value sea de tipo string
                                                 value={typeof field.value === 'string' ? field.value : ''}
                                             />
                                         </FormControl>

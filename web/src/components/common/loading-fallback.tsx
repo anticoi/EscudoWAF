@@ -10,10 +10,10 @@ export const LoadingFallback = () => {
         const timer = setInterval(() => {
             setProgress((prevProgress) => {
                 // Slow down as it approaches 100%
-                // 使用Math.floor确保结果是整数
+                // Usar Math.floor para garantizar un resultado entero
                 const increment = Math.floor(Math.max(1, 10 * (1 - prevProgress / 100)))
                 const newProgress = Math.min(99, prevProgress + increment)
-                // 确保最终结果也是整数
+                // Asegurar que el resultado final también sea entero
                 return Math.floor(newProgress)
             })
         }, 200)

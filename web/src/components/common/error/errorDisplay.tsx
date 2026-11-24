@@ -16,18 +16,18 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface AdvancedErrorDisplayProps {
-    /** 错误对象 */
+    /** Objeto de error */
     error: unknown
-    /** 重试回调函数 */
+    /** Función de callback de reintento */
     onRetry?: () => void
-    /** 额外的CSS类名 */
+    /** Nombres de clases CSS adicionales */
     className?: string
-    /** 是否使用卡片样式 (更现代化的UI) */
+    /** Si se usa estilo de tarjeta (UI más moderna) */
     useCardStyle?: boolean
 }
 
 /**
- * 高级错误展示组件
+ * Componente avanzado de visualización de errores
  */
 export const AdvancedErrorDisplay = ({
     error,
@@ -38,16 +38,16 @@ export const AdvancedErrorDisplay = ({
     const { t } = useTranslation()
     const [showDetails, setShowDetails] = useState(false)
 
-    // 处理错误信息
+    // Manejar la información de error
     const isApiError = error instanceof Error && error.name === 'ApiError'
-    const errorMessage = error instanceof Error ? error.message : t('error.loading', '加载数据时发生错误')
+    const errorMessage = error instanceof Error ? error.message : t('error.loading', 'Se produjo un error al cargar los datos')
     const apiError = isApiError ? (error as ApiError) : undefined
     const errorCode = apiError?.code || (error instanceof Error && 'status' in error ? (error as unknown as { status: number }).status : undefined)
     const errorType = getErrorType(error)
     const requestId = apiError?.requestId
     const errorDetail = apiError?.errorDetail
 
-    // 获取错误配置
+    // Obtener la configuración de errores
     const config = errorConfigs[errorType]
     const title = t(config.titleKey, config.titleKey)
     const description = t(config.descriptionKey, config.descriptionKey)
@@ -56,21 +56,21 @@ export const AdvancedErrorDisplay = ({
         : description
 
     /**
-     * 格式化错误详情对象
-     * @param detail - 错误详情
-     * @returns 格式化后的错误详情字符串
+     * Formatear el objeto de detalles del error
+     * @param detail - detalles del error
+     * @returns cadena formateada con los detalles del error
      */
     const formatErrorDetail = (detail: unknown): string | null => {
         if (!detail) return null
 
         try {
             if (typeof detail === 'string') {
-                // 尝试解析JSON字符串
+                // Intentar analizar la cadena JSON
                 try {
                     const parsed = JSON.parse(detail)
                     return JSON.stringify(parsed, null, 2)
                 } catch {
-                    // 如果不是JSON，直接返回字符串
+                    // Si no es JSON, devolver la cadena directamente
                     return detail
                 }
             } else if (typeof detail === 'object') {
@@ -79,7 +79,7 @@ export const AdvancedErrorDisplay = ({
 
             return String(detail)
         } catch {
-            return t('error.cannotParse', '无法解析错误详情')
+            return t('error.cannotParse', 'No se pudieron analizar los detalles del error')
         }
     }
 
@@ -97,7 +97,7 @@ export const AdvancedErrorDisplay = ({
                             <CardTitle className="text-lg text-red-700 dark:text-red-400">{title}</CardTitle>
                             {errorCode && (
                                 <Badge variant="outline" className="mt-1 text-xs border-red-200 dark:border-red-900/50 text-red-500 dark:text-red-400">
-                                    {t('error.code', '错误代码')}: {errorCode}
+                                    {t('error.code', 'Código de error')}: {errorCode}
                                 </Badge>
                             )}
                         </div>
@@ -117,7 +117,7 @@ export const AdvancedErrorDisplay = ({
                                     className="px-2 text-xs flex items-center gap-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                                 >
                                     {showDetails ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                                    {showDetails ? t('error.hideDetails', '隐藏详情') : t('error.viewDetails', '查看详情')}
+                                    {showDetails ? t('error.hideDetails', 'Ocultar detalles') : t('error.viewDetails', 'Ver detalles')}
                                 </Button>
                             </CollapsibleTrigger>
                         </div>
@@ -125,11 +125,11 @@ export const AdvancedErrorDisplay = ({
                         <CollapsibleContent>
                             <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-md text-xs font-mono overflow-auto">
                                 <p className="break-words overflow-hidden max-h-[100px] dark:text-gray-300">{String(errorMessage)}</p>
-                                {errorCode && <p className="mt-1 dark:text-gray-300">{t('error.code', '错误代码')}: {errorCode}</p>}
-                                {requestId && <p className="mt-1 dark:text-gray-300">{t('error.requestId', '请求ID')}: {requestId}</p>}
+                                {errorCode && <p className="mt-1 dark:text-gray-300">{t('error.code', 'Código de error')}: {errorCode}</p>}
+                                {requestId && <p className="mt-1 dark:text-gray-300">{t('error.requestId', 'ID de la petición')}: {requestId}</p>}
                                 {formattedErrorDetail && (
                                     <div className="mt-1">
-                                        <p className="dark:text-gray-300">{t('error.details', '错误详情')}:</p>
+                                        <p className="dark:text-gray-300">{t('error.details', 'Detalles del error')}:</p>
                                         <pre className="mt-1 p-2 bg-red-100 dark:bg-red-900/30 rounded-md overflow-x-auto dark:text-gray-300">
                                             {formattedErrorDetail}
                                         </pre>
@@ -148,7 +148,7 @@ export const AdvancedErrorDisplay = ({
                             className="flex items-center gap-2 text-xs border-red-300 dark:border-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 mt-2"
                         >
                             <RefreshCw className="h-3 w-3" />
-                            {t('error.retry', '重试')}
+                            {t('error.retry', 'Reintentar')}
                         </Button>
                     </CardFooter>
                 )}
@@ -156,7 +156,7 @@ export const AdvancedErrorDisplay = ({
         )
     }
 
-    // 经典 Alert 样式
+    // Estilo clásico de alerta
     return (
         <Alert variant="destructive" className={cn("mx-auto my-6 max-w-xl", className)}>
             {config.icon}
@@ -173,7 +173,7 @@ export const AdvancedErrorDisplay = ({
                                 className="px-2 text-xs flex items-center gap-1 hover:bg-red-50 dark:hover:bg-red-900/20"
                             >
                                 <HelpCircle className="h-3 w-3" />
-                                {showDetails ? t('error.hideDetails', '隐藏详情') : t('error.viewDetails', '查看详情')}
+                                {showDetails ? t('error.hideDetails', 'Ocultar detalles') : t('error.viewDetails', 'Ver detalles')}
                             </Button>
                         </CollapsibleTrigger>
 
@@ -185,7 +185,7 @@ export const AdvancedErrorDisplay = ({
                                 className="flex items-center gap-2 text-xs border-red-300 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400"
                             >
                                 <RefreshCw className="h-3 w-3" />
-                                {t('error.retry', '重试')}
+                                {t('error.retry', 'Reintentar')}
                             </Button>
                         )}
                     </div>
@@ -193,11 +193,11 @@ export const AdvancedErrorDisplay = ({
                     <CollapsibleContent>
                         <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 rounded text-xs font-mono overflow-auto">
                             <p className="break-words overflow-hidden max-h-[100px] dark:text-gray-300">{String(errorMessage)}</p>
-                            {errorCode && <p className="mt-1 dark:text-gray-300">{t('error.code', '错误代码')}: {errorCode}</p>}
-                            {requestId && <p className="mt-1 dark:text-gray-300">{t('error.requestId', '请求ID')}: {requestId}</p>}
+                            {errorCode && <p className="mt-1 dark:text-gray-300">{t('error.code', 'Código de error')}: {errorCode}</p>}
+                            {requestId && <p className="mt-1 dark:text-gray-300">{t('error.requestId', 'ID de la petición')}: {requestId}</p>}
                             {formattedErrorDetail && (
                                 <div className="mt-1">
-                                    <p className="dark:text-gray-300">{t('error.details', '错误详情')}:</p>
+                                    <p className="dark:text-gray-300">{t('error.details', 'Detalles del error')}:</p>
                                     <pre className="mt-1 p-2 bg-red-100 dark:bg-red-900/30 rounded overflow-x-auto dark:text-gray-300">
                                         {formattedErrorDetail}
                                     </pre>

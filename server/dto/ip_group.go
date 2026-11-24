@@ -2,32 +2,32 @@
 package dto
 
 import (
-	"github.com/HUAHUAI23/RuiQi/pkg/model"
+	"github.com/anticoi/EscudoWAF/pkg/model"
 )
 
-// IPGroupCreateRequest IP组创建请求
-// @Description 创建IP组的请求参数
+// IPGroupCreateRequest petición de creación de grupo de IPs
+// @Description Parámetros de la petición para crear un grupo de IPs
 type IPGroupCreateRequest struct {
-	Name  string   `json:"name" binding:"required" example:"内部服务器"`              // IP组名称
-	Items []string `json:"items" binding:"required" example:"[\"192.168.1.1\"]"` // IP地址或CIDR列表
+	Name  string   `json:"name" binding:"required" example:"Servidor interno"`              // Nombre del grupo de IPs
+	Items []string `json:"items" binding:"required" example:"[\"192.168.1.1\"]"` // Lista de direcciones IP o CIDR
 }
 
-// IPGroupUpdateRequest IP组更新请求
-// @Description 更新IP组的请求参数
+// IPGroupUpdateRequest petición de actualización de grupo de IPs
+// @Description Parámetros de la petición para actualizar un grupo de IPs
 type IPGroupUpdateRequest struct {
-	Name  string   `json:"name,omitempty" example:"内部服务器"`              // IP组名称
-	Items []string `json:"items,omitempty" example:"[\"192.168.1.1\"]"` // IP地址或CIDR列表
+	Name  string   `json:"name,omitempty" example:"Servidor interno"`              // Nombre del grupo de IPs
+	Items []string `json:"items,omitempty" example:"[\"192.168.1.1\"]"` // Lista de direcciones IP o CIDR
 }
 
-// IPGroupListResponse IP组列表响应
-// @Description IP组列表响应
+// IPGroupListResponse Respuesta de lista de grupos de IPs
+// @Description Respuesta de lista de grupos de IPs
 type IPGroupListResponse struct {
-	Total int64           `json:"total"` // 总数
-	Items []model.IPGroup `json:"items"` // IP组列表
+	Total int64           `json:"total"` // Total
+	Items []model.IPGroup `json:"items"` // Lista de grupos de IPs
 }
 
-// AddIPToBlacklistRequest 添加IP到黑名单请求
-// @Description 添加IP地址或CIDR到系统默认黑名单的请求
+// AddIPToBlacklistRequest petición para añadir IP a la lista negra
+// @Description Petición para añadir dirección IP o CIDR a la lista negra por defecto del sistema
 type AddIPToBlacklistRequest struct {
-	IP string `json:"ip" binding:"required" example:"192.168.1.1"` // IP地址或CIDR
+	IP string `json:"ip" binding:"required" example:"192.168.1.1"` // Dirección IP o CIDR
 }

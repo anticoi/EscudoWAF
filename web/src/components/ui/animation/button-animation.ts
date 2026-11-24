@@ -1,7 +1,7 @@
 // src/components/ui/animation/button-animation.ts
 import { HTMLMotionProps } from "motion/react"
 
-// 标准按钮动画 - 流畅的序列缩放效果
+// Animación de botón estándar - efecto fluido de escala en secuencia
 export const buttonAnimation: HTMLMotionProps<"div"> = {
     whileHover: {
         scale: [null, 1.05, 1.02],
@@ -18,17 +18,17 @@ export const buttonAnimation: HTMLMotionProps<"div"> = {
             ease: "easeIn",
         }
     },
-    // 添加触摸板轻触反馈
+    // Añadir respuesta táctil del trackpad
     transition: {
         duration: 0.3,
         ease: "easeOut",
-        type: "spring", // 使用弹簧动画提高触摸反馈
+        type: "spring", // Usar animación de resorte para mejorar la respuesta táctil
         stiffness: 400,
         damping: 17
     }
 }
 
-// 主要按钮动画 - 带有阴影增强的效果
+// Animación de botón principal - con efecto de sombra mejorado
 export const primaryButtonAnimation: HTMLMotionProps<"div"> = {
     whileHover: {
         scale: [null, 1.08, 1.03],
@@ -45,7 +45,7 @@ export const primaryButtonAnimation: HTMLMotionProps<"div"> = {
         transition: {
             duration: 0.1,
             ease: "easeIn",
-            // 触摸板优化参数
+            // Parámetros de optimización del trackpad
             type: "spring",
             stiffness: 600,
             damping: 25
@@ -60,7 +60,7 @@ export const primaryButtonAnimation: HTMLMotionProps<"div"> = {
     }
 }
 
-// 次要按钮动画 - 更微妙的效果
+// Animación de botón secundario - efecto más sutil
 export const secondaryButtonAnimation: HTMLMotionProps<"div"> = {
     whileHover: {
         scale: [null, 1.04, 1.02],
@@ -75,7 +75,7 @@ export const secondaryButtonAnimation: HTMLMotionProps<"div"> = {
         transition: {
             duration: 0.1,
             ease: "easeIn",
-            // 为触摸板响应优化
+            // Optimización para respuesta del trackpad
             type: "spring",
             stiffness: 500,
             damping: 20
@@ -90,7 +90,7 @@ export const secondaryButtonAnimation: HTMLMotionProps<"div"> = {
     }
 }
 
-// 幽灵按钮动画 - 轻微效果
+// Animación de botón ghost - efecto sutil
 export const ghostButtonAnimation: HTMLMotionProps<"div"> = {
     whileHover: {
         scale: 1.03,
@@ -104,7 +104,7 @@ export const ghostButtonAnimation: HTMLMotionProps<"div"> = {
         transition: {
             duration: 0.1,
             ease: "easeIn",
-            // 更敏感的轻触反馈
+            // Respuesta táctil más sensible
             type: "spring",
             stiffness: 450,
             damping: 15
@@ -119,7 +119,7 @@ export const ghostButtonAnimation: HTMLMotionProps<"div"> = {
     }
 }
 
-// 破坏性操作按钮动画 - 更强调的警告效果
+// Animación de botón de operación destructiva - efecto de advertencia más enfatizado
 export const destructiveButtonAnimation: HTMLMotionProps<"div"> = {
     whileHover: {
         scale: [null, 1.06, 1.03],
@@ -130,10 +130,10 @@ export const destructiveButtonAnimation: HTMLMotionProps<"div"> = {
         },
     },
     whileTap: {
-        // 碎裂消失效果
+        // Efecto de desvanecimiento fragmentado
         scale: [0.95, 0.75, 0],
         opacity: [1, 0.7, 0],
-        x: [0, 5, -5], // 左右轻微抖动
+        x: [0, 5, -5], // Ligero temblor lateral
         transition: {
             duration: 0.4,
             times: [0, 0.5, 1],

@@ -5,21 +5,21 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/dto"
-	"github.com/HUAHUAI23/RuiQi/server/model"
-	"github.com/HUAHUAI23/RuiQi/server/repository"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/dto"
+	"github.com/anticoi/EscudoWAF/server/model"
+	"github.com/anticoi/EscudoWAF/server/repository"
 	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 var (
-	ErrCertificateNotFound   = errors.New("证书不存在")
-	ErrCertificateNameExists = errors.New("证书名称已存在")
-	ErrInvalidCertificate    = errors.New("无效的证书格式")
+	ErrCertificateNotFound   = errors.New("El certificado no existe")
+	ErrCertificateNameExists = errors.New("El nombre del certificado ya existe")
+	ErrInvalidCertificate    = errors.New("Formato de certificado no válido")
 )
 
-// CertificateService 证书服务接口
+// CertificateService interfaz del servicio de certificados
 type CertificateService interface {
 	CreateCertificate(ctx context.Context, req *dto.CertificateCreateRequest) (*model.CertificateStore, error)
 	GetCertificates(ctx context.Context, pageStr, sizeStr string) ([]model.CertificateStore, int64, error)
@@ -28,13 +28,13 @@ type CertificateService interface {
 	DeleteCertificate(ctx context.Context, id bson.ObjectID) error
 }
 
-// CertificateServiceImpl 证书服务实现
+// CertificateServiceImpl implementación del servicio de certificados
 type CertificateServiceImpl struct {
 	certRepo repository.CertificateRepository
 	logger   zerolog.Logger
 }
 
-// NewCertificateService 创建证书服务
+// NewCertificateService crea el servicio de certificados
 func NewCertificateService(certRepo repository.CertificateRepository) CertificateService {
 	logger := config.GetServiceLogger("certificate")
 	return &CertificateServiceImpl{
@@ -43,9 +43,9 @@ func NewCertificateService(certRepo repository.CertificateRepository) Certificat
 	}
 }
 
-// CreateCertificate 创建证书
+// CreateCertificate crea un certificado
 func (s *CertificateServiceImpl) CreateCertificate(ctx context.Context, req *dto.CertificateCreateRequest) (*model.CertificateStore, error) {
-	// 检查证书名称是否已存在
+	// Comprobar si el nombre del certificado ya existe
 	if req.Name != "" {
 		exists, err := s.certRepo.CheckCertificateNameExists(ctx, req.Name, bson.NilObjectID)
 		if err != nil {
@@ -56,7 +56,7 @@ func (s *CertificateServiceImpl) CreateCertificate(ctx context.Context, req *dto
 		}
 	}
 
-	// 创建新证书
+	// Crear nuevo certificado
 	cert := model.NewCertificateStore()
 	cert.Name = req.Name
 	cert.Description = req.Description
@@ -67,24 +67,24 @@ func (s *CertificateServiceImpl) CreateCertificate(ctx context.Context, req *dto
 	cert.FingerPrint = req.FingerPrint
 	cert.Domains = req.Domains
 
-	// 验证证书
+	// Validar el certificado
 	if err := model.ValidateCertificateStore(cert); err != nil {
-		s.logger.Error().Err(err).Msg("证书验证失败")
+		s.logger.Error().Err(err).Msg("Error de validación del certificado")
 		return nil, ErrInvalidCertificate
 	}
 
-	// 保存证书
+	// Guardar certificado
 	err := s.certRepo.CreateCertificate(ctx, cert)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("创建证书失败")
+		s.logger.Error().Err(err).Msg("Error al crear el certificado")
 		return nil, err
 	}
 
-	s.logger.Info().Str("id", cert.ID.Hex()).Str("name", cert.Name).Msg("证书创建成功")
+	s.logger.Info().Str("id", cert.ID.Hex()).Str("name", cert.Name).Msg("Certificado creado con éxito")
 	return cert, nil
 }
 
-// GetCertificates 获取证书列表
+// GetCertificates Obtener lista de certificados
 func (s *CertificateServiceImpl) GetCertificates(ctx context.Context, pageStr, sizeStr string) ([]model.CertificateStore, int64, error) {
 	page, err := strconv.ParseInt(pageStr, 10, 64)
 	if err != nil || page < 1 {
@@ -98,11 +98,11 @@ func (s *CertificateServiceImpl) GetCertificates(ctx context.Context, pageStr, s
 
 	certificates, total, err := s.certRepo.GetCertificates(ctx, page, size)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("获取证书列表失败")
+		s.logger.Error().Err(err).Msg("Error al obtener la lista de certificados")
 		return nil, 0, err
 	}
 
-	// 转换为DTO
+	// Convertir a DTO
 	responses := make([]model.CertificateStore, len(certificates))
 	for i, cert := range certificates {
 		responses[i] = model.CertificateStore{
@@ -123,23 +123,23 @@ func (s *CertificateServiceImpl) GetCertificates(ctx context.Context, pageStr, s
 	return responses, total, nil
 }
 
-// GetCertificateByID 根据ID获取证书
+// GetCertificateByID obtiene un certificado por ID
 func (s *CertificateServiceImpl) GetCertificateByID(ctx context.Context, id bson.ObjectID) (*model.CertificateStore, error) {
 	cert, err := s.certRepo.GetCertificateByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, repository.ErrCertNotFound) {
 			return nil, ErrCertificateNotFound
 		}
-		s.logger.Error().Err(err).Str("id", id.Hex()).Msg("获取证书失败")
+		s.logger.Error().Err(err).Str("id", id.Hex()).Msg("Error al obtener el certificado")
 		return nil, err
 	}
 
 	return cert, nil
 }
 
-// UpdateCertificate 更新证书
+// UpdateCertificate Actualizar certificado
 func (s *CertificateServiceImpl) UpdateCertificate(ctx context.Context, id bson.ObjectID, req *dto.CertificateUpdateRequest) (*model.CertificateStore, error) {
-	// 获取现有证书
+	// Obtener el certificado existente
 	cert, err := s.certRepo.GetCertificateByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, repository.ErrCertNotFound) {
@@ -148,7 +148,7 @@ func (s *CertificateServiceImpl) UpdateCertificate(ctx context.Context, id bson.
 		return nil, err
 	}
 
-	// 检查证书名称是否已存在（如果要更新名称）
+	// Comprobar si el nombre del certificado ya existe (si se va a actualizar el nombre)
 	if req.Name != "" && req.Name != cert.Name {
 		exists, err := s.certRepo.CheckCertificateNameExists(ctx, req.Name, id)
 		if err != nil {
@@ -160,7 +160,7 @@ func (s *CertificateServiceImpl) UpdateCertificate(ctx context.Context, id bson.
 		cert.Name = req.Name
 	}
 
-	// 更新其他字段（只更新非空字段）
+	// Actualizar los demás campos (solo campos no vacíos)
 	if req.Description != "" {
 		cert.Description = req.Description
 	}
@@ -183,26 +183,26 @@ func (s *CertificateServiceImpl) UpdateCertificate(ctx context.Context, id bson.
 		cert.Domains = req.Domains
 	}
 
-	// 验证证书
+	// Validar el certificado
 	if err := model.ValidateCertificateStore(cert); err != nil {
-		s.logger.Error().Err(err).Msg("证书验证失败")
+		s.logger.Error().Err(err).Msg("Error de validación del certificado")
 		return nil, ErrInvalidCertificate
 	}
 
-	// 保存更新
+	// Guardar actualización
 	err = s.certRepo.UpdateCertificate(ctx, cert)
 	if err != nil {
-		s.logger.Error().Err(err).Str("id", id.Hex()).Msg("更新证书失败")
+		s.logger.Error().Err(err).Str("id", id.Hex()).Msg("Error al actualizar el certificado")
 		return nil, err
 	}
 
-	s.logger.Info().Str("id", id.Hex()).Str("name", cert.Name).Msg("证书更新成功")
+	s.logger.Info().Str("id", id.Hex()).Str("name", cert.Name).Msg("Certificado actualizado con éxito")
 	return cert, nil
 }
 
-// DeleteCertificate 删除证书
+// DeleteCertificate Eliminar certificado
 func (s *CertificateServiceImpl) DeleteCertificate(ctx context.Context, id bson.ObjectID) error {
-	// 检查证书是否存在
+	// Comprobar si el certificado existe
 	_, err := s.certRepo.GetCertificateByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, repository.ErrCertNotFound) {
@@ -211,13 +211,13 @@ func (s *CertificateServiceImpl) DeleteCertificate(ctx context.Context, id bson.
 		return err
 	}
 
-	// 删除证书
+	// Eliminar certificado
 	err = s.certRepo.DeleteCertificate(ctx, id)
 	if err != nil {
-		s.logger.Error().Err(err).Str("id", id.Hex()).Msg("删除证书失败")
+		s.logger.Error().Err(err).Str("id", id.Hex()).Msg("Error al eliminar el certificado")
 		return err
 	}
 
-	s.logger.Info().Str("id", id.Hex()).Msg("证书删除成功")
+	s.logger.Info().Str("id", id.Hex()).Msg("Certificado eliminado con éxito")
 	return nil
 }

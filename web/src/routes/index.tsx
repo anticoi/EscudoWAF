@@ -4,28 +4,28 @@ import { useRoutes } from "./config"
 import { RouteErrorBoundary } from "@/handler/error-boundary"
 
 export function AppRouter() {
-    // 使用现有的路由配置
+    // Usar la configuración de rutas existente
     const routes = useRoutes()
 
-    // 遍历路由并添加errorElement
+    // Iterar sobre las rutas y añadir errorElement
     const routesWithErrorHandling = addErrorElementToRoutes(routes)
 
-    // 创建路由器
+    // Crear el router
     const router = createBrowserRouter(routesWithErrorHandling)
 
     return <RouterProvider router={router} />
 }
 
-// 递归添加错误处理
+// Añadir manejo de errores recursivamente
 function addErrorElementToRoutes(routes: RouteObject[]) {
     return routes.map(route => {
-        // 为每个路由添加错误元素
+        // Añadir elemento de error a cada ruta
         const updatedRoute = {
             ...route,
             errorElement: <RouteErrorBoundary />
         }
 
-        // 递归处理子路由
+        // Procesar subrutas recursivamente
         if (route.children) {
             updatedRoute.children = addErrorElementToRoutes(route.children)
         }

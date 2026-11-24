@@ -1,12 +1,12 @@
 declare global {
-    // 为 window 添加 ApiError 类型
+    // Añadir el tipo ApiError a window
     // interface Window {
     //     ApiError: typeof import('../api').ApiError
     // }
 
-    // 直接声明全局类型
+    // Declarar tipos globales directamente
     type ApiError = import('../api').ApiError
 }
 
-// 这个导出是必需的，让这个文件被视为一个模块
+// Esta exportación es necesaria para que este archivo se trate como un módulo
 export { }

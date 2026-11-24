@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	mongodb "github.com/HUAHUAI23/RuiQi/pkg/database/mongo"
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/model"
-	"github.com/HUAHUAI23/RuiQi/server/repository"
-	"github.com/HUAHUAI23/RuiQi/server/service/daemon"
+	mongodb "github.com/anticoi/EscudoWAF/pkg/database/mongo"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/model"
+	"github.com/anticoi/EscudoWAF/server/repository"
+	"github.com/anticoi/EscudoWAF/server/service/daemon"
 	"github.com/rs/zerolog"
 )
 
@@ -27,34 +27,34 @@ func Start(runner daemon.ServiceRunner, logger zerolog.Logger) (func(), error) {
 		logger.Info().Strs("targets", targetList).Msg("Starting HAProxy stats service with initial targets")
 	}
 
-	// 创建定时任务服务
+	// Crear el servicio de tareas programadas
 	cronJobService, err := GetInstance(runner, targetList)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create cron job service: %w", err)
 	}
 
-	// 启动定时任务
+	// Iniciar la tarea programada
 	if err := cronJobService.Start(); err != nil {
 		return nil, fmt.Errorf("failed to start cron job service: %w", err)
 	}
 
-	// 返回清理函数供主程序在退出时调用
+	// Devolver función de limpieza para que el programa principal la llame al salir
 	cleanup := func() {
 		logger.Info().Msg("Shutting down HAProxy stats service...")
 
-		// 创建一个带超时的上下文，确保关闭过程不会无限期挂起
+		// Crear un contexto con timeout para que el cierre no se cuelgue indefinidamente
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		// 停止服务
+		// Detener servicio
 		if err := cronJobService.Stop(); err != nil {
 			logger.Error().Err(err).Msg("Error when stopping HAProxy stats cron jobs")
-			// 如果超时，记录强制终止
+			// Si expira el tiempo, registrar la terminación forzada
 			select {
 			case <-shutdownCtx.Done():
 				logger.Warn().Msg("Forced shutdown of HAProxy stats service due to timeout")
 			default:
-				// 正常关闭，不需要做任何事
+				// Cierre normal, no hay nada que hacer
 			}
 		} else {
 			logger.Info().Msg("HAProxy stats service shutdown completed successfully")
@@ -71,13 +71,13 @@ func Start(runner daemon.ServiceRunner, logger zerolog.Logger) (func(), error) {
 }
 
 func GetLatestTargetList() ([]string, error) {
-	// 连接数据库
+	// Conectar a la base de datos
 	client, err := mongodb.Connect(config.Global.DBConfig.URI)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
-	// 获取数据库
+	// Obtener la base de datos
 	db := client.Database(config.Global.DBConfig.Database)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -89,9 +89,9 @@ func GetLatestTargetList() ([]string, error) {
 		return nil, fmt.Errorf("failed to get site list: %w", err)
 	}
 
-	// 使用 map 来确保唯一性
+	// Usar map para garantizar unicidad
 	targetMap := make(map[string]struct{})
-	// 遍历站点列表，获取目标列表
+	// Iterar sobre la lista de sitios para obtener la lista de objetivos
 	for _, site := range siteList {
 		if !site.ActiveStatus {
 			continue
@@ -100,7 +100,7 @@ func GetLatestTargetList() ([]string, error) {
 		targetMap[fmt.Sprintf("fe_%d_https", site.ListenPort)] = struct{}{}
 	}
 
-	// 将 map 转换回 slice
+	// Convertir el map de nuevo a slice
 	var targetList []string
 	for target := range targetMap {
 		targetList = append(targetList, target)

@@ -31,16 +31,16 @@ export function MicroRuleDialog({
 }: MicroRuleDialogProps) {
     const { t } = useTranslation()
 
-    // 根据模式确定标题和描述
+    // Determinar el título y la descripción según el modo
     const title = mode === 'create' ? t("microRule.dialog.createTitle") : t("microRule.dialog.updateTitle")
     const description = mode === 'create'
         ? t("microRule.dialog.createDescription")
         : t("microRule.dialog.updateDescription")
 
-    // 根据模式准备表单默认值
+    // Preparar valores por defecto del formulario según el modo
     const defaultValues = mode === 'update' && rule
         ? rule
-        : undefined // 使用MicroRuleForm中的默认值
+        : undefined // Usar los valores por defecto de MicroRuleForm
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>

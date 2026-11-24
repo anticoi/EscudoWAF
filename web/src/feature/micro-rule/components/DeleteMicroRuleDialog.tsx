@@ -33,10 +33,10 @@ export function DeleteMicroRuleDialog({
     onDeleted
 }: DeleteMicroRuleDialogProps) {
     const { t } = useTranslation()
-    // 删除规则钩子
+    // Hook de eliminación de regla
     const { deleteMicroRule, isLoading } = useDeleteMicroRule()
 
-    // 处理删除规则
+    // Manejar la eliminación de reglas
     const handleDeleteMicroRule = () => {
         if (!ruleId) return
 

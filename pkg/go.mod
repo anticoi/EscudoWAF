@@ -1,4 +1,4 @@
-module github.com/HUAHUAI23/RuiQi/pkg
+module github.com/anticoi/EscudoWAF/pkg
 
 go 1.24.1
 

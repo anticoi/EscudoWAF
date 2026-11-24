@@ -68,10 +68,10 @@ const config = {
                 },
 
                 iconStroke: {
-                    light: '##8861DB',      // 亮色背景上使用
-                    DEFAULT: '#8861DB',    // 默认颜色
-                    dark: '#8861DB',       // 暗色背景上使用
-                    accent: '#8861DB',     // 强调色
+                    light: '##8861DB',      // Para usar sobre fondos claros
+                    DEFAULT: '#8861DB',    // Color por defecto
+                    dark: '#8861DB',       // Para usar sobre fondos oscuros
+                    accent: '#8861DB',     // Color de acento
                 },
             },
             keyframes: {
@@ -127,13 +127,13 @@ const config = {
                     "0%": { boxShadow: '0 0 5px rgba(var(--primary-rgb), 0.2), 0 0 10px rgba(var(--primary-rgb), 0.1)' },
                     "100%": { boxShadow: '0 0 10px rgba(var(--primary-rgb), 0.6), 0 0 20px rgba(var(--primary-rgb), 0.4), 0 0 30px rgba(var(--primary-rgb), 0.2)' }
                 },
-                // 滚动条发光
+                // Resplandor de la barra de desplazamiento
                 "scrollbar-glow": {
                     "0%": { boxShadow: "0 0 4px rgba(var(--primary-rgb), 0.3), 0 0 8px rgba(var(--primary-rgb), 0.1)" },
                     "50%": { boxShadow: "0 0 8px rgba(var(--primary-rgb), 0.6), 0 0 16px rgba(var(--primary-rgb), 0.3)" },
                     "100%": { boxShadow: "0 0 4px rgba(var(--primary-rgb), 0.3), 0 0 8px rgba(var(--primary-rgb), 0.1)" }
                 },
-                // 滚动条霓虹灯效果
+                // Efecto neón de la barra de desplazamiento
                 "scrollbar-neon": {
                     "0%": { boxShadow: "0 0 5px rgba(var(--primary-rgb), 0.4), 0 0 10px rgba(var(--primary-rgb), 0.2)" },
                     "50%": { boxShadow: "0 0 10px rgba(var(--primary-rgb), 0.7), 0 0 20px rgba(var(--primary-rgb), 0.4)" },
@@ -149,7 +149,7 @@ const config = {
                     "50%": { backgroundPosition: "100% 100%" },
                     "100%": { backgroundPosition: "0% 0%" }
                 },
-                // logo 弹跳
+                // rebote del logo
                 "logo-pulse": {
                     "0%, 100%": { opacity: "0.9", transform: "scale(0.95)" },
                     "50%": { opacity: "1", transform: "scale(1.05)" },
@@ -204,7 +204,7 @@ const config = {
         tailwindcssAnimate,
         function ({ addUtilities }) {
             const newUtilities = {
-                // 霓虹灯文本
+                // Texto neón
                 '.text-shadow-glow-purple': {
                     textShadow: '0 0 8px rgba(232,223,255,0.8), 0 0 12px rgba(232,223,255,0.4)',
                 },
@@ -238,7 +238,7 @@ const config = {
                     animation: 'text-flicker 5s infinite alternate'
                 },
 
-                // 霓虹灯边框效果
+                // Efecto de borde neón
                 '.border-glow-purple': {
                     boxShadow: '0 0 5px rgba(232,223,255,0.5), 0 0 10px rgba(232,223,255,0.3), 0 0 15px rgba(232,223,255,0.1)',
                     border: '1px solid rgba(232,223,255,0.6)',

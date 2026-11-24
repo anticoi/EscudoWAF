@@ -6,20 +6,20 @@ import {
     BlockedIPCleanupResponse,
 } from '@/types/blocked-ip'
 
-// Blocked IP API接口基础路径
+// Ruta base de la API de IPs bloqueadas
 const BASE_URL = '/blocked-ips'
 
 /**
- * Blocked IP相关API服务
+ * Servicios de API relacionados con IPs bloqueadas
  */
 export const blockedIPApi = {
     /**
-     * 获取封禁IP列表
-     * @param params 查询参数
-     * @returns 封禁IP列表响应数据
+     * Obtener lista de IPs bloqueadas
+     * @param params parámetros de consulta
+     * @returns datos de respuesta de lista de IPs bloqueadas
      */
     getBlockedIPs: (params: BlockedIPListRequest = {}): Promise<BlockedIPListResponse> => {
-        // 映射前端参数到后端期望的参数名，确保默认值
+        // Mapear parámetros del frontend a los nombres que espera el backend, asegurando valores por defecto
         const queryParams: Record<string, string | number> = {
             page: params.page || 1,
             size: params.size || 20,
@@ -28,7 +28,7 @@ export const blockedIPApi = {
             sortDir: params.sortDir || 'desc'
         }
         
-        // 只有当有值时才添加可选参数
+        // Solo añadir parámetros opcionales cuando tienen valor
         if (params.ip) {
             queryParams.ip = params.ip
         }
@@ -42,16 +42,16 @@ export const blockedIPApi = {
     },
 
     /**
-     * 获取封禁IP统计信息
-     * @returns 统计信息
+     * Obtener estadísticas de IPs bloqueadas
+     * @returns Información estadística
      */
     getBlockedIPStats: (): Promise<BlockedIPStatsResponse> => {
         return get<BlockedIPStatsResponse>(`${BASE_URL}/stats`)
     },
 
     /**
-     * 清理过期的封禁IP记录
-     * @returns 清理结果
+     * Limpiar registros de IPs bloqueadas expirados
+     * @returns resultado de la limpieza
      */
     cleanupExpiredBlockedIPs: (): Promise<BlockedIPCleanupResponse> => {
         return del<BlockedIPCleanupResponse>(`${BASE_URL}/cleanup`)

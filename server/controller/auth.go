@@ -4,15 +4,15 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/HUAHUAI23/RuiQi/server/dto"
-	"github.com/HUAHUAI23/RuiQi/server/model"
-	"github.com/HUAHUAI23/RuiQi/server/service"
-	"github.com/HUAHUAI23/RuiQi/server/utils/response"
+	"github.com/anticoi/EscudoWAF/server/dto"
+	"github.com/anticoi/EscudoWAF/server/model"
+	"github.com/anticoi/EscudoWAF/server/service"
+	"github.com/anticoi/EscudoWAF/server/utils/response"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-// AuthController 认证控制器
+// AuthController controlador de autenticación
 type AuthController interface {
 	Login(ctx *gin.Context)
 	ResetPassword(ctx *gin.Context)
@@ -27,25 +27,25 @@ type AuthControllerImpl struct {
 	authService service.AuthService
 }
 
-// NewAuthController 创建认证控制器
+// NewAuthController crea el controlador de autenticación
 func NewAuthController(authService service.AuthService) AuthController {
 	return &AuthControllerImpl{
 		authService: authService,
 	}
 }
 
-// Login 用户登录
+// Login Inicio de sesión
 //
-//	@Summary		用户登录
-//	@Description	用户登录并获取JWT令牌
-//	@Tags			认证
+//	@Summary		Inicio de sesión
+//	@Description	Inicio de sesión y obtención de token JWT
+//	@Tags			Autenticación
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body		dto.UserLoginRequest								true	"登录信息"
-//	@Success		200		{object}	model.SuccessResponse{data=dto.LoginResponseData}	"登录成功"
-//	@Failure		400		{object}	model.ErrResponse									"请求参数错误"
-//	@Failure		401		{object}	model.ErrResponseDontShowError						"用户名或密码错误"
-//	@Failure		500		{object}	model.ErrResponseDontShowError						"服务器内部错误"
+//	@Param			request	body		dto.UserLoginRequest								true	"Información de inicio de sesión"
+//	@Success		200		{object}	model.SuccessResponse{data=dto.LoginResponseData}	"Inicio de sesión exitoso"
+//	@Failure		400		{object}	model.ErrResponse									"Parámetros de la petición incorrectos"
+//	@Failure		401		{object}	model.ErrResponseDontShowError						"Nombre de usuario o contraseña incorrectos"
+//	@Failure		500		{object}	model.ErrResponseDontShowError						"Error interno del servidor"
 //	@Router			/auth/login [post]
 func (c *AuthControllerImpl) Login(ctx *gin.Context) {
 	var req dto.UserLoginRequest
@@ -54,37 +54,37 @@ func (c *AuthControllerImpl) Login(ctx *gin.Context) {
 		return
 	}
 
-	// 登录
+	// Iniciar sesión
 	token, user, err := c.authService.Login(ctx, req)
 	if err != nil {
 		if errors.Is(err, service.ErrUserNotFound) || errors.Is(err, service.ErrInvalidPassword) {
-			response.Error(ctx, model.NewAPIError(http.StatusBadRequest, "用户名或密码错误", err), false)
+			response.Error(ctx, model.NewAPIError(http.StatusBadRequest, "Nombre de usuario o contraseña incorrectos", err), false)
 			return
 		}
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	// 返回令牌和用户信息
-	response.Success(ctx, "登录成功", gin.H{
+	// Devolver el token y la información del usuario
+	response.Success(ctx, "Inicio de sesión exitoso", gin.H{
 		"token": token,
 		"user":  user,
 	})
 }
 
-// ResetPassword 重置密码
+// ResetPassword Restablecer contraseña
 //
-//	@Summary		重置密码
-//	@Description	用户重置自己的密码
-//	@Tags			认证
+//	@Summary		Restablecer contraseña
+//	@Description	El usuario restablece su propia contraseña
+//	@Tags			Autenticación
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body	dto.UserPasswordResetRequest	true	"密码重置信息"
+//	@Param			request	body	dto.UserPasswordResetRequest	true	"Información de restablecimiento de contraseña"
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponseNoData		"密码重置成功"
-//	@Failure		400	{object}	model.ErrResponseDontShowError	"请求参数错误或原密码错误"
-//	@Failure		401	{object}	model.ErrResponseDontShowError	"未授权访问"
-//	@Failure		500	{object}	model.ErrResponseDontShowError	"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponseNoData		"Contraseña restablecida con éxito"
+//	@Failure		400	{object}	model.ErrResponseDontShowError	"Parámetros incorrectos o contraseña actual incorrecta"
+//	@Failure		401	{object}	model.ErrResponseDontShowError	"Acceso no autorizado"
+//	@Failure		500	{object}	model.ErrResponseDontShowError	"Error interno del servidor"
 //	@Router			/auth/reset-password [post]
 func (c *AuthControllerImpl) ResetPassword(ctx *gin.Context) {
 	var req dto.UserPasswordResetRequest
@@ -93,14 +93,14 @@ func (c *AuthControllerImpl) ResetPassword(ctx *gin.Context) {
 		return
 	}
 
-	// 从上下文中获取用户ID
+	// Obtener el ID de usuario del contexto
 	userID, exists := ctx.Get("userID")
 	if !exists {
 		response.Unauthorized(ctx, nil)
 		return
 	}
 
-	// 重置密码
+	// Restablecer contraseña
 	userID, err := bson.ObjectIDFromHex(userID.(string))
 	if err != nil {
 		response.InternalServerError(ctx, err, false)
@@ -110,31 +110,31 @@ func (c *AuthControllerImpl) ResetPassword(ctx *gin.Context) {
 	err = c.authService.ResetPassword(ctx, userID.(bson.ObjectID), req)
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidPassword) {
-			response.Error(ctx, model.NewAPIError(http.StatusBadRequest, "原密码错误", err), false)
+			response.Error(ctx, model.NewAPIError(http.StatusBadRequest, "La contraseña actual es incorrecta", err), false)
 			return
 		}
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	response.Success(ctx, "密码重置成功", nil)
+	response.Success(ctx, "Contraseña restablecida con éxito", nil)
 }
 
-// CreateUser 创建用户
+// CreateUser crea un usuario
 //
-//	@Summary		创建新用户
-//	@Description	管理员创建新用户
-//	@Tags			用户管理
+//	@Summary		Crear nuevo usuario
+//	@Description	El administrador crea un nuevo usuario
+//	@Tags			Gestión de usuarios
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body	dto.UserCreateRequest	true	"用户创建信息"
+//	@Param			request	body	dto.UserCreateRequest	true	"Información de creación de usuario"
 //	@Security		BearerAuth
-//	@Success		200	{object}	dto.ResetPasswordResponseData	"用户创建成功"
-//	@Failure		400	{object}	model.ErrResponse				"请求参数错误"
-//	@Failure		401	{object}	model.ErrResponseDontShowError	"未授权访问"
-//	@Failure		403	{object}	model.ErrResponseDontShowError	"禁止访问"
-//	@Failure		409	{object}	model.ErrResponseDontShowError	"用户名已存在"
-//	@Failure		500	{object}	model.ErrResponseDontShowError	"服务器内部错误"
+//	@Success		200	{object}	dto.ResetPasswordResponseData	"Usuario creado con éxito"
+//	@Failure		400	{object}	model.ErrResponse				"Parámetros de la petición incorrectos"
+//	@Failure		401	{object}	model.ErrResponseDontShowError	"Acceso no autorizado"
+//	@Failure		403	{object}	model.ErrResponseDontShowError	"Acceso prohibido"
+//	@Failure		409	{object}	model.ErrResponseDontShowError	"El nombre de usuario ya existe"
+//	@Failure		500	{object}	model.ErrResponseDontShowError	"Error interno del servidor"
 //	@Router			/users [post]
 func (c *AuthControllerImpl) CreateUser(ctx *gin.Context) {
 	var req dto.UserCreateRequest
@@ -143,7 +143,7 @@ func (c *AuthControllerImpl) CreateUser(ctx *gin.Context) {
 		return
 	}
 
-	// 从上下文中获取管理员ID
+	// Obtener el ID de administrador del contexto
 	adminID, exists := ctx.Get("userID")
 	if !exists {
 		response.Unauthorized(ctx, nil)
@@ -156,11 +156,11 @@ func (c *AuthControllerImpl) CreateUser(ctx *gin.Context) {
 		return
 	}
 
-	// 创建用户
+	// Crear usuario
 	user, err := c.authService.CreateUser(ctx, adminID.(bson.ObjectID), req)
 	if err != nil {
 		if errors.Is(err, service.ErrUserAlreadyExist) {
-			response.Error(ctx, model.NewAPIError(http.StatusConflict, "用户名已存在", err), false)
+			response.Error(ctx, model.NewAPIError(http.StatusConflict, "El nombre de usuario ya existe", err), false)
 			return
 		} else if errors.Is(err, service.ErrForbidden) {
 			response.Forbidden(ctx, err)
@@ -170,50 +170,50 @@ func (c *AuthControllerImpl) CreateUser(ctx *gin.Context) {
 		return
 	}
 
-	response.Success(ctx, "用户创建成功", user)
+	response.Success(ctx, "Usuario creado con éxito", user)
 }
 
-// GetUsers 获取所有用户
+// GetUsers Obtener todos los usuarios
 //
-//	@Summary		获取所有用户
-//	@Description	获取系统中所有用户的列表
-//	@Tags			用户管理
+//	@Summary		Obtener todos los usuarios
+//	@Description	Obtener la lista de todos los usuarios del sistema
+//	@Tags			Gestión de usuarios
 //	@Produce		json
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponse{data=[]model.User}	"获取用户列表成功"
-//	@Failure		401	{object}	model.ErrResponseDontShowError				"未授权访问"
-//	@Failure		403	{object}	model.ErrResponseDontShowError				"禁止访问"
-//	@Failure		500	{object}	model.ErrResponseDontShowError				"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponse{data=[]model.User}	"Lista de usuarios obtenida con éxito"
+//	@Failure		401	{object}	model.ErrResponseDontShowError				"Acceso no autorizado"
+//	@Failure		403	{object}	model.ErrResponseDontShowError				"Acceso prohibido"
+//	@Failure		500	{object}	model.ErrResponseDontShowError				"Error interno del servidor"
 //	@Router			/users [get]
 func (c *AuthControllerImpl) GetUsers(ctx *gin.Context) {
-	// 获取所有用户
+	// Obtener todos los usuarios
 	users, err := c.authService.GetUsers(ctx)
 	if err != nil {
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	response.Success(ctx, "获取用户列表成功", users)
+	response.Success(ctx, "Lista de usuarios obtenida con éxito", users)
 }
 
-// GetUserInfo 获取用户信息
+// GetUserInfo obtiene información del usuario
 //
-//	@Summary		获取当前用户信息
-//	@Description	获取当前登录用户的详细信息
-//	@Tags			认证
+//	@Summary		Obtener información del usuario actual
+//	@Description	Obtener información detallada del usuario autenticado
+//	@Tags			Autenticación
 //	@Produce		json
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponse{data=dto.GetUserInfoResponseData}	"获取用户信息成功"
-//	@Failure		401	{object}	model.ErrResponseDontShowError							"未授权访问"
+//	@Success		200	{object}	model.SuccessResponse{data=dto.GetUserInfoResponseData}	"Información del usuario obtenida con éxito"
+//	@Failure		401	{object}	model.ErrResponseDontShowError							"Acceso no autorizado"
 //	@Router			/auth/me [get]
 func (c *AuthControllerImpl) GetUserInfo(ctx *gin.Context) {
-	// 从上下文中获取用户信息
+	// Obtener la información del usuario del contexto
 	userID, _ := ctx.Get("userID")
 	username, _ := ctx.Get("username")
 	userRole, _ := ctx.Get("userRole")
 	needReset, _ := ctx.Get("needReset")
 
-	response.Success(ctx, "获取用户信息成功", gin.H{
+	response.Success(ctx, "Información del usuario obtenida con éxito", gin.H{
 		"id":        userID,
 		"username":  username,
 		"role":      userRole,
@@ -221,41 +221,41 @@ func (c *AuthControllerImpl) GetUserInfo(ctx *gin.Context) {
 	})
 }
 
-// DeleteUser 删除用户
+// DeleteUser Eliminar usuario
 //
-//	@Summary		删除用户
-//	@Description	管理员删除指定用户
-//	@Tags			用户管理
+//	@Summary		Eliminar usuario
+//	@Description	El administrador elimina el usuario especificado
+//	@Tags			Gestión de usuarios
 //	@Produce		json
-//	@Param			id	path	string	true	"用户ID"
+//	@Param			id	path	string	true	"ID de usuario"
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.APIResponse	"用户删除成功"
-//	@Failure		401	{object}	model.APIResponse	"未授权访问"
-//	@Failure		403	{object}	model.APIResponse	"禁止访问"
-//	@Failure		404	{object}	model.APIResponse	"用户不存在"
-//	@Failure		500	{object}	model.APIResponse	"服务器内部错误"
+//	@Success		200	{object}	model.APIResponse	"Usuario eliminado con éxito"
+//	@Failure		401	{object}	model.APIResponse	"Acceso no autorizado"
+//	@Failure		403	{object}	model.APIResponse	"Acceso prohibido"
+//	@Failure		404	{object}	model.APIResponse	"El usuario no existe"
+//	@Failure		500	{object}	model.APIResponse	"Error interno del servidor"
 //	@Router			/users/{id} [delete]
 func (c *AuthControllerImpl) DeleteUser(ctx *gin.Context) {
-	// 待实现
+	// Por implementar
 }
 
-// UpdateUser 更新用户
+// UpdateUser actualiza un usuario
 //
-//	@Summary		更新用户信息
-//	@Description	管理员更新指定用户的信息
-//	@Tags			用户管理
+//	@Summary		Actualizar información del usuario
+//	@Description	El administrador actualiza la información del usuario especificado
+//	@Tags			Gestión de usuarios
 //	@Accept			json
 //	@Produce		json
-//	@Param			id		path	string					true	"用户ID"
-//	@Param			request	body	dto.UserUpdateRequest	true	"用户更新信息"
+//	@Param			id		path	string					true	"ID de usuario"
+//	@Param			request	body	dto.UserUpdateRequest	true	"Información de actualización del usuario"
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.APIResponse	"用户更新成功"
-//	@Failure		400	{object}	model.APIResponse	"请求参数错误"
-//	@Failure		401	{object}	model.APIResponse	"未授权访问"
-//	@Failure		403	{object}	model.APIResponse	"禁止访问"
-//	@Failure		404	{object}	model.APIResponse	"用户不存在"
-//	@Failure		500	{object}	model.APIResponse	"服务器内部错误"
+//	@Success		200	{object}	model.APIResponse	"Usuario actualizado con éxito"
+//	@Failure		400	{object}	model.APIResponse	"Parámetros de la petición incorrectos"
+//	@Failure		401	{object}	model.APIResponse	"Acceso no autorizado"
+//	@Failure		403	{object}	model.APIResponse	"Acceso prohibido"
+//	@Failure		404	{object}	model.APIResponse	"El usuario no existe"
+//	@Failure		500	{object}	model.APIResponse	"Error interno del servidor"
 //	@Router			/users/{id} [put]
 func (c *AuthControllerImpl) UpdateUser(ctx *gin.Context) {
-	// 待实现
+	// Por implementar
 }

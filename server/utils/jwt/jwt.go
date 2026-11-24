@@ -5,29 +5,29 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/HUAHUAI23/RuiQi/server/model"
+	"github.com/anticoi/EscudoWAF/server/model"
 	"github.com/golang-jwt/jwt/v5"
 )
 
-// 定义JWT错误
+// Definición de errores JWT
 var (
-	ErrInvalidToken = errors.New("令牌无效")
-	ErrExpiredToken = errors.New("令牌已过期")
+	ErrInvalidToken = errors.New("Token no válido")
+	ErrExpiredToken = errors.New("Token expirado")
 )
 
-// 定义密钥，实际应用中应从配置中读取
+// Definición de la clave; en producción debe leerse de la configuración
 var jwtSecret []byte
 
-// 初始化JWT密钥
+// Inicializar la clave JWT
 func InitJWTSecret(secret string) error {
 	if secret == "" {
-		return fmt.Errorf("JWT密钥未配置")
+		return fmt.Errorf("Clave JWT no configurada")
 	}
 	jwtSecret = []byte(secret)
 	return nil
 }
 
-// Claims 自定义JWT声明结构
+// Claims estructura de claims JWT personalizados
 type Claims struct {
 	UserID   string `json:"userId"`
 	Username string `json:"username"`
@@ -35,9 +35,9 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-// GenerateToken 生成JWT令牌
+// GenerateToken genera un token JWT
 func GenerateToken(user model.User, expiration time.Duration) (string, error) {
-	// 设置JWT声明
+	// Establecer los claims del JWT
 	claims := Claims{
 		UserID:   user.ID.Hex(),
 		Username: user.Username,
@@ -46,23 +46,23 @@ func GenerateToken(user model.User, expiration time.Duration) (string, error) {
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
-			Issuer:    "RuiQi",
+			Issuer:    "EscudoWAF",
 			Subject:   user.ID.Hex(),
 		},
 	}
 
-	// 创建令牌
+	// Crear el token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	// 签名令牌
+	// Firmar el token
 	return token.SignedString(jwtSecret)
 }
 
-// ParseToken 解析JWT令牌
+// ParseToken analiza un token JWT
 func ParseToken(tokenString string) (*Claims, error) {
-	// 解析令牌
+	// Analizar el token
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		// 验证签名方法
+		// Validar el método de firma
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -70,14 +70,14 @@ func ParseToken(tokenString string) (*Claims, error) {
 	})
 
 	if err != nil {
-		// 处理特定错误
+		// Manejar errores específicos
 		if errors.Is(err, jwt.ErrTokenExpired) || errors.Is(err, jwt.ErrTokenNotValidYet) {
 			return nil, ErrExpiredToken
 		}
 		return nil, ErrInvalidToken
 	}
 
-	// 提取声明
+	// Extraer los claims
 	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
 		return claims, nil
 	}

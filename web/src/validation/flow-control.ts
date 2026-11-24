@@ -3,24 +3,24 @@ import { z } from 'zod'
 export const limitConfigSchema = z.object({
     enabled: z.boolean().default(false),
     threshold: z.number()
-        .min(1, "阈值不能小于1")
-        .max(10000, "阈值不能超过10000")
+        .min(1, "El umbral no puede ser menor que 1")
+        .max(10000, "El umbral no puede superar 10000")
         .default(100),
     statDuration: z.number()
-        .min(10, "统计时间窗口不能小于10秒")
-        .max(3600, "统计时间窗口不能超过3600秒")
+        .min(10, "La ventana de tiempo no puede ser menor de 10 segundos")
+        .max(3600, "La ventana de tiempo no puede superar 3600 segundos")
         .default(60),
     blockDuration: z.number()
-        .min(60, "封禁时长不能小于60秒")
-        .max(86400, "封禁时长不能超过86400秒")
+        .min(60, "La duración del bloqueo no puede ser menor de 60 segundos")
+        .max(86400, "La duración del bloqueo no puede superar 86400 segundos")
         .default(600),
     burstCount: z.number()
-        .min(1, "突发请求数不能小于1")
-        .max(1000, "突发请求数不能超过1000")
+        .min(1, "El número de peticiones en ráfaga no puede ser menor que 1")
+        .max(1000, "El número de peticiones en ráfaga no puede superar 1000")
         .default(10),
     paramsCapacity: z.number()
-        .min(1000, "缓存容量不能小于1000")
-        .max(100000, "缓存容量不能超过100000")
+        .min(1000, "La capacidad de caché no puede ser menor que 1000")
+        .max(100000, "La capacidad de caché no puede superar 100000")
         .default(10000),
 })
 

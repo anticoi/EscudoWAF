@@ -11,14 +11,14 @@ import {
 import { ErrorType, ErrorTypeValue } from './errorTypes'
 import { ReactElement } from 'react'
 
-// 错误配置类型
+// Tipo de configuración de errores
 export interface ErrorConfig {
     icon: ReactElement
     titleKey: string
     descriptionKey: string
 }
 
-// 错误配置映射
+// Mapeo de configuración de errores
 export const errorConfigs: Record<ErrorTypeValue, ErrorConfig> = {
     [ErrorType.NETWORK]: {
         icon: <WifiOff className="h-5 w-5" />,

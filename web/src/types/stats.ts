@@ -1,7 +1,7 @@
-// 时间范围类型
+// Tipo de rango de tiempo
 export type TimeRange = '24h' | '7d' | '30d';
 
-// 概览统计数据
+// Estadísticas de resumen
 export interface OverviewStats {
   timeRange: TimeRange;
   totalRequests: number;
@@ -16,45 +16,45 @@ export interface OverviewStats {
   attackIPCount: number;
 }
 
-// 实时QPS数据点
+// Punto de datos QPS en tiempo real
 export interface RealtimeQPSData {
   timestamp: string;
   value: number;
 }
 
-// 实时QPS响应
+// Respuesta QPS en tiempo real
 export interface RealtimeQPSResponse {
   data: RealtimeQPSData[];
 }
 
-// 时间序列数据点
+// Punto de datos de serie temporal
 export interface TimeSeriesDataPoint {
   timestamp: string;
   value: number;
 }
 
-// 请求和拦截数据的时间序列响应
+// Respuesta de series temporales de datos de peticiones y bloqueos
 export interface TimeSeriesResponse {
   metric: 'requests' | 'blocks';
   timeRange: TimeRange;
   data: TimeSeriesDataPoint[];
 }
 
-// 组合时间序列响应(请求和拦截)
+// Respuesta combinada de series temporales (peticiones y bloqueos)
 export interface CombinedTimeSeriesResponse {
   timeRange: TimeRange;
   requests: TimeSeriesResponse;
   blocks: TimeSeriesResponse;
 }
 
-// 流量数据点
+// Punto de datos de tráfico
 export interface TrafficDataPoint {
   timestamp: string;
   inboundTraffic: number;
   outboundTraffic: number;
 }
 
-// 流量时间序列响应
+// Respuesta de series temporales de tráfico
 export interface TrafficTimeSeriesResponse {
   timeRange: TimeRange;
   data: TrafficDataPoint[];

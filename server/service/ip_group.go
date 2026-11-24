@@ -6,25 +6,25 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/HUAHUAI23/RuiQi/pkg/model"
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/dto"
-	"github.com/HUAHUAI23/RuiQi/server/repository"
+	"github.com/anticoi/EscudoWAF/pkg/model"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/dto"
+	"github.com/anticoi/EscudoWAF/server/repository"
 	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 const (
-	SystemDefaultBlacklistName = "system_default_blacklist" // 系统默认黑名单组名称
+	SystemDefaultBlacklistName = "system_default_blacklist" // Nombre del grupo de lista negra por defecto del sistema
 )
 
 var (
-	ErrIPGroupNotFound    = errors.New("IP组不存在")
-	ErrIPGroupNameExists  = errors.New("IP组名称已存在")
-	ErrSystemIPGroupNoMod = errors.New("系统默认IP组不允许删除")
+	ErrIPGroupNotFound    = errors.New("El grupo de IPs no existe")
+	ErrIPGroupNameExists  = errors.New("El nombre del grupo de IPs ya existe")
+	ErrSystemIPGroupNoMod = errors.New("No se permite eliminar el grupo de IPs por defecto del sistema")
 )
 
-// IPGroupService IP组服务接口
+// IPGroupService interfaz del servicio de grupos de IPs
 type IPGroupService interface {
 	CreateIPGroup(ctx context.Context, req *dto.IPGroupCreateRequest) (*model.IPGroup, error)
 	GetIPGroups(ctx context.Context, pageStr, sizeStr string) ([]model.IPGroup, int64, error)
@@ -34,13 +34,13 @@ type IPGroupService interface {
 	AddIPToBlacklist(ctx context.Context, ip string) error
 }
 
-// IPGroupServiceImpl IP组服务实现
+// IPGroupServiceImpl implementación del servicio de grupos de IPs
 type IPGroupServiceImpl struct {
 	ipGroupRepo repository.IPGroupRepository
 	logger      zerolog.Logger
 }
 
-// NewIPGroupService 创建IP组服务
+// NewIPGroupService crea el servicio de grupos de IPs
 func NewIPGroupService(ipGroupRepo repository.IPGroupRepository) IPGroupService {
 	logger := config.GetServiceLogger("ipgroup")
 	return &IPGroupServiceImpl{
@@ -49,9 +49,9 @@ func NewIPGroupService(ipGroupRepo repository.IPGroupRepository) IPGroupService 
 	}
 }
 
-// CreateIPGroup 创建IP组
+// CreateIPGroup Crear grupo de IPs
 func (s *IPGroupServiceImpl) CreateIPGroup(ctx context.Context, req *dto.IPGroupCreateRequest) (*model.IPGroup, error) {
-	// 检查IP组名称是否已存在
+	// Comprobar si el nombre del grupo de IPs ya existe
 	if req.Name != "" {
 		exists, err := s.ipGroupRepo.CheckIPGroupNameExists(ctx, req.Name, bson.NilObjectID)
 		if err != nil {
@@ -62,24 +62,24 @@ func (s *IPGroupServiceImpl) CreateIPGroup(ctx context.Context, req *dto.IPGroup
 		}
 	}
 
-	// 创建新IP组
+	// Crear nuevo grupo de IPs
 	ipGroup := &model.IPGroup{
 		Name:  req.Name,
 		Items: req.Items,
 	}
 
-	// 保存IP组
+	// Guardar grupo de IPs
 	err := s.ipGroupRepo.CreateIPGroup(ctx, ipGroup)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("创建IP组失败")
+		s.logger.Error().Err(err).Msg("Error al crear el grupo de IPs")
 		return nil, err
 	}
 
-	s.logger.Info().Str("id", ipGroup.ID.Hex()).Str("name", ipGroup.Name).Msg("IP组创建成功")
+	s.logger.Info().Str("id", ipGroup.ID.Hex()).Str("name", ipGroup.Name).Msg("Grupo de IPs creado con éxito")
 	return ipGroup, nil
 }
 
-// GetIPGroups 获取IP组列表
+// GetIPGroups Obtener lista de grupos de IPs
 func (s *IPGroupServiceImpl) GetIPGroups(ctx context.Context, pageStr, sizeStr string) ([]model.IPGroup, int64, error) {
 	page, err := strconv.ParseInt(pageStr, 10, 64)
 	if err != nil || page < 1 {
@@ -93,30 +93,30 @@ func (s *IPGroupServiceImpl) GetIPGroups(ctx context.Context, pageStr, sizeStr s
 
 	ipGroups, total, err := s.ipGroupRepo.GetIPGroups(ctx, page, size)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("获取IP组列表失败")
+		s.logger.Error().Err(err).Msg("Error al obtener la lista de grupos de IPs")
 		return nil, 0, err
 	}
 
 	return ipGroups, total, nil
 }
 
-// GetIPGroupByID 根据ID获取IP组
+// GetIPGroupByID obtiene un grupo de IPs por ID
 func (s *IPGroupServiceImpl) GetIPGroupByID(ctx context.Context, id bson.ObjectID) (*model.IPGroup, error) {
 	ipGroup, err := s.ipGroupRepo.GetIPGroupByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, repository.ErrIPGroupNotFound) {
 			return nil, ErrIPGroupNotFound
 		}
-		s.logger.Error().Err(err).Str("id", id.Hex()).Msg("获取IP组失败")
+		s.logger.Error().Err(err).Str("id", id.Hex()).Msg("Error al obtener el grupo de IPs")
 		return nil, err
 	}
 
 	return ipGroup, nil
 }
 
-// UpdateIPGroup 更新IP组
+// UpdateIPGroup Actualizar grupo de IPs
 func (s *IPGroupServiceImpl) UpdateIPGroup(ctx context.Context, id bson.ObjectID, req *dto.IPGroupUpdateRequest) (*model.IPGroup, error) {
-	// 获取现有IP组
+	// Obtener el grupo de IPs existente
 	ipGroup, err := s.ipGroupRepo.GetIPGroupByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, repository.ErrIPGroupNotFound) {
@@ -125,16 +125,16 @@ func (s *IPGroupServiceImpl) UpdateIPGroup(ctx context.Context, id bson.ObjectID
 		return nil, err
 	}
 
-	// 检查是否是系统默认IP组
+	// Comprobar si es el grupo de IPs por defecto del sistema
 	if ipGroup.Name == SystemDefaultBlacklistName {
-		s.logger.Warn().Str("id", id.Hex()).Msg("尝试修改系统默认IP组")
-		// 如果是系统默认IP组，只允许更新Items，不允许更新Name
+		s.logger.Warn().Str("id", id.Hex()).Msg("Se intentó modificar el grupo de IPs por defecto del sistema")
+		// Si es el grupo de IPs por defecto del sistema, solo se permite actualizar Items, no Name
 		if req.Name != "" && req.Name != SystemDefaultBlacklistName {
 			return nil, ErrSystemIPGroupNoMod
 		}
 	}
 
-	// 检查IP组名称是否已存在（如果要更新名称）
+	// Comprobar si el nombre del grupo de IPs ya existe (si se va a actualizar el nombre)
 	if req.Name != "" && req.Name != ipGroup.Name {
 		exists, err := s.ipGroupRepo.CheckIPGroupNameExists(ctx, req.Name, id)
 		if err != nil {
@@ -146,25 +146,25 @@ func (s *IPGroupServiceImpl) UpdateIPGroup(ctx context.Context, id bson.ObjectID
 		ipGroup.Name = req.Name
 	}
 
-	// 更新IP列表（只更新非空字段）
+	// Actualizar la lista de IPs (solo campos no vacíos)
 	if req.Items != nil {
 		ipGroup.Items = req.Items
 	}
 
-	// 保存更新
+	// Guardar actualización
 	err = s.ipGroupRepo.UpdateIPGroup(ctx, ipGroup)
 	if err != nil {
-		s.logger.Error().Err(err).Str("id", id.Hex()).Msg("更新IP组失败")
+		s.logger.Error().Err(err).Str("id", id.Hex()).Msg("Error al actualizar el grupo de IPs")
 		return nil, err
 	}
 
-	s.logger.Info().Str("id", id.Hex()).Str("name", ipGroup.Name).Msg("IP组更新成功")
+	s.logger.Info().Str("id", id.Hex()).Str("name", ipGroup.Name).Msg("Grupo de IPs actualizado con éxito")
 	return ipGroup, nil
 }
 
-// DeleteIPGroup 删除IP组
+// DeleteIPGroup Eliminar grupo de IPs
 func (s *IPGroupServiceImpl) DeleteIPGroup(ctx context.Context, id bson.ObjectID) error {
-	// 检查IP组是否存在
+	// Comprobar si el grupo de IPs existe
 	ipGroup, err := s.ipGroupRepo.GetIPGroupByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, repository.ErrIPGroupNotFound) {
@@ -173,54 +173,54 @@ func (s *IPGroupServiceImpl) DeleteIPGroup(ctx context.Context, id bson.ObjectID
 		return err
 	}
 
-	// 检查是否是系统默认IP组
+	// Comprobar si es el grupo de IPs por defecto del sistema
 	if ipGroup.Name == SystemDefaultBlacklistName {
-		s.logger.Warn().Str("id", id.Hex()).Msg("尝试删除系统默认IP组")
+		s.logger.Warn().Str("id", id.Hex()).Msg("Se intentó eliminar el grupo de IPs por defecto del sistema")
 		return ErrSystemIPGroupNoMod
 	}
 
-	// 删除IP组
+	// Eliminar grupo de IPs
 	err = s.ipGroupRepo.DeleteIPGroup(ctx, id)
 	if err != nil {
-		s.logger.Error().Err(err).Str("id", id.Hex()).Msg("删除IP组失败")
+		s.logger.Error().Err(err).Str("id", id.Hex()).Msg("Error al eliminar el grupo de IPs")
 		return err
 	}
 
-	s.logger.Info().Str("id", id.Hex()).Msg("IP组删除成功")
+	s.logger.Info().Str("id", id.Hex()).Msg("Grupo de IPs eliminado con éxito")
 	return nil
 }
 
-// AddIPToBlacklist 添加IP到系统默认黑名单
+// AddIPToBlacklist añade una IP a la lista negra por defecto del sistema
 func (s *IPGroupServiceImpl) AddIPToBlacklist(ctx context.Context, ip string) error {
-	// 查找系统默认黑名单组
+	// Buscar el grupo de lista negra por defecto del sistema
 	ipGroup, err := s.ipGroupRepo.GetIPGroupByName(ctx, SystemDefaultBlacklistName)
 	if err != nil {
 		if errors.Is(err, repository.ErrIPGroupNotFound) {
-			s.logger.Error().Msg("系统默认黑名单组不存在")
+			s.logger.Error().Msg("El grupo de lista negra por defecto del sistema no existe")
 			return ErrIPGroupNotFound
 		}
-		s.logger.Error().Err(err).Msg("获取系统默认黑名单组失败")
+		s.logger.Error().Err(err).Msg("Error al obtener el grupo de lista negra por defecto del sistema")
 		return err
 	}
 
-	// 检查IP是否已存在
+	// Comprobar si la IP ya existe
 	for _, existingIP := range ipGroup.Items {
 		if existingIP == ip {
-			s.logger.Info().Str("ip", ip).Msg("IP已存在于黑名单中")
-			return nil // 如果已存在，直接返回成功
+			s.logger.Info().Str("ip", ip).Msg("La IP ya existe en la lista negra")
+			return nil // Si ya existe, devolver éxito directamente
 		}
 	}
 
-	// 添加IP到黑名单
+	// Añadir IP a la lista negra
 	ipGroup.Items = append(ipGroup.Items, ip)
 
-	// 更新IP组
+	// Actualizar grupo de IPs
 	err = s.ipGroupRepo.UpdateIPGroup(ctx, ipGroup)
 	if err != nil {
-		s.logger.Error().Err(err).Str("ip", ip).Msg("添加IP到黑名单失败")
+		s.logger.Error().Err(err).Str("ip", ip).Msg("Error al añadir la IP a la lista negra")
 		return err
 	}
 
-	s.logger.Info().Str("ip", ip).Msg("IP成功添加到黑名单")
+	s.logger.Info().Str("ip", ip).Msg("IP añadida a la lista negra correctamente")
 	return nil
 }

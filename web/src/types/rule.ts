@@ -1,9 +1,9 @@
-// 匹配目标类型
+// Tipo de objetivo de coincidencia
 export type TargetType = 'source_ip' | 'url' | 'path'
 
-// 匹配方式类型
+// Tipo de modo de coincidencia
 export type MatchType =
-    // IP匹配方式
+    // Modo de coincidencia de IP
     | 'equal'
     | 'not_equal'
     | 'fuzzy'
@@ -11,26 +11,26 @@ export type MatchType =
     | 'not_in_cidr'
     | 'in_ipgroup'
     | 'not_in_ipgroup'
-    // URL和Path匹配方式
+    // Modo de coincidencia de URL y Path
     | 'include'
     | 'contains'
     | 'not_contains'
     | 'prefix_keyword'
     | 'regex'
 
-// 逻辑操作符
+// Operador lógico
 export type LogicalOperator = 'AND' | 'OR'
 
-// 条件类型
+// Tipo de condición
 export type ConditionType = 'simple' | 'composite'
 
-// 规则类型
+// Tipo de regla
 export type RuleType = 'whitelist' | 'blacklist'
 
-// 规则状态
+// Estado de la regla
 export type RuleStatus = 'enabled' | 'disabled'
 
-// 简单条件
+// Condición simple
 export interface SimpleCondition {
     type: 'simple'
     target: TargetType
@@ -38,17 +38,17 @@ export interface SimpleCondition {
     match_value: string
 }
 
-// 复合条件
+// Condición compuesta
 export interface CompositeCondition {
     type: 'composite'
     operator: LogicalOperator
     conditions: (SimpleCondition | CompositeCondition)[]
 }
 
-// 条件类型(联合类型)
+// Tipo de condición (tipo unión)
 export type Condition = SimpleCondition | CompositeCondition
 
-// 微规则模型
+// Modelo de microrregla
 export interface MicroRule {
     id: string
     name: string
@@ -60,7 +60,7 @@ export interface MicroRule {
     updatedAt?: string
 }
 
-// 创建规则请求
+// Petición de creación de regla
 export interface MicroRuleCreateRequest {
     name: string
     type: RuleType
@@ -69,7 +69,7 @@ export interface MicroRuleCreateRequest {
     condition: Condition
 }
 
-// 更新规则请求
+// Petición de actualización de regla
 export interface MicroRuleUpdateRequest {
     name?: string
     type?: RuleType
@@ -78,13 +78,13 @@ export interface MicroRuleUpdateRequest {
     condition?: Condition
 }
 
-// 规则列表响应
+// Respuesta de lista de reglas
 export interface MicroRuleListResponse {
     total: number
     items: MicroRule[]
 }
 
-// 目标类型与匹配方式的映射关系
+// Relación de mapeo entre tipos de objetivo y modos de coincidencia
 export const TARGET_MATCH_TYPES: Record<TargetType, MatchType[]> = {
     'source_ip': ['equal', 'not_equal', 'fuzzy', 'in_cidr', 'not_in_cidr', 'in_ipgroup', 'not_in_ipgroup'],
     'url': ['equal', 'not_equal', 'contains', 'not_contains', 'prefix_keyword', 'regex'],

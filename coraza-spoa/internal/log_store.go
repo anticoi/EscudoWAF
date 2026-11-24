@@ -7,48 +7,48 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/HUAHUAI23/RuiQi/pkg/model"
+	"github.com/anticoi/EscudoWAF/pkg/model"
 	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-// LogStore 定义日志存储接口
+// LogStore define la interfaz de almacenamiento de logs
 type LogStore interface {
 	Store(log model.WAFLog) error
 	Start()
 	Close()
 }
 
-// LogBatch 日志批次结构，用于对象池
+// LogBatch estructura de lote de logs, para el pool de objetos
 type LogBatch struct {
 	logs []interface{}
 	size int
 }
 
-// 批次对象池，减少内存分配
+// Pool de objetos de lote, reduce asignaciones de memoria
 var batchPool = sync.Pool{
 	New: func() interface{} {
 		return &LogBatch{
-			logs: make([]interface{}, 0, 200), // 预分配更大的容量
+			logs: make([]interface{}, 0, 200), // Preasignar mayor capacidad
 		}
 	},
 }
 
-// RingBuffer 高性能无锁环形缓冲区
+// RingBuffer buffer circular de alto rendimiento sin bloqueos
 type RingBuffer struct {
 	buffer   []model.WAFLog
 	capacity uint64
 	mask     uint64
-	_        [56]byte // 缓存行填充，避免false sharing
+	_        [56]byte // Relleno de línea de caché, evita false sharing
 	head     atomic.Uint64
 	_        [56]byte
 	tail     atomic.Uint64
 	_        [56]byte
 }
 
-// NewRingBuffer 创建环形缓冲区
+// NewRingBuffer crea un buffer circular
 func NewRingBuffer(size int) *RingBuffer {
-	// 确保容量是2的幂
+	// Asegurar que la capacidad sea potencia de 2
 	capacity := uint64(1)
 	for capacity < uint64(size) {
 		capacity <<= 1
@@ -61,7 +61,7 @@ func NewRingBuffer(size int) *RingBuffer {
 	}
 }
 
-// Push 无锁推送日志
+// Push envía logs sin bloqueos
 func (rb *RingBuffer) Push(log model.WAFLog) bool {
 	for {
 		tail := rb.tail.Load()
@@ -69,73 +69,73 @@ func (rb *RingBuffer) Push(log model.WAFLog) bool {
 		head := rb.head.Load()
 
 		if next == head {
-			return false // 缓冲区满
+			return false // Buffer lleno
 		}
 
 		if rb.tail.CompareAndSwap(tail, next) {
 			rb.buffer[tail] = log
 			return true
 		}
-		// CAS失败，重试
+		// CAS falló, reintentando
 		runtime.Gosched()
 	}
 }
 
-// PopBatch 批量弹出日志
+// PopBatch extrae logs por lotes
 func (rb *RingBuffer) PopBatch(batch *LogBatch, maxSize int) int {
 	head := rb.head.Load()
 	tail := rb.tail.Load()
 
-	// 计算可用数量
+	// Calcular la cantidad disponible
 	available := int((tail - head) & rb.mask)
 	if available == 0 {
 		return 0
 	}
 
-	// 限制批量大小
+	// Limitar el tamaño del lote
 	if available > maxSize {
 		available = maxSize
 	}
 
-	// 批量读取
+	// Lectura por lotes
 	for i := 0; i < available; i++ {
 		idx := (head + uint64(i)) & rb.mask
 		batch.logs = append(batch.logs, rb.buffer[idx])
 	}
 
-	// 更新head
+	// Actualizar head
 	rb.head.Add(uint64(available))
 	batch.size = available
 	return available
 }
 
-// MongoLogStore MongoDB实现的高性能日志存储
+// MongoLogStore almacenamiento de logs de alto rendimiento implementado en MongoDB
 type MongoLogStore struct {
 	mongo       *mongo.Client
 	mongoDB     string
 	collection  *mongo.Collection
-	ringBuffers []*RingBuffer // 多个环形缓冲区，减少竞争
+	ringBuffers []*RingBuffer // Múltiples buffers circulares para reducir la contención
 	numBuffers  int
 	logger      zerolog.Logger
 	state       atomic.Uint32 // 0: stopped, 1: running, 2: closing
 	wg          sync.WaitGroup
 
-	// 性能优化参数
-	writerCount    int           // 写入协程数
-	batchSize      atomic.Int32  // 动态批大小
-	batchInterval  time.Duration // 批处理间隔
+	// Parámetros de optimización de rendimiento
+	writerCount    int           // Número de goroutines de escritura
+	batchSize      atomic.Int32  // Tamaño de lote dinámico
+	batchInterval  time.Duration // Intervalo de procesamiento por lotes
 	maxBatchSize   int
 	minBatchSize   int
-	bufferSelector atomic.Uint64 // 用于选择buffer
+	bufferSelector atomic.Uint64 // Para seleccionar el buffer
 }
 
-// 单例实例
+// Instancia singleton
 var (
 	mongoLogStoreOnce     sync.Once
 	mongoLogStoreInstance *MongoLogStore
 )
 
-// StoreConfig 存储配置
+// StoreConfig configuración de almacenamiento
 type StoreConfig struct {
 	BufferSize    int
 	NumBuffers    int
@@ -145,26 +145,26 @@ type StoreConfig struct {
 	MinBatchSize  int
 }
 
-// DefaultConfig 默认配置
+// DefaultConfig configuración por defecto
 func DefaultConfig() StoreConfig {
 	cores := runtime.NumCPU()
 	return StoreConfig{
-		BufferSize:    8192,                   // 每个buffer的大小
-		NumBuffers:    cores,                  // buffer数量等于CPU核心数
-		WriterCount:   cores / 2,              // 写入协程数为核心数的一半
-		BatchInterval: 100 * time.Millisecond, // 100ms批处理间隔
+		BufferSize:    8192,                   // Tamaño de cada buffer
+		NumBuffers:    cores,                  // Número de buffers igual a los núcleos de CPU
+		WriterCount:   cores / 2,              // Goroutines de escritura: la mitad de los núcleos
+		BatchInterval: 100 * time.Millisecond, // Intervalo de procesamiento por lotes de 100ms
 		MaxBatchSize:  500,
 		MinBatchSize:  50,
 	}
 }
 
-// NewMongoLogStore 创建新的MongoDB日志存储器（单例模式）
+// NewMongoLogStore crea un almacenamiento de logs en MongoDB (singleton)
 func NewMongoLogStore(client *mongo.Client, database, collection string, logger zerolog.Logger) *MongoLogStore {
 	config := DefaultConfig()
 	return NewMongoLogStoreWithConfig(client, database, collection, config, logger)
 }
 
-// NewMongoLogStoreWithConfig 使用配置创建存储器
+// NewMongoLogStoreWithConfig crea el almacenamiento con configuración
 func NewMongoLogStoreWithConfig(client *mongo.Client, database, collection string, config StoreConfig, logger zerolog.Logger) *MongoLogStore {
 	mongoLogStoreOnce.Do(func() {
 		if config.NumBuffers <= 0 {
@@ -190,13 +190,13 @@ func NewMongoLogStoreWithConfig(client *mongo.Client, database, collection strin
 			minBatchSize:  config.MinBatchSize,
 		}
 
-		// 初始化环形缓冲区
+		// Inicializar el buffer circular
 		bufferSizePerRing := config.BufferSize / config.NumBuffers
 		for i := 0; i < config.NumBuffers; i++ {
 			store.ringBuffers[i] = NewRingBuffer(bufferSizePerRing)
 		}
 
-		// 设置初始批大小
+		// Establecer el tamaño inicial del lote
 		store.batchSize.Store(int32(config.MinBatchSize))
 
 		mongoLogStoreInstance = store
@@ -204,62 +204,62 @@ func NewMongoLogStoreWithConfig(client *mongo.Client, database, collection strin
 			Int("num_buffers", config.NumBuffers).
 			Int("writer_count", config.WriterCount).
 			Int("buffer_size", config.BufferSize).
-			Msg("创建新的高性能MongoLogStore实例")
+			Msg("Crear nueva instancia de MongoLogStore de alto rendimiento")
 	})
 
 	return mongoLogStoreInstance
 }
 
-// Store 高性能非阻塞存储
+// Store almacenamiento no bloqueante de alto rendimiento
 func (s *MongoLogStore) Store(log model.WAFLog) error {
-	// 快速检查状态
+	// Comprobación rápida de estado
 	if s.state.Load() != 1 {
-		return nil // 未运行状态，直接丢弃
+		return nil // Estado no iniciado, descartar directamente
 	}
 
-	// 选择buffer（轮询方式分散负载）
+	// Seleccionar buffer (distribución de carga round-robin)
 	idx := s.bufferSelector.Add(1) % uint64(s.numBuffers)
 	buffer := s.ringBuffers[idx]
 
-	// 尝试推送到环形缓冲区
+	// Intentar enviar al buffer circular
 	if !buffer.Push(log) {
-		// 缓冲区满，直接丢弃（按要求可以接受日志丢失）
+		// Buffer lleno, descartar directamente (la pérdida de logs es aceptable según lo requerido)
 		return nil
 	}
 
 	return nil
 }
 
-// Start 启动日志存储处理
+// Start inicia el procesamiento de almacenamiento de logs
 func (s *MongoLogStore) Start() {
 	if !s.state.CompareAndSwap(0, 1) {
-		s.logger.Debug().Msg("日志处理已在运行")
+		s.logger.Debug().Msg("El procesamiento de logs ya está en ejecución")
 		return
 	}
 
-	s.logger.Info().Msg("启动高性能日志处理")
+	s.logger.Info().Msg("Iniciar procesamiento de logs de alto rendimiento")
 
-	// 启动多个写入协程
+	// Iniciar múltiples goroutines de escritura
 	for i := 0; i < s.writerCount; i++ {
 		s.wg.Add(1)
 		go s.writer(i)
 	}
 
-	// 启动动态调整协程
+	// Iniciar la goroutine de ajuste dinámico
 	s.wg.Add(1)
 	go s.dynamicAdjuster()
 }
 
-// writer 写入协程
+// writer goroutine de escritura
 func (s *MongoLogStore) writer(id int) {
 	defer s.wg.Done()
 
-	// 每个writer负责特定的buffers
+	// Cada writer se encarga de buffers específicos
 	buffersPerWriter := s.numBuffers / s.writerCount
 	startIdx := id * buffersPerWriter
 	endIdx := startIdx + buffersPerWriter
 	if id == s.writerCount-1 {
-		endIdx = s.numBuffers // 最后一个writer处理剩余的buffers
+		endIdx = s.numBuffers // El último writer procesa los buffers restantes
 	}
 
 	ticker := time.NewTicker(s.batchInterval)
@@ -268,21 +268,21 @@ func (s *MongoLogStore) writer(id int) {
 	for {
 		<-ticker.C
 		if s.state.Load() == 2 {
-			// 正在关闭，处理剩余数据
+			// Cerrando, procesando datos restantes
 			s.flushAll(startIdx, endIdx)
 			return
 		}
-		// 处理分配的buffers
+		// Procesar los buffers asignados
 		s.processBatches(startIdx, endIdx)
 
-		// 检查是否需要退出
+		// Comprobar si es necesario salir
 		if s.state.Load() == 2 {
 			return
 		}
 	}
 }
 
-// processBatches 处理批次
+// processBatches procesa los lotes
 func (s *MongoLogStore) processBatches(startIdx, endIdx int) {
 	batch := batchPool.Get().(*LogBatch)
 	defer func() {
@@ -294,7 +294,7 @@ func (s *MongoLogStore) processBatches(startIdx, endIdx int) {
 	currentBatchSize := int(s.batchSize.Load())
 	totalCollected := 0
 
-	// 从多个buffer收集日志
+	// Recopilar logs de múltiples buffers
 	for i := startIdx; i < endIdx && totalCollected < currentBatchSize; i++ {
 		buffer := s.ringBuffers[i]
 		remaining := currentBatchSize - totalCollected
@@ -302,27 +302,27 @@ func (s *MongoLogStore) processBatches(startIdx, endIdx int) {
 		totalCollected += count
 	}
 
-	// 如果收集到日志，执行批量写入
+	// Si se recopilaron logs, ejecutar la escritura por lotes
 	if batch.size > 0 {
 		s.batchInsert(batch)
 	}
 }
 
-// batchInsert 批量插入（无重试，追求性能）
+// batchInsert inserción por lotes (sin reintentos, optimizado para rendimiento)
 func (s *MongoLogStore) batchInsert(batch *LogBatch) {
 	if batch.size == 0 {
 		return
 	}
 
-	// 使用较短的超时，失败就丢弃
+	// Usar timeout corto; si falla, descartar
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
-	// 批量插入，忽略错误（可接受丢失）
+	// Inserción por lotes, ignora errores (pérdida aceptable)
 	_, _ = s.collection.InsertMany(ctx, batch.logs[:batch.size])
 }
 
-// dynamicAdjuster 动态调整批大小
+// dynamicAdjuster ajusta dinámicamente el tamaño del lote
 func (s *MongoLogStore) dynamicAdjuster() {
 	defer s.wg.Done()
 
@@ -338,7 +338,7 @@ func (s *MongoLogStore) dynamicAdjuster() {
 			return
 		}
 
-		// 计算当前负载
+		// Calcular la carga actual
 		currentCount := uint64(0)
 		for _, buffer := range s.ringBuffers {
 			head := buffer.head.Load()
@@ -346,16 +346,16 @@ func (s *MongoLogStore) dynamicAdjuster() {
 			currentCount += (tail - head) & buffer.mask
 		}
 
-		// 根据增长率调整批大小
+		// Ajustar el tamaño del lote según la tasa de crecimiento
 		elapsed := time.Since(lastCheck).Seconds()
 		rate := float64(currentCount-lastCount) / elapsed
 
 		currentBatchSize := s.batchSize.Load()
 		newBatchSize := currentBatchSize
 
-		if rate > 1000 { // 高负载
+		if rate > 1000 { // Alta carga
 			newBatchSize = min(currentBatchSize*2, int32(s.maxBatchSize))
-		} else if rate < 100 { // 低负载
+		} else if rate < 100 { // Carga baja
 			newBatchSize = max(currentBatchSize/2, int32(s.minBatchSize))
 		}
 
@@ -368,7 +368,7 @@ func (s *MongoLogStore) dynamicAdjuster() {
 	}
 }
 
-// flushAll 刷新所有缓冲区
+// flushAll vacía todos los buffers
 func (s *MongoLogStore) flushAll(startIdx, endIdx int) {
 	batch := batchPool.Get().(*LogBatch)
 	defer func() {
@@ -377,7 +377,7 @@ func (s *MongoLogStore) flushAll(startIdx, endIdx int) {
 		batchPool.Put(batch)
 	}()
 
-	// 尽可能多地收集日志
+	// Recopilar tantos logs como sea posible
 	for i := startIdx; i < endIdx; i++ {
 		buffer := s.ringBuffers[i]
 		for {
@@ -394,23 +394,23 @@ func (s *MongoLogStore) flushAll(startIdx, endIdx int) {
 	}
 }
 
-// Close 关闭日志存储器
+// Close cierra el almacenamiento de logs
 func (s *MongoLogStore) Close() {
-	// 设置关闭状态
+	// Establecer el estado cerrado
 	if !s.state.CompareAndSwap(1, 2) {
 		return
 	}
 
-	s.logger.Info().Msg("关闭高性能日志处理")
+	s.logger.Info().Msg("Cerrar el procesamiento de logs de alto rendimiento")
 
-	// 等待所有writer完成
+	// Esperar a que terminen todos los writers
 	s.wg.Wait()
 
-	// 重置状态
+	// Restablecer el estado
 	s.state.Store(0)
 }
 
-// 辅助函数
+// Función auxiliar
 func min(a, b int32) int32 {
 	if a < b {
 		return a

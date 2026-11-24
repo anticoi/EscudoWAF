@@ -9,34 +9,34 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/public"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/public"
 	"github.com/gin-gonic/gin"
 )
 
-// SetStaticFileRouter 设置静态文件路由
+// SetStaticFileRouter configura las rutas de archivos estáticos
 func SetStaticFileRouter(router *gin.Engine) {
 	logger := config.Logger
 
-	// 加载HTML模板
+	// Cargar la plantilla HTML
 	router.SetHTMLTemplate(template.Must(template.New("").ParseFS(public.Templates, "templates/*")))
 
-	// 检查是否禁用Web功能
+	// Comprobar si la función web está deshabilitada
 	if config.Global.DisableWeb {
-		logger.Info().Msg("Web功能已禁用")
+		logger.Info().Msg("Función web deshabilitada")
 		router.GET("/", func(ctx *gin.Context) {
 			ctx.HTML(http.StatusOK, "index.tmpl", gin.H{
-				"URL":               "https://github.com/HUAHUAI23/RuiQi",
+				"URL":               "https://github.com/anticoi/EscudoWAF",
 				"INITIAL_COUNTDOWN": 15,
 			})
 		})
 		return
 	}
 
-	// 根据WebPath配置选择文件系统
+	// Elegir el sistema de archivos según la configuración WebPath
 	if config.Global.WebPath == "" {
-		// 使用嵌入的文件系统
-		logger.Info().Msg("使用嵌入的前端资源")
+		// Usar sistema de archivos embebido
+		logger.Info().Msg("Usar recursos de frontend embebidos")
 		err := initFSRouter(router, public.Public.(fs.ReadDirFS), ".")
 		if err != nil {
 			panic(err)
@@ -44,13 +44,13 @@ func SetStaticFileRouter(router *gin.Engine) {
 		fs := http.FS(public.Public)
 		router.NoRoute(newIndexNoRouteHandler(fs))
 	} else {
-		// 使用外部文件系统
-		logger.Info().Msg("使用外部前端资源路径")
+		// Usar sistema de archivos externo
+		logger.Info().Msg("Usar ruta de recursos de frontend externa")
 		absPath, err := filepath.Abs(config.Global.WebPath)
 		if err != nil {
 			panic(err)
 		}
-		logger.Info().Str("path", absPath).Msg("使用外部前端资源路径")
+		logger.Info().Str("path", absPath).Msg("Usar ruta de recursos de frontend externa")
 		err = initFSRouter(router, os.DirFS(absPath).(fs.ReadDirFS), ".")
 		if err != nil {
 			panic(err)
@@ -59,7 +59,7 @@ func SetStaticFileRouter(router *gin.Engine) {
 	}
 }
 
-// checkNoRouteNotFound 检查路径是否为API路由
+// checkNoRouteNotFound comprueba si la ruta es una ruta de API
 func checkNoRouteNotFound(path string) bool {
 	if strings.HasPrefix(path, "/api") ||
 		strings.HasPrefix(path, "/health") {
@@ -68,21 +68,21 @@ func checkNoRouteNotFound(path string) bool {
 	return false
 }
 
-// newIndexNoRouteHandler 创建处理SPA路由的NoRoute处理器（嵌入文件系统）
+// newIndexNoRouteHandler crea el manejador NoRoute para rutas SPA (sistema de archivos embebido)
 func newIndexNoRouteHandler(fs http.FileSystem) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		if checkNoRouteNotFound(ctx.Request.URL.Path) {
 			ctx.String(http.StatusNotFound, "404 page not found")
 			return
 		}
-		// 对于前端路由，使用目录路径来避免index.html重定向问题
-		// 根据 https://github.com/gin-gonic/gin/issues/2654 的解决方案
-		// 使用 "" 或 "/" 而不是 "index.html" 来避免重定向循环
+		// Para rutas del frontend, usar rutas de directorio para evitar problemas de redirección de index.html
+		// Según la solución de https://github.com/gin-gonic/gin/issues/2654
+		// Usar "" o "/" en lugar de "index.html" para evitar bucles de redirección
 		ctx.FileFromFS("", fs)
 	}
 }
 
-// newDynamicNoRouteHandler 创建处理SPA路由的NoRoute处理器（外部文件系统）
+// newDynamicNoRouteHandler crea el manejador NoRoute para rutas SPA (sistema de archivos externo)
 func newDynamicNoRouteHandler(fs http.FileSystem) func(ctx *gin.Context) {
 	fileServer := http.StripPrefix("/", http.FileServer(fs))
 	return func(c *gin.Context) {
@@ -91,26 +91,26 @@ func newDynamicNoRouteHandler(fs http.FileSystem) func(ctx *gin.Context) {
 			return
 		}
 
-		// 尝试打开请求的文件
+		// Intentar abrir el archivo solicitado
 		f, err := fs.Open(c.Request.URL.Path)
 		if err != nil {
-			// 文件不存在，返回 index.html（SPA路由处理）
+			// El archivo no existe, devolver index.html (manejo de rutas SPA)
 			c.FileFromFS("", fs)
 			return
 		}
 		f.Close()
 
-		// 文件存在，直接提供服务
+		// El archivo existe, servirlo directamente
 		fileServer.ServeHTTP(c.Writer, c.Request)
 	}
 }
 
-// staticFileFS 接口定义
+// Definición de la interfaz staticFileFS
 type staticFileFS interface {
 	StaticFileFS(relativePath string, filepath string, fs http.FileSystem) gin.IRoutes
 }
 
-// initFSRouter 递归遍历文件系统并注册所有静态文件
+// initFSRouter recorre el sistema de archivos recursivamente y registra todos los archivos estáticos
 func initFSRouter(e staticFileFS, f fs.ReadDirFS, path string) error {
 	dirs, err := f.ReadDir(path)
 	if err != nil {
@@ -124,17 +124,17 @@ func initFSRouter(e staticFileFS, f fs.ReadDirFS, path string) error {
 		}
 
 		if dir.IsDir() {
-			// 递归处理子目录
+			// Procesar subdirectorios recursivamente
 			err = initFSRouter(e, f, u)
 			if err != nil {
 				return err
 			}
 		} else {
-			// 注册单个文件，但跳过根目录的index.html以避免冲突
+			// Registrar archivo individual, pero omitir index.html de la raíz para evitar conflictos
 			routePath := "/" + u
 			if path == "." {
 				routePath = "/" + dir.Name()
-				// 跳过根目录的index.html，由NoRoute处理器处理
+				// Omitir index.html de la raíz, lo maneja el handler NoRoute
 				if dir.Name() == "index.html" {
 					continue
 				}

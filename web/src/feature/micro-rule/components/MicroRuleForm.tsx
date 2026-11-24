@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/select'
 import { ConditionBuilder } from './ConditionBuilder'
 
-// 默认复合条件
+// Condición compuesta por defecto
 const DEFAULT_CONDITION: Condition = {
     type: 'composite',
     operator: 'AND',
@@ -57,7 +57,7 @@ export function MicroRuleForm({
 }: MicroRuleFormProps) {
     const { t } = useTranslation()
 
-    // 准备默认值
+    // Preparar valores por defecto
     const initialValues: MicroRuleCreateRequest = defaultValues || {
         name: '',
         type: 'blacklist',
@@ -66,7 +66,7 @@ export function MicroRuleForm({
         condition: DEFAULT_CONDITION,
     }
 
-    // API钩子
+    // Hooks de la API
     const {
         createMicroRule,
         isLoading: isCreating,
@@ -81,29 +81,29 @@ export function MicroRuleForm({
         clearError: clearUpdateError
     } = useUpdateMicroRule()
 
-    // 动态状态
+    // Estado dinámico
     const isLoading = mode === 'create' ? isCreating : isUpdating
     const error = mode === 'create' ? createError : updateError
     const clearError = mode === 'create' ? clearCreateError : clearUpdateError
 
-    // 表单设置
+    // Configuración del formulario
     const form = useForm<MicroRuleCreateRequest>({
         resolver: zodResolver(ruleCreateSchema),
         defaultValues: initialValues,
     })
 
 
-    // 表单提交处理
+    // Manejo del envío del formulario
     const handleFormSubmit = useCallback((data: MicroRuleCreateRequest) => {
-        // 清除之前的错误
+        // Limpiar los errores anteriores
         if (clearError) clearError()
 
 
-        // 根据模式执行创建或更新操作
+        // Ejecutar creación o actualización según el modo
         if (mode === 'create') {
             createMicroRule(data, {
                 onSuccess: () => {
-                    // 重置表单
+                    // Restablecer el formulario
                     form.reset({
                         name: '',
                         type: 'blacklist',
@@ -111,14 +111,14 @@ export function MicroRuleForm({
                         priority: 100,
                         condition: DEFAULT_CONDITION,
                     })
-                    // 通知父组件成功
+                    // Notificar éxito al componente padre
                     if (onSuccess) onSuccess()
                 }
             })
         } else if (mode === 'update' && ruleId) {
             updateMicroRule({ id: ruleId, data }, {
                 onSuccess: () => {
-                    // 通知父组件成功
+                    // Notificar éxito al componente padre
                     if (onSuccess) onSuccess()
                 }
             })
@@ -129,7 +129,7 @@ export function MicroRuleForm({
         <AnimatedContainer>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
-                    {/* API错误提示 */}
+                    {/* Aviso de error de API */}
                     {error && (
                         <Alert variant="destructive">
                             <AlertCircle className="h-4 w-4" />
@@ -137,7 +137,7 @@ export function MicroRuleForm({
                         </Alert>
                     )}
 
-                    {/* 基本信息字段 */}
+                    {/* Campos de información básica */}
                     <div className="grid grid-cols-2 gap-4">
                         <FormField
                             control={form.control}
@@ -172,7 +172,7 @@ export function MicroRuleForm({
                             )}
                         />
 
-                        {/* 规则类型 */}
+                        {/* Tipo de regla */}
                         <FormField
                             control={form.control}
                             name="type"
@@ -199,7 +199,7 @@ export function MicroRuleForm({
                             )}
                         />
 
-                        {/* 规则状态 */}
+                        {/* Estado de la regla */}
                         <FormField
                             control={form.control}
                             name="status"
@@ -227,7 +227,7 @@ export function MicroRuleForm({
                         />
                     </div>
 
-                    {/* 条件构建器 */}
+                    {/* Constructor de condiciones */}
 
                     <div className="space-y-4 mt-6">
                         <FormLabel className="dark:text-shadow-glow-white text-base">{t("microRule.form.condition")}</FormLabel>
@@ -241,7 +241,7 @@ export function MicroRuleForm({
                     </div>
 
 
-                    {/* 提交按钮 */}
+                    {/* Botón de envío */}
                     <div className="flex justify-end mt-6">
                         <AnimatedButton>
                             <Button type="submit" disabled={isLoading}>

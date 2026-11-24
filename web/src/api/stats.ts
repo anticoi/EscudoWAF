@@ -8,17 +8,17 @@ import {
   TimeRange
 } from '@/types/stats'
 
-// 统计API接口基础路径
+// Ruta base de la API de estadísticas
 const BASE_URL = '/stats'
 
 /**
- * 统计数据相关API服务
+ * Servicios de API relacionados con estadísticas
  */
 export const statsApi = {
   /**
-   * 获取统计概览数据
-   * @param timeRange 时间范围
-   * @returns 统计概览数据
+   * Obtener datos de resumen estadístico
+   * @param timeRange rango de tiempo
+   * @returns datos de resumen estadístico
    */
   getOverviewStats: (timeRange: TimeRange = '24h'): Promise<OverviewStats> => {
     return get<OverviewStats>(`${BASE_URL}/overview`, {
@@ -27,9 +27,9 @@ export const statsApi = {
   },
 
   /**
-   * 获取实时QPS数据
-   * @param limit 数据点数量限制，默认30
-   * @returns 实时QPS数据
+   * Obtener datos QPS en tiempo real
+   * @param limit límite de puntos de datos, por defecto 30
+   * @returns datos QPS en tiempo real
    */
   getRealtimeQPS: (limit: number = 30): Promise<RealtimeQPSResponse> => {
     return get<RealtimeQPSResponse>(`${BASE_URL}/realtime-qps`, {
@@ -38,10 +38,10 @@ export const statsApi = {
   },
 
   /**
-   * 获取时间序列数据
-   * @param timeRange 时间范围
-   * @param metric 指标类型
-   * @returns 时间序列数据
+   * Obtener datos de series temporales
+   * @param timeRange rango de tiempo
+   * @param metric tipo de métrica
+   * @returns datos de series temporales
    */
   getTimeSeriesData: (
     timeRange: TimeRange = '24h',
@@ -53,9 +53,9 @@ export const statsApi = {
   },
 
   /**
-   * 获取组合时间序列数据(请求数和拦截数)
-   * @param timeRange 时间范围
-   * @returns 组合时间序列数据
+   * Obtener datos de series temporales combinadas (peticiones y bloqueos)
+   * @param timeRange rango de tiempo
+   * @returns datos de series temporales combinadas
    */
   getCombinedTimeSeriesData: (timeRange: TimeRange = '24h'): Promise<CombinedTimeSeriesResponse> => {
     return get<CombinedTimeSeriesResponse>(`${BASE_URL}/combined-time-series`, {
@@ -64,9 +64,9 @@ export const statsApi = {
   },
 
   /**
-   * 获取流量时间序列数据
-   * @param timeRange 时间范围
-   * @returns 流量时间序列数据
+   * Obtener datos de series temporales de tráfico
+   * @param timeRange rango de tiempo
+   * @returns datos de series temporales de tráfico
    */
   getTrafficTimeSeriesData: (timeRange: TimeRange = '24h'): Promise<TrafficTimeSeriesResponse> => {
     return get<TrafficTimeSeriesResponse>(`${BASE_URL}/traffic-time-series`, {

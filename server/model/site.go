@@ -6,68 +6,68 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-// WAFMode 定义WAF工作模式类型
+// WAFMode define el tipo de modo de trabajo del WAF
 type WAFMode string
 
 const (
-	WAFModeProtection  WAFMode = "protection"  // 防护模式
-	WAFModeObservation WAFMode = "observation" // 观察模式
+	WAFModeProtection  WAFMode = "protection"  // Modo de protección
+	WAFModeObservation WAFMode = "observation" // Modo de observación
 )
 
-// Site 代表一个站点配置
+// Site representa la configuración de un sitio
 type Site struct {
-	ID           bson.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`                  // 站点ID
-	Name         string        `bson:"name" json:"name"`                                   // 站点名称
-	Domain       string        `bson:"domain" json:"domain"`                               // 域名，如 a.com
-	ListenPort   int           `bson:"listenPort" json:"listenPort"`                       // 监听端口，如 9000
-	EnableHTTPS  bool          `bson:"enableHTTPS" json:"enableHTTPS"`                     // 是否启用HTTPS
-	Certificate  Certificate   `bson:"certificate,omitempty" json:"certificate,omitempty"` // 证书信息
-	Backend      Backend       `bson:"backend" json:"backend"`                             // 后端服务器配置
-	WAFEnabled   bool          `bson:"wafEnabled" json:"wafEnabled"`                       // 是否启用WAF
-	WAFMode      WAFMode       `bson:"wafMode" json:"wafMode"`                             // WAF防护模式
+	ID           bson.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`                  // ID del sitio
+	Name         string        `bson:"name" json:"name"`                                   // Nombre del sitio
+	Domain       string        `bson:"domain" json:"domain"`                               // Dominio, p. ej. a.com
+	ListenPort   int           `bson:"listenPort" json:"listenPort"`                       // Puerto de escucha, p. ej. 9000
+	EnableHTTPS  bool          `bson:"enableHTTPS" json:"enableHTTPS"`                     // Si HTTPS está habilitado
+	Certificate  Certificate   `bson:"certificate,omitempty" json:"certificate,omitempty"` // Información del certificado
+	Backend      Backend       `bson:"backend" json:"backend"`                             // Configuración del servidor backend
+	WAFEnabled   bool          `bson:"wafEnabled" json:"wafEnabled"`                       // Si el WAF está habilitado
+	WAFMode      WAFMode       `bson:"wafMode" json:"wafMode"`                             // Modo de protección WAF
 	CreatedAt    time.Time     `bson:"createdAt" json:"createdAt"`
 	UpdatedAt    time.Time     `bson:"updatedAt" json:"updatedAt"`
-	ActiveStatus bool          `bson:"activeStatus" json:"activeStatus"` // 站点是否激活
+	ActiveStatus bool          `bson:"activeStatus" json:"activeStatus"` // Si el sitio está activo
 }
 
-// Certificate 代表证书信息
+// Certificate representa la información de un certificado
 type Certificate struct {
-	CertName    string    `bson:"certName" json:"certName"`       // 证书名称/别名
-	PublicKey   string    `bson:"publicKey" json:"publicKey"`     // 公钥内容（PEM格式）
-	PrivateKey  string    `bson:"privateKey" json:"privateKey"`   // 私钥内容（PEM格式）
-	ExpireDate  time.Time `bson:"expireDate" json:"expireDate"`   // 证书过期日期
-	IssuerName  string    `bson:"issuerName" json:"issuerName"`   // 颁发机构
-	FingerPrint string    `bson:"fingerPrint" json:"fingerPrint"` // 证书指纹
+	CertName    string    `bson:"certName" json:"certName"`       // Nombre/alias del certificado
+	PublicKey   string    `bson:"publicKey" json:"publicKey"`     // Contenido de la clave pública (formato PEM)
+	PrivateKey  string    `bson:"privateKey" json:"privateKey"`   // Contenido de la clave privada (formato PEM)
+	ExpireDate  time.Time `bson:"expireDate" json:"expireDate"`   // Fecha de expiración del certificado
+	IssuerName  string    `bson:"issuerName" json:"issuerName"`   // Autoridad emisora
+	FingerPrint string    `bson:"fingerPrint" json:"fingerPrint"` // Huella del certificado
 }
 
-// Backend 代表后端服务器配置
+// Backend representa la configuración de un servidor backend
 type Backend struct {
-	Servers []Server `bson:"servers" json:"servers"` // 服务器列表
+	Servers []Server `bson:"servers" json:"servers"` // Lista de servidores
 }
 
-// Server 代表单个后端服务器
+// Server representa un servidor backend individual
 type Server struct {
-	Host  string `bson:"host" json:"host"`   // 主机地址，如 IP 或域名
-	Port  int    `bson:"port" json:"port"`   // 端口
-	IsSSL bool   `bson:"isSSL" json:"isSSL"` // 是否启用SSL
+	Host  string `bson:"host" json:"host"`   // Dirección del host, p. ej. IP o dominio
+	Port  int    `bson:"port" json:"port"`   // Puerto
+	IsSSL bool   `bson:"isSSL" json:"isSSL"` // Si SSL está habilitado
 }
 
-// IsValidWAFMode 检查WAF模式是否有效
+// IsValidWAFMode comprueba si el modo WAF es válido
 func IsValidWAFMode(mode WAFMode) bool {
 	return mode == WAFModeProtection || mode == WAFModeObservation
 }
 
-// DefaultWAFMode 返回默认的WAF模式
+// DefaultWAFMode devuelve el modo WAF por defecto
 func DefaultWAFMode() WAFMode {
 	return WAFModeObservation
 }
 
-// GetAllWAFModes 返回所有可用的WAF模式
+// GetAllWAFModes devuelve todos los modos WAF disponibles
 func GetAllWAFModes() []WAFMode {
 	return []WAFMode{WAFModeProtection, WAFModeObservation}
 }
 
-// NewSite 创建一个新站点，设置默认值
+// NewSite crea un nuevo sitio con valores por defecto
 func NewSite() *Site {
 	now := time.Now()
 	return &Site{
@@ -83,7 +83,7 @@ func NewSite() *Site {
 	}
 }
 
-// ValidateSite 验证站点配置有效性
+// ValidateSite valida la validez de la configuración del sitio
 func ValidateSite(site *Site) error {
 	if !IsValidWAFMode(site.WAFMode) {
 		site.WAFMode = DefaultWAFMode()
@@ -91,7 +91,7 @@ func ValidateSite(site *Site) error {
 	return nil
 }
 
-// WAFModeFromString 从字符串转换为WAFMode
+// WAFModeFromString convierte una cadena a WAFMode
 func WAFModeFromString(s string) WAFMode {
 	mode := WAFMode(s)
 	if !IsValidWAFMode(mode) {
@@ -100,7 +100,7 @@ func WAFModeFromString(s string) WAFMode {
 	return mode
 }
 
-// GetCollectionName 返回集合名称
+// GetCollectionName devuelve el nombre de la colección
 func (r *Site) GetCollectionName() string {
 	return "site"
 }

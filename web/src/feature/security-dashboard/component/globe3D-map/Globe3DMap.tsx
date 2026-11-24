@@ -6,7 +6,7 @@ import countries from "./globe-data-min.json"
 import type { FeatureCollection, GeoJsonProperties, Geometry } from "./geojson"
 import { WAFAttackTrajectory, WAF_ATTACK_TRAJECTORY_COLORS } from "./types"
 
-// WAF安全仪表板全局Globe实例管理 - 避免StrictMode重复创建问题
+// Gestión de la instancia global del Globe del dashboard WAF - evita el problema de doble creación de StrictMode
 const wafSecurityGlobeInstance: {
     renderer: WebGLRenderer | null
     camera: PerspectiveCamera | null
@@ -15,10 +15,10 @@ const wafSecurityGlobeInstance: {
     controls: OrbitControls | null
     animationId: number | null
     isInitialized: boolean
-    isCreating: boolean  // 防止并发创建
+    isCreating: boolean  // Evitar creación concurrente
     elementRef: HTMLDivElement | null
-    componentCount: number  // 追踪使用该实例的组件数量
-    resizeHandler: (() => void) | null // 存储resize处理函数
+    componentCount: number  // Rastrear el número de componentes que usan esta instancia
+    resizeHandler: (() => void) | null // Almacenar el manejador de resize
 } = {
     renderer: null,
     camera: null,
@@ -33,12 +33,12 @@ const wafSecurityGlobeInstance: {
     resizeHandler: null
 }
 
-// WAF安全Globe组件 - 使用全局WebGL上下文管理
+// Componente Globe de seguridad WAF - usa gestión global del contexto WebGL
 const Globe3DMap = React.memo(({ wafAttackTrajectoryData }: { wafAttackTrajectoryData: WAFAttackTrajectory[] }) => {
     const globeRef = useRef<HTMLDivElement>(null)
     const isMountedRef = useRef(false)
 
-    // 初始化或重用全局Three.js实例
+    // Inicializar o reutilizar la instancia global de Three.js
     useEffect(() => {
         if (!globeRef.current) return
 
@@ -48,7 +48,7 @@ const Globe3DMap = React.memo(({ wafAttackTrajectoryData }: { wafAttackTrajector
 
         console.log(`Globe component mounted, count: ${wafSecurityGlobeInstance.componentCount}`)
 
-        // 如果正在创建中，等待创建完成
+        // Si se está creando, esperar a que termine la creación
         if (wafSecurityGlobeInstance.isCreating) {
             console.log('WebGL context is being created, waiting...')
             const checkInterval = setInterval(() => {
@@ -60,69 +60,69 @@ const Globe3DMap = React.memo(({ wafAttackTrajectoryData }: { wafAttackTrajector
             return () => clearInterval(checkInterval)
         }
 
-        // 如果全局实例已存在且有效，重用它
+        // Si la instancia global existe y es válida, reutilizarla
         if (wafSecurityGlobeInstance.isInitialized && wafSecurityGlobeInstance.renderer) {
             console.log('Reusing existing WebGL context...')
             attachToElement(el)
             return
         }
 
-        // 创建新实例
+        // Crear nueva instancia
         createGlobeInstance(el)
 
-        // 清理函数
+        // Función de limpieza
         return () => {
             console.log(`Globe component unmounting, count: ${wafSecurityGlobeInstance.componentCount}`)
             isMountedRef.current = false
             wafSecurityGlobeInstance.componentCount--
 
-            // 只有当没有组件使用时才清理全局实例
+            // Solo limpiar la instancia global cuando ningún componente la usa
             if (wafSecurityGlobeInstance.componentCount <= 0) {
                 setTimeout(() => {
-                    // 再次检查是否真的没有组件在使用
+                    // Verificar de nuevo que ningún componente lo está usando
                     if (wafSecurityGlobeInstance.componentCount <= 0) {
                         console.log('No components using global instance, cleaning up...')
                         cleanupGlobalInstance()
                     }
-                }, 1000) // 延迟清理，给路由切换一些时间
+                }, 1000) // Limpieza diferida, dar tiempo al cambio de rutas
             }
         }
     }, [])
 
-    // 将现有canvas附加到新元素
+    // Adjuntar el canvas existente al nuevo elemento
     const attachToElement = (el: HTMLDivElement) => {
         if (!wafSecurityGlobeInstance.renderer) return
 
         const rect = el.getBoundingClientRect()
 
-        // 如果canvas不在当前容器中，移动它
+        // Si el canvas no está en el contenedor actual, moverlo
         if (!el.contains(wafSecurityGlobeInstance.renderer.domElement)) {
             el.innerHTML = ''
             el.appendChild(wafSecurityGlobeInstance.renderer.domElement)
             wafSecurityGlobeInstance.elementRef = el
         }
 
-        // 设置容器样式
+        // Establecer el estilo del contenedor
         el.style.setProperty("width", "100%")
         el.style.setProperty("height", "100%")
         el.style.setProperty("overflow", "hidden")
 
-        // 更新尺寸
+        // Actualizar las dimensiones
         if (wafSecurityGlobeInstance.camera) {
             wafSecurityGlobeInstance.camera.aspect = rect.width / rect.height
             wafSecurityGlobeInstance.camera.updateProjectionMatrix()
         }
         wafSecurityGlobeInstance.renderer.setSize(rect.width, rect.height)
 
-        // 确保重用实例时也设置正确的旋转角度
+        // Asegurar el ángulo de rotación correcto también al reutilizar la instancia
         // if (wafSecurityGlobeInstance.globe) {
         //     console.log('Setting rotation for reused globe instance...')
-        //     wafSecurityGlobeInstance.globe.rotation.y = -Math.PI * (95 / 180)  // -95度
-        //     wafSecurityGlobeInstance.globe.rotation.z = -Math.PI / 8  // 轻微倾斜
+        //     wafSecurityGlobeInstance.globe.rotation.y = -Math.PI * (95 / 180)  // -95 grados
+        //     wafSecurityGlobeInstance.globe.rotation.z = -Math.PI / 8  // ligera inclinación
         // }
     }
 
-    // 创建新的Globe实例
+    // Crear nueva instancia de Globe
     const createGlobeInstance = (el: HTMLDivElement) => {
         if (wafSecurityGlobeInstance.isCreating || wafSecurityGlobeInstance.isInitialized) {
             return
@@ -135,12 +135,12 @@ const Globe3DMap = React.memo(({ wafAttackTrajectoryData }: { wafAttackTrajector
         el.innerHTML = ''
 
         try {
-            // 创建新的Three.js实例
+            // Crear nueva instancia de Three.js
             const renderer = new WebGLRenderer({
                 antialias: true,
                 logarithmicDepthBuffer: true,
                 alpha: true,
-                preserveDrawingBuffer: true  // 保持绘制缓冲区
+                preserveDrawingBuffer: true  // Mantener el buffer de dibujo
             })
             const camera = new PerspectiveCamera(50, rect.width / rect.height, 0.001, 1000)
             const scene = new Scene()
@@ -154,7 +154,7 @@ const Globe3DMap = React.memo(({ wafAttackTrajectoryData }: { wafAttackTrajector
 
             const controls = new OrbitControls(camera, renderer.domElement)
 
-            // 设置灯光
+            // Configurar las luces
             const ambientLight = new AmbientLight(new Color(0xFFFFFF), 1)
             const dLight = new DirectionalLight(new Color(0x000000), 0.6)
             dLight.position.set(-400, 100, 400)
@@ -166,41 +166,41 @@ const Globe3DMap = React.memo(({ wafAttackTrajectoryData }: { wafAttackTrajector
             dirLight.position.set(5, 3, 4)
             scene.add(ambientLight, dLight, dLight1, dLight2, dirLight)
 
-            // 设置相机
+            // Configurar la cámara
             camera.aspect = rect.width / rect.height
-            camera.position.z = 320  // 从400减少到280，让球体显示更大
+            camera.position.z = 320  // Reducido de 400 a 280, para que el globo se vea más grande
             camera.position.x = 0
             camera.position.y = 0
             camera.updateProjectionMatrix()
 
-            // 设置控制器
+            // Establecer el controlador
             controls.enableDamping = true
             controls.enablePan = false
-            controls.minDistance = 150  // 从200减少到150
-            controls.maxDistance = 400  // 从500减少到400
+            controls.minDistance = 150  // Reducido de 200 a 150
+            controls.maxDistance = 400  // Reducido de 500 a 400
             controls.rotateSpeed = 0.8
             controls.zoomSpeed = 1
             controls.autoRotate = false
             controls.minPolarAngle = Math.PI / 5
             controls.maxPolarAngle = Math.PI - Math.PI / 5
 
-            // 创建地球
+            // Crear el globo
             console.log('Creating globe instance...')
             const globe = new ThreeGlobe({ waitForGlobeReady: true, animateIn: true })
             scene.add(globe)
 
             const globeMaterial = new MeshPhysicalMaterial({
                 color: new Color(0x0d0c27),
-                transparent: true,       // 启用透明
-                transmission: 1,         // 透光率
-                thickness: 0.5,          // 厚度
-                roughness: 0.75,         // 粗糙度
-                metalness: 0,            // 金属感
-                ior: 1.5,                // 折射率
-                envMapIntensity: 1.5,    // 环境贴图强度
-                reflectivity: 0.1,       // 反射率
-                opacity: 0.55,           // 不透明度
-                side: DoubleSide,        // 双面渲染
+                transparent: true,       // Habilitar transparencia
+                transmission: 1,         // Transmitancia
+                thickness: 0.5,          // Grosor
+                roughness: 0.75,         // Rugosidad
+                metalness: 0,            // Apariencia metálica
+                ior: 1.5,                // Índice de refracción
+                envMapIntensity: 1.5,    // Intensidad del mapa de entorno
+                reflectivity: 0.1,       // Reflectividad
+                opacity: 0.55,           // Opacidad
+                side: DoubleSide,        // Renderizado de doble cara
             })
 
             globe
@@ -220,20 +220,20 @@ const Globe3DMap = React.memo(({ wafAttackTrajectoryData }: { wafAttackTrajector
                     return (countryCode === "CHN" || countryCode === "TWN") ? "rgba(255, 255, 255, 1)" : "rgba(241, 230, 255, 1)"
                 })
 
-            // 设置 onGlobeReady 回调（只设置一次）
+            // Establecer el callback onGlobeReady (solo una vez)
             globe.onGlobeReady(() => {
                 console.log('Globe is ready!')
-                // 在地球准备好后设置旋转角度
-                // globe.rotation.y = -Math.PI * (95 / 180)  // -95度
-                // globe.rotation.z = -Math.PI / 8  // 轻微倾斜以获得更好的视角
+                // Establecer el ángulo de rotación cuando el globo esté listo
+                // globe.rotation.y = -Math.PI * (95 / 180)  // -95 grados
+                // globe.rotation.z = -Math.PI / 8  // ligera inclinación para mejor ángulo de visión
             })
 
-            // 立即设置旋转角度（不等待onGlobeReady）
+            // Establecer el ángulo de rotación inmediatamente (sin esperar a onGlobeReady)
             // console.log('Setting globe rotation immediately...')
-            // globe.rotation.y = -Math.PI * (95 / 180)  // -95度
-            // globe.rotation.z = -Math.PI / 8  // 轻微倾斜以获得更好的视角
+            // globe.rotation.y = -Math.PI * (95 / 180)  // -95 grados
+            // globe.rotation.z = -Math.PI / 8  // ligera inclinación para mejor ángulo de visión
 
-            // 更新全局实例
+            // Actualizar la instancia global
             wafSecurityGlobeInstance.renderer = renderer
             wafSecurityGlobeInstance.camera = camera
             wafSecurityGlobeInstance.scene = scene
@@ -243,7 +243,7 @@ const Globe3DMap = React.memo(({ wafAttackTrajectoryData }: { wafAttackTrajector
             wafSecurityGlobeInstance.isInitialized = true
             wafSecurityGlobeInstance.isCreating = false
 
-            // 动画循环
+            // Bucle de animación
             const animate = () => {
                 if (!wafSecurityGlobeInstance.isInitialized || !isMountedRef.current) return
 
@@ -256,7 +256,7 @@ const Globe3DMap = React.memo(({ wafAttackTrajectoryData }: { wafAttackTrajector
             console.log('Starting animation loop...')
             animate()
 
-            // 窗口大小变化处理
+            // Manejar cambios de tamaño de ventana
             const handleResize = () => {
                 if (!wafSecurityGlobeInstance.camera || !wafSecurityGlobeInstance.renderer) return
                 if (!wafSecurityGlobeInstance.elementRef) return
@@ -267,7 +267,7 @@ const Globe3DMap = React.memo(({ wafAttackTrajectoryData }: { wafAttackTrajector
                 wafSecurityGlobeInstance.renderer.setSize(newRect.width, newRect.height)
             }
 
-            // 保存 resize 处理函数的引用
+            // Guardar la referencia del manejador de resize
             wafSecurityGlobeInstance.resizeHandler = handleResize
             window.addEventListener('resize', handleResize)
 
@@ -277,7 +277,7 @@ const Globe3DMap = React.memo(({ wafAttackTrajectoryData }: { wafAttackTrajector
         }
     }
 
-    // 清理全局实例
+    // Limpiar la instancia global
     const cleanupGlobalInstance = () => {
         console.log('Cleaning up global WebGL context...')
 
@@ -298,13 +298,13 @@ const Globe3DMap = React.memo(({ wafAttackTrajectoryData }: { wafAttackTrajector
             wafSecurityGlobeInstance.scene.clear()
         }
 
-        // 正确移除事件监听器
+        // Eliminar correctamente el listener de eventos
         if (wafSecurityGlobeInstance.resizeHandler) {
             window.removeEventListener('resize', wafSecurityGlobeInstance.resizeHandler)
             wafSecurityGlobeInstance.resizeHandler = null
         }
 
-        // 重置全局实例
+        // Restablecer la instancia global
         wafSecurityGlobeInstance.renderer = null
         wafSecurityGlobeInstance.camera = null
         wafSecurityGlobeInstance.scene = null
@@ -316,7 +316,7 @@ const Globe3DMap = React.memo(({ wafAttackTrajectoryData }: { wafAttackTrajector
         wafSecurityGlobeInstance.elementRef = null
     }
 
-    // 更新轨迹数据
+    // Actualizar los datos de trayectorias
     useEffect(() => {
         if (!wafSecurityGlobeInstance.globe || !wafSecurityGlobeInstance.isInitialized || !wafAttackTrajectoryData || wafAttackTrajectoryData.length === 0) {
             return
@@ -326,24 +326,24 @@ const Globe3DMap = React.memo(({ wafAttackTrajectoryData }: { wafAttackTrajector
 
         const globe = wafSecurityGlobeInstance.globe
 
-        // // 确保每次数据更新时都设置正确的旋转角度
+        // // Asegurar el ángulo de rotación correcto en cada actualización de datos
         // console.log('Setting rotation in data update...')
-        // // 先重置旋转
+        // // Primero restablecer la rotación
         // globe.rotation.set(0, 0, 0)
-        // // 然后应用新的旋转
-        // globe.rotation.y = -Math.PI * (95 / 180)  // -95度
-        // globe.rotation.z = -Math.PI / 8  // 轻微倾斜
+        // // Luego aplicar la nueva rotación
+        // globe.rotation.y = -Math.PI * (95 / 180)  // -95 grados
+        // globe.rotation.z = -Math.PI / 8  // ligera inclinación
         // console.log('Current globe rotation:', globe.rotation.y, globe.rotation.z)
 
-        // 生成WAF攻击源点和防护中心数据
+        // Generar datos de puntos de origen de ataques y del centro de protección del WAF
         const attackPointsData = Array.from(wafAttackTrajectoryData
             .reduce((p, c) => {
-                // 攻击源点
+                // Puntos de origen de ataques
                 p.set(`${c.startLat},${c.startLng}`, {
                     lat: c.startLat,
                     lng: c.startLng,
                 })
-                // WAF防护中心 (杭州)
+                // Centro de protección WAF (Hangzhou)
                 p.set(`${c.endLat},${c.endLng}`, {
                     lat: c.endLat,
                     lng: c.endLng,
@@ -352,23 +352,23 @@ const Globe3DMap = React.memo(({ wafAttackTrajectoryData }: { wafAttackTrajector
             }, new Map<string, { lat: number; lng: number }>()).values()
         )
 
-        // 更新WAF攻击轨迹数据 - 优化线条样式
+        // Actualizar datos de trayectorias de ataque del WAF - estilos de línea optimizados
         globe
             .arcsData(wafAttackTrajectoryData)
             .arcColor((e: unknown) => {
                 const attackTrajectory = e as WAFAttackTrajectory
-                // 根据攻击类型分配颜色
+                // Asignar colores según el tipo de ataque
                 return WAF_ATTACK_TRAJECTORY_COLORS[attackTrajectory.colorIndex]
             })
-            .arcAltitude((e: unknown) => Math.pow((e as WAFAttackTrajectory).arcAlt * 0.22, 1.225)) // 攻击轨迹高度(因为此处的arcAlt是地理距离, 所以需要适配四次贝塞尔曲线的高度, 距离越远需要给的补偿值越大因此使用倍率加次方计算)
-            .arcStroke(0.3) // 攻击轨迹线条粗细
+            .arcAltitude((e: unknown) => Math.pow((e as WAFAttackTrajectory).arcAlt * 0.22, 1.225)) // Altura de la trayectoria de ataque (arcAlt es distancia geográfica; hay que adaptar la altura de la curva Bézier cuártica, a mayor distancia mayor compensación, por eso se usa multiplicador con potencia)
+            .arcStroke(0.3) // Grosor de las líneas de trayectoria de ataques
             .arcDashLength(0.9)
             .arcDashGap(4)
             .arcDashAnimateTime(1000)
             .arcsTransitionDuration(1000)
             .arcDashInitialGap((e: unknown) => (e as WAFAttackTrajectory).order * 1)
 
-        // 使用环形动画效果标记攻击点位
+        // Marcar los puntos de ataque con efecto de anillo animado
         globe
             .ringsData(attackPointsData)
             .pointColor("#ffffaa")

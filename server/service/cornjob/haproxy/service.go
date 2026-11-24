@@ -7,33 +7,33 @@ import (
 	"sync"
 	"time"
 
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/service/daemon"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/service/daemon"
 	"github.com/rs/zerolog"
 )
 
-// 单例实例
+// Instancia singleton
 var (
 	instance *CronJobService
-	mu       sync.Mutex // 用于双重检查锁定和其他操作的互斥锁
+	mu       sync.Mutex // Mutex para doble verificación de bloqueo y otras operaciones
 )
 
-// CronJobService 定时任务服务
+// CronJobService servicio de tareas programadas
 type CronJobService struct {
-	statsJob  *StatsJob          // HAProxy统计数据定时任务
-	logger    zerolog.Logger     // 日志记录器
-	ctx       context.Context    // 上下文
-	cancel    context.CancelFunc // 上下文取消函数
-	isRunning bool               // 是否正在运行
-	mu        sync.Mutex         // 实例内部锁，用于Start/Stop操作
+	statsJob  *StatsJob          // Tarea programada de estadísticas de HAProxy
+	logger    zerolog.Logger     // Logger
+	ctx       context.Context    // Contexto
+	cancel    context.CancelFunc // Función de cancelación del contexto
+	isRunning bool               // Si está en ejecución
+	mu        sync.Mutex         // Bloqueo interno de la instancia, para operaciones Start/Stop
 }
 
-// 创建新的CronJobService实例（内部方法）
+// Crear nueva instancia de CronJobService (método interno)
 func newCronJobService(runner daemon.ServiceRunner, targetList []string) (*CronJobService, error) {
-	// 初始化logger
+	// Inicializar el logger
 	logger := config.GetLogger().With().Str("component", "cronjob-service").Logger()
 
-	// 创建统计定时任务
+	// Crear la tarea programada de estadísticas
 	statsJob, err := NewStatsJob(runner, targetList)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create stats job: %w", err)
@@ -49,23 +49,23 @@ func newCronJobService(runner daemon.ServiceRunner, targetList []string) (*CronJ
 	}, nil
 }
 
-// GetInstance 获取单例实例，使用双重检查锁定模式
+// GetInstance obtiene la instancia singleton con doble verificación de bloqueo
 func GetInstance(runner daemon.ServiceRunner, targetList []string) (*CronJobService, error) {
-	// 第一次检查 - 快速路径，无锁
+	// Primera comprobación - ruta rápida, sin bloqueo
 	if instance != nil {
 		return instance, nil
 	}
 
-	// 锁定以确保线程安全
+	// Bloquear para garantizar seguridad entre hilos
 	mu.Lock()
 	defer mu.Unlock()
 
-	// 第二次检查 - 在锁内部再次检查
+	// Segunda comprobación - verificar de nuevo dentro del bloqueo
 	if instance != nil {
 		return instance, nil
 	}
 
-	// 初始化实例
+	// Inicializar la instancia
 	var err error
 	instance, err = newCronJobService(runner, targetList)
 	if err != nil {
@@ -75,7 +75,7 @@ func GetInstance(runner daemon.ServiceRunner, targetList []string) (*CronJobServ
 	return instance, nil
 }
 
-// MustGetInstance 获取单例实例，如果不存在或出错则panic
+// MustGetInstance obtiene la instancia singleton; hace panic si no existe o hay error
 func MustGetInstance() *CronJobService {
 	if instance == nil {
 		panic("CronJobService instance not initialized, call GetInstance first")
@@ -83,46 +83,46 @@ func MustGetInstance() *CronJobService {
 	return instance
 }
 
-// ResetInstance 重置单例（主要用于测试或配置变更）
+// ResetInstance reinicia el singleton (principalmente para pruebas o cambios de configuración)
 func ResetInstance() {
 	mu.Lock()
 	defer mu.Unlock()
 
-	// 如果实例存在且正在运行，先停止服务
+	// Si la instancia existe y está en ejecución, detener primero el servicio
 	if instance != nil {
-		// 不使用实例的Stop方法以避免死锁
-		// 直接调用内部逻辑停止服务
+		// No usar el método Stop de la instancia para evitar deadlocks
+		// Llamar directamente a la lógica interna para detener el servicio
 		if instance.isRunning {
 			instance.isRunning = false
 
-			// 创建一个带超时的context
+			// Crear un context con timeout
 			ctx, cancel := context.WithTimeout(instance.ctx, 30*time.Second)
 			defer cancel()
 
-			// 停止任务
+			// Detener tarea
 			err := instance.statsJob.Stop(ctx)
 			if err != nil {
 				instance.logger.Error().Err(err).Msg("Failed to stop HAProxy stats job during reset")
 			}
 
-			// 取消上下文
+			// Cancelar el contexto
 			instance.cancel()
 
 			instance.logger.Info().Msg("CronJobService stopped during reset")
 		}
 	}
 
-	// 重置单例变量
+	// Restablecer la variable singleton
 	instance = nil
 }
 
-// UpdateTargetList 更新监控的目标列表
+// UpdateTargetList actualiza la lista de objetivos monitorizados
 func (s *CronJobService) UpdateTargetList(targetList []string) {
 	s.statsJob.UpdateTargetList(targetList)
 	s.logger.Info().Strs("targets", targetList).Msg("Updated HAProxy monitoring target list")
 }
 
-// Start 启动所有定时任务
+// Start inicia todas las tareas programadas
 func (s *CronJobService) Start() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -131,7 +131,7 @@ func (s *CronJobService) Start() error {
 		return errors.New("service is already running")
 	}
 
-	// 启动HAProxy统计数据定时任务
+	// Iniciar la tarea programada de estadísticas de HAProxy
 	if err := s.statsJob.Start(s.ctx); err != nil {
 		s.logger.Error().Err(err).Msg("Failed to start HAProxy stats job")
 		return fmt.Errorf("failed to start stats job: %w", err)
@@ -142,25 +142,25 @@ func (s *CronJobService) Start() error {
 	return nil
 }
 
-// Stop 停止所有定时任务
+// Stop detiene todas las tareas programadas
 func (s *CronJobService) Stop() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	if !s.isRunning {
-		return nil // 已经停止，不需要再做任何事
+		return nil // Ya está detenido, no hay nada más que hacer
 	}
 
 	s.isRunning = false
 
-	// 创建一个带超时的context
+	// Crear un context con timeout
 	ctx, cancel := context.WithTimeout(s.ctx, 30*time.Second)
 	defer cancel()
 
-	// 用新context停止任务
+	// Detener la tarea con un nuevo context
 	err := s.statsJob.Stop(ctx)
 
-	// 然后取消服务自己的context
+	// Luego cancelar el context del propio servicio
 	s.cancel()
 
 	if err != nil {
@@ -172,7 +172,7 @@ func (s *CronJobService) Stop() error {
 	return nil
 }
 
-// IsRunning 返回服务是否正在运行
+// IsRunning devuelve si el servicio está en ejecución
 func (s *CronJobService) IsRunning() bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()

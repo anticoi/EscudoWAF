@@ -5,36 +5,36 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/HUAHUAI23/RuiQi/server/model"
-	"github.com/HUAHUAI23/RuiQi/server/repository"
-	"github.com/HUAHUAI23/RuiQi/server/utils/jwt"
-	"github.com/HUAHUAI23/RuiQi/server/utils/response"
+	"github.com/anticoi/EscudoWAF/server/model"
+	"github.com/anticoi/EscudoWAF/server/repository"
+	"github.com/anticoi/EscudoWAF/server/utils/jwt"
+	"github.com/anticoi/EscudoWAF/server/utils/response"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-// HasPermission 权限检查中间件
+// HasPermission middleware de verificación de permisos
 func HasPermission(requiredPermission string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// 获取用户角色
+		// Obtener el rol del usuario
 		role, exists := c.Get("userRole")
 		if !exists {
-			response.Unauthorized(c, fmt.Errorf("请求上下文中没有用户角色信息"))
+			response.Unauthorized(c, fmt.Errorf("No hay información de rol de usuario en el contexto de la petición"))
 			c.Abort()
 			return
 		}
 
-		// 如果是管理员，直接通过
+		// Si es administrador, pasar directamente
 		if role == model.RoleAdmin {
 			c.Next()
 			return
 		}
 
-		// 获取用户权限
+		// Obtener los permisos del usuario
 		var userPermissions []string
 
 		roleRepo := c.MustGet("roleRepo").(repository.RoleRepository)
-		// 获取角色默认权限
+		// Obtener los permisos por defecto del rol
 		rolePermissions := model.GetDefaultRolePermissions()[role.(string)]
 
 		if rolePermissions == nil {
@@ -48,7 +48,7 @@ func HasPermission(requiredPermission string) gin.HandlerFunc {
 			rolePermissions = roleObj.Permissions
 		}
 
-		// 获取用户额外权限
+		// Obtener los permisos adicionales del usuario
 		extraPermissions, exists := c.Get("userPermissions")
 		if exists {
 			userPermissions = append(rolePermissions, extraPermissions.([]string)...)
@@ -56,7 +56,7 @@ func HasPermission(requiredPermission string) gin.HandlerFunc {
 			userPermissions = rolePermissions
 		}
 
-		// 检查是否有所需权限
+		// Comprobar si se tienen los permisos necesarios
 		hasPermission := false
 		for _, perm := range userPermissions {
 			if perm == requiredPermission {
@@ -75,30 +75,30 @@ func HasPermission(requiredPermission string) gin.HandlerFunc {
 	}
 }
 
-// JWTAuth JWT认证中间件
+// JWTAuth middleware de autenticación JWT
 func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// 从请求头获取令牌
+		// Obtener el token de la cabecera de la petición
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			response.Unauthorized(c, fmt.Errorf("未提供令牌"))
+			response.Unauthorized(c, fmt.Errorf("Token no proporcionado"))
 			c.Abort()
 			return
 		}
 
-		// 检查格式
+		// Comprobar el formato
 		parts := strings.SplitN(authHeader, " ", 2)
 		if !(len(parts) == 2 && parts[0] == "Bearer") {
-			response.Unauthorized(c, fmt.Errorf("无效的令牌格式"))
+			response.Unauthorized(c, fmt.Errorf("Formato de token no válido"))
 			c.Abort()
 			return
 		}
 
-		// 解析令牌
+		// Analizar el token
 		claims, err := jwt.ParseToken(parts[1])
 		if err != nil {
 			if err == jwt.ErrExpiredToken {
-				response.Error(c, model.NewAPIError(http.StatusUnauthorized, "令牌已过期", err), false)
+				response.Error(c, model.NewAPIError(http.StatusUnauthorized, "Token expirado", err), false)
 			} else {
 				response.Unauthorized(c, err)
 			}
@@ -106,7 +106,7 @@ func JWTAuth() gin.HandlerFunc {
 			return
 		}
 
-		// 获取用户信息
+		// Obtener la información del usuario
 		userRepo := c.MustGet("userRepo").(repository.UserRepository)
 		userID, err := bson.ObjectIDFromHex(claims.UserID)
 		if err != nil {
@@ -121,7 +121,7 @@ func JWTAuth() gin.HandlerFunc {
 			return
 		}
 
-		// 将用户信息存储在上下文中
+		// Almacenar la información del usuario en el contexto
 		c.Set("userID", user.ID.Hex())
 		c.Set("username", user.Username)
 		c.Set("userRole", user.Role)
@@ -132,19 +132,19 @@ func JWTAuth() gin.HandlerFunc {
 	}
 }
 
-// PasswordResetRequired 密码重置检查中间件
+// PasswordResetRequired middleware de verificación de restablecimiento de contraseña
 func PasswordResetRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		needReset, exists := c.Get("needReset")
 		if !exists {
-			response.Unauthorized(c, fmt.Errorf("密码是否重置标志不存在"))
+			response.Unauthorized(c, fmt.Errorf("No existe el indicador de restablecimiento de contraseña"))
 			c.Abort()
 			return
 		}
 
-		// 如果需要重置密码，只允许访问密码重置接口
+		// Si se requiere restablecer la contraseña, solo permitir acceso a la interfaz de restablecimiento
 		if needReset.(bool) && c.FullPath() != "/api/v1/auth/reset-password" {
-			response.Error(c, model.NewAPIError(http.StatusForbidden, "请先重置密码", nil), false)
+			response.Error(c, model.NewAPIError(http.StatusForbidden, "Por favor, restablezca primero la contraseña", nil), false)
 			c.Abort()
 			return
 		}

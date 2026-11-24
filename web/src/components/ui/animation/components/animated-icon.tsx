@@ -16,7 +16,7 @@ interface AnimatedIconProps {
     children: React.ReactNode
     className?: string
     animationVariant?: "spin" | "continuous-spin" | "continuous-shake" | "continuous-pulse" | "shake" | "bounce" | "pulse" | "glow"
-    isAnimating?: boolean // 用于控制连续动画
+    isAnimating?: boolean // Para controlar animaciones continuas
     onClick?: () => void
 }
 
@@ -29,9 +29,9 @@ export const AnimatedIcon = forwardRef<HTMLDivElement, AnimatedIconProps>(
         onClick,
         ...props
     }, ref) => {
-        // 根据动画变体选择动画属性
+        // Elegir las propiedades de animación según la variante
         const getAnimationProps = () => {
-            // 对于连续动画，根据 isAnimating 决定是否应用动画
+            // Para animaciones continuas, aplicar animación según isAnimating
             if ((animationVariant === "continuous-spin" || animationVariant === "continuous-shake" || animationVariant === "continuous-pulse") && isAnimating) {
                 switch (animationVariant) {
                     case "continuous-spin":
@@ -45,7 +45,7 @@ export const AnimatedIcon = forwardRef<HTMLDivElement, AnimatedIconProps>(
                 }
             }
 
-            // 对于其他交互动画，根据变体选择
+            // Para otras animaciones interactivas, seleccionar según la variante
             switch (animationVariant) {
                 case "continuous-spin":
                 case "spin":

@@ -14,16 +14,16 @@ export function RealtimeQPSChart() {
     const chartInstanceRef = useRef<echarts.ECharts | null>(null)
     const { theme } = useTheme()
     const [isResetAnimating, setIsResetAnimating] = useState(false)
-    // 判断是否为暗色模式
+    // Comprobar si es modo oscuro
     const isDarkMode = theme === 'dark'
 
-    // 使用修改后的hook获取数据，现在包含refreshInterval
+    // Usar el hook modificado para obtener datos, ahora incluye refreshInterval
     const { localData, isLoading, isInitialized, refreshInterval } = useRealtimeQPS(30)
 
-    // 当前QPS值 - 取最新的数据点值
+    // Valor QPS actual - tomar el punto de datos más reciente
     const currentQPS = localData.length > 0 ? localData[localData.length - 1].value : 0
 
-    // 格式化时间戳 - 显示时:分:秒
+    // Formatear la marca de tiempo - mostrar hora:minutos:segundos
     const formatTimeLabel = (timestamp: string) => {
         const date = new Date(timestamp)
         return date.toLocaleTimeString([], {
@@ -37,44 +37,44 @@ export function RealtimeQPSChart() {
     useEffect(() => {
         if (!refreshInterval || !isInitialized) return
 
-        // 创建定时器，与数据刷新周期同步
+        // Crear temporizador sincronizado con el ciclo de actualización de datos
         const animationTimer = setInterval(() => {
-            // 触发动画
+            // Disparar la animación
             setIsResetAnimating(true)
 
-            // 1秒后结束动画
+            // Terminar la animación tras 1 segundo
             setTimeout(() => {
                 setIsResetAnimating(false)
             }, 1000)
         }, refreshInterval)
 
-        // 清理函数
+        // Función de limpieza
         return () => {
             clearInterval(animationTimer)
         }
     }, [refreshInterval, isInitialized])
 
 
-    // 初始化和更新图表
+    // Inicializar y actualizar el gráfico
     useEffect(() => {
         if (!chartRef.current || localData.length === 0) return
 
-        // 如果已经有图表实例，则不需要重新创建
+        // Si ya existe una instancia del gráfico, no es necesario recrearla
         if (!chartInstanceRef.current) {
             chartInstanceRef.current = echarts.init(chartRef.current)
         }
 
-        // 根据主题使用对应颜色
-        const CHART_PRIMARY_COLOR = isDarkMode ? '#b394e9' : '#9d76db' // 紫色主题
-        const CHART_SECONDARY_COLOR = isDarkMode ? 'rgba(179, 148, 233, 0.5)' : 'rgba(157, 118, 219, 0.5)' // 半透明紫色
+        // Usar el color correspondiente según el tema
+        const CHART_PRIMARY_COLOR = isDarkMode ? '#b394e9' : '#9d76db' // Tema púrpura
+        const CHART_SECONDARY_COLOR = isDarkMode ? 'rgba(179, 148, 233, 0.5)' : 'rgba(157, 118, 219, 0.5)' // Púrpura semitransparente
 
-        // 处理数据，确保0值也显示小柱子
+        // Procesar los datos, asegurar que los valores 0 también muestren pequeñas barras
         const processedData = localData.map(item => {
-            // 如果值为0，给一个最小值0.05以便显示
+            // Si el valor es 0, usar un mínimo de 0.05 para que se muestre
             return item.value === 0 ? 0.05 : item.value
         })
 
-        // 设置图表选项
+        // Establecer las opciones del gráfico
         const option: echarts.EChartsOption = {
             tooltip: {
                 trigger: 'axis',
@@ -92,7 +92,7 @@ export function RealtimeQPSChart() {
                     const dataIndex = params[0].dataIndex
                     if (typeof dataIndex === 'number' && dataIndex >= 0 && dataIndex < localData.length) {
                         const item = localData[dataIndex]
-                        // 显示实际值，而不是处理后的值
+                        // Mostrar el valor real en lugar del procesado
                         return `${formatTimeLabel(item.timestamp)}: <span style="font-weight: bold; color: ${CHART_PRIMARY_COLOR}">${item.value}</span> QPS`
                     }
                     return ''
@@ -104,63 +104,63 @@ export function RealtimeQPSChart() {
                 }
             },
             grid: {
-                left: 0,  // 完全移除左侧margin
-                right: 0, // 完全移除右侧margin
-                bottom: 0, // 移除底部margin
+                left: 0,  // Eliminar completamente el margen izquierdo
+                right: 0, // Eliminar completamente el margen derecho
+                bottom: 0, // Quitar el margen inferior
                 top: '5%',
-                containLabel: false // 不为标签预留空间
+                containLabel: false // No reservar espacio para etiquetas
             },
             xAxis: {
                 type: 'category',
                 boundaryGap: true,
                 data: localData.map(item => formatTimeLabel(item.timestamp)),
                 axisLabel: {
-                    show: false // 隐藏X轴标签
+                    show: false // Ocultar las etiquetas del eje X
                 },
                 axisLine: {
-                    show: false // 隐藏X轴线
+                    show: false // Ocultar la línea del eje X
                 },
                 axisTick: {
-                    show: false // 隐藏刻度线
+                    show: false // Ocultar las marcas de graduación
                 },
                 splitLine: {
-                    show: false // 隐藏分割线
+                    show: false // Ocultar las líneas divisorias
                 }
             },
             yAxis: {
                 type: 'value',
-                show: false, // 完全隐藏Y轴
+                show: false, // Ocultar completamente el eje Y
                 max: function (value) {
-                    // 让图表顶部有一些留白，最大值上浮20%
+                    // Dejar un margen superior en el gráfico, valor máximo +20%
                     return Math.max(10, value.max * 1.2)
                 },
-                min: 0 // 确保Y轴从0开始，这样小柱子能显示
+                min: 0 // Asegurar que el eje Y empiece en 0 para que las barras pequeñas se vean
             },
             series: [
                 {
                     name: 'QPS',
                     type: 'bar',
-                    barWidth: '65%',  // 调整柱子宽度为65%
-                    barCategoryGap: '10%',  // 适当增加类目间距
-                    barGap: '0%',  // 消除柱子间隙
+                    barWidth: '65%',  // Ajustar el ancho de las barras al 65%
+                    barCategoryGap: '10%',  // Aumentar apropiadamente el espacio entre categorías
+                    barGap: '0%',  // Eliminar el espacio entre barras
                     itemStyle: {
                         color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
                             { offset: 0, color: CHART_PRIMARY_COLOR },
                             { offset: 1, color: CHART_SECONDARY_COLOR }
                         ]),
-                        borderRadius: [4, 4, 0, 0], // 柱状图顶部圆角
+                        borderRadius: [4, 4, 0, 0], // Esquinas superiores redondeadas del gráfico de barras
                         shadowColor: isDarkMode ? 'rgba(179, 148, 233, 0.6)' : 'rgba(157, 118, 219, 0.4)',
                         shadowBlur: isDarkMode ? 15 : 10
                     },
-                    data: processedData, // 使用处理后的数据
+                    data: processedData, // Usar los datos procesados
                     animationDuration: 300,
                     animationEasing: 'cubicOut',
                     animationDelay: function (idx) {
-                        return idx * 5 // 快速动画
+                        return idx * 5 // Animación rápida
                     }
                 }
             ],
-            // 添加底部的虚线
+            // Añadir línea discontinua inferior
             markLine: {
                 silent: true,
                 symbol: 'none',
@@ -170,17 +170,17 @@ export function RealtimeQPSChart() {
                 },
                 data: [
                     {
-                        yAxis: 0 // Y轴0点处的线
+                        yAxis: 0 // Línea en el punto 0 del eje Y
                     }
                 ]
             },
             animation: true
         }
 
-        // 应用选项
+        // Opciones de la aplicación
         chartInstanceRef.current.setOption(option)
 
-        // 调整窗口大小时重绘图表
+        // Redibujar el gráfico al cambiar el tamaño de la ventana
         const handleResize = () => {
             if (chartInstanceRef.current) {
                 chartInstanceRef.current.resize()
@@ -189,7 +189,7 @@ export function RealtimeQPSChart() {
 
         window.addEventListener('resize', handleResize)
 
-        // 清理函数
+        // Función de limpieza
         return () => {
             window.removeEventListener('resize', handleResize)
         }

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router' // 修改导入路径从react-router-dom到react-router
+import { useNavigate } from 'react-router' // Cambiar la ruta de importación de react-router-dom a react-router
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { authApi } from '@/api/services'
 import useAuthStore from '@/store/auth'
@@ -26,7 +26,7 @@ export const useLogin = () => {
             }
         },
         onError: (error: ApiError) => {
-            setError(error.message || '登录失败，请检查用户名和密码')
+            setError(error.message || 'Error de inicio de sesión, compruebe el usuario y la contraseña')
         }
     })
 
@@ -55,13 +55,13 @@ export const useResetPassword = () => {
             // to force a new login with the new password
             if (user?.needReset) {
                 logout()
-                navigate('/login', { state: { message: '密码已重置，请使用新密码登录' } })
+                navigate('/login', { state: { message: 'Contraseña restablecida, inicie sesión con la nueva contraseña' } })
             } else {
                 navigate('/')
             }
         },
         onError: (error: ApiError) => {
-            setError(error.message || '密码重置失败，请重试')
+            setError(error.message || 'Error al restablecer la contraseña, inténtelo de nuevo')
         },
     })
 
@@ -83,7 +83,7 @@ export const useCurrentUser = () => {
         enabled: !!useAuthStore.getState().token,
     })
 
-    // 监听数据变化，替代 onSuccess
+    // Escuchar cambios de datos, sustituye a onSuccess
     useEffect(() => {
         if (data) {
             setUser(data)

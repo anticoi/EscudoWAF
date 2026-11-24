@@ -6,8 +6,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/HUAHUAI23/RuiQi/pkg/model"
-	"github.com/HUAHUAI23/RuiQi/server/config"
+	"github.com/anticoi/EscudoWAF/pkg/model"
+	"github.com/anticoi/EscudoWAF/server/config"
 	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -15,10 +15,10 @@ import (
 )
 
 var (
-	ErrIPGroupNotFound = errors.New("IP组不存在")
+	ErrIPGroupNotFound = errors.New("El grupo de IPs no existe")
 )
 
-// IPGroupRepository IP组仓库接口
+// IPGroupRepository interfaz del repositorio de grupos de IPs
 type IPGroupRepository interface {
 	CreateIPGroup(ctx context.Context, ipGroup *model.IPGroup) error
 	GetIPGroups(ctx context.Context, page, size int64) ([]model.IPGroup, int64, error)
@@ -29,29 +29,29 @@ type IPGroupRepository interface {
 	CheckIPGroupNameExists(ctx context.Context, name string, excludeID bson.ObjectID) (bool, error)
 }
 
-// MongoIPGroupRepository MongoDB实现的IP组仓库
+// MongoIPGroupRepository repositorio de grupos de IPs implementado en MongoDB
 type MongoIPGroupRepository struct {
 	collection *mongo.Collection
 	logger     zerolog.Logger
 }
 
-// NewIPGroupRepository 创建IP组仓库
+// NewIPGroupRepository crea el repositorio de grupos de IPs
 func NewIPGroupRepository(db *mongo.Database) IPGroupRepository {
 	var ipGroup model.IPGroup
 	collection := db.Collection(ipGroup.GetCollectionName())
 	logger := config.GetRepositoryLogger("ipgroup")
 
-	// 创建索引
+	// Crear índices
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// IP组名称唯一索引
+	// Índice único de nombres de grupos de IPs
 	_, err := collection.Indexes().CreateOne(ctx, mongo.IndexModel{
 		Keys:    bson.D{{Key: "name", Value: 1}},
 		Options: options.Index().SetUnique(true),
 	})
 	if err != nil {
-		logger.Error().Err(err).Msg("创建IP组名称索引失败")
+		logger.Error().Err(err).Msg("Error al crear el índice de nombres de grupos de IPs")
 	}
 
 	return &MongoIPGroupRepository{
@@ -60,12 +60,12 @@ func NewIPGroupRepository(db *mongo.Database) IPGroupRepository {
 	}
 }
 
-// CreateIPGroup 创建IP组
+// CreateIPGroup Crear grupo de IPs
 func (r *MongoIPGroupRepository) CreateIPGroup(ctx context.Context, ipGroup *model.IPGroup) error {
-	// 插入新IP组
+	// Insertar nuevo grupo de IPs
 	result, err := r.collection.InsertOne(ctx, ipGroup)
 	if err != nil {
-		r.logger.Error().Err(err).Str("name", ipGroup.Name).Msg("插入IP组时出错")
+		r.logger.Error().Err(err).Str("name", ipGroup.Name).Msg("Error al insertar el grupo de IPs")
 		return err
 	}
 
@@ -73,43 +73,43 @@ func (r *MongoIPGroupRepository) CreateIPGroup(ctx context.Context, ipGroup *mod
 	return nil
 }
 
-// GetIPGroups 获取IP组列表
+// GetIPGroups Obtener lista de grupos de IPs
 func (r *MongoIPGroupRepository) GetIPGroups(ctx context.Context, page, size int64) ([]model.IPGroup, int64, error) {
-	// 计算分页
+	// Calcular la paginación
 	skip := (page - 1) * size
 
-	// 设置查询选项
+	// Establecer las opciones de consulta
 	findOptions := options.Find().
 		SetSkip(skip).
 		SetLimit(size).
-		SetSort(bson.D{{Key: "name", Value: 1}}) // 按名称升序排序
+		SetSort(bson.D{{Key: "name", Value: 1}}) // Ordenar por nombre ascendente
 
-	// 执行查询
+	// Ejecutar la consulta
 	cursor, err := r.collection.Find(ctx, bson.D{}, findOptions)
 	if err != nil {
-		r.logger.Error().Err(err).Msg("查询IP组列表时出错")
+		r.logger.Error().Err(err).Msg("Error al consultar la lista de grupos de IPs")
 		return nil, 0, err
 	}
 	defer cursor.Close(ctx)
 
-	// 解析结果
+	// Resultado del análisis
 	var ipGroups []model.IPGroup
 	if err = cursor.All(ctx, &ipGroups); err != nil {
-		r.logger.Error().Err(err).Msg("解析IP组列表时出错")
+		r.logger.Error().Err(err).Msg("Error al analizar la lista de grupos de IPs")
 		return nil, 0, err
 	}
 
-	// 获取总数
+	// Obtener el total
 	total, err := r.collection.CountDocuments(ctx, bson.D{})
 	if err != nil {
-		r.logger.Error().Err(err).Msg("获取IP组总数时出错")
+		r.logger.Error().Err(err).Msg("Error al obtener el total de grupos de IPs")
 		return nil, 0, err
 	}
 
 	return ipGroups, total, nil
 }
 
-// GetIPGroupByID 根据ID获取IP组
+// GetIPGroupByID obtiene un grupo de IPs por ID
 func (r *MongoIPGroupRepository) GetIPGroupByID(ctx context.Context, id bson.ObjectID) (*model.IPGroup, error) {
 	var ipGroup model.IPGroup
 	err := r.collection.FindOne(ctx, bson.D{{Key: "_id", Value: id}}).Decode(&ipGroup)
@@ -117,14 +117,14 @@ func (r *MongoIPGroupRepository) GetIPGroupByID(ctx context.Context, id bson.Obj
 		if err == mongo.ErrNoDocuments {
 			return nil, ErrIPGroupNotFound
 		}
-		r.logger.Error().Err(err).Str("id", id.Hex()).Msg("查询IP组时出错")
+		r.logger.Error().Err(err).Str("id", id.Hex()).Msg("Error al consultar el grupo de IPs")
 		return nil, err
 	}
 
 	return &ipGroup, nil
 }
 
-// GetIPGroupByName 根据名称获取IP组
+// GetIPGroupByName obtiene un grupo de IPs por nombre
 func (r *MongoIPGroupRepository) GetIPGroupByName(ctx context.Context, name string) (*model.IPGroup, error) {
 	var ipGroup model.IPGroup
 	err := r.collection.FindOne(ctx, bson.D{{Key: "name", Value: name}}).Decode(&ipGroup)
@@ -132,16 +132,16 @@ func (r *MongoIPGroupRepository) GetIPGroupByName(ctx context.Context, name stri
 		if err == mongo.ErrNoDocuments {
 			return nil, ErrIPGroupNotFound
 		}
-		r.logger.Error().Err(err).Str("name", name).Msg("按名称查询IP组时出错")
+		r.logger.Error().Err(err).Str("name", name).Msg("Error al consultar el grupo de IPs por nombre")
 		return nil, err
 	}
 
 	return &ipGroup, nil
 }
 
-// UpdateIPGroup 更新IP组
+// UpdateIPGroup Actualizar grupo de IPs
 func (r *MongoIPGroupRepository) UpdateIPGroup(ctx context.Context, ipGroup *model.IPGroup) error {
-	// 更新IP组
+	// Actualizar grupo de IPs
 	_, err := r.collection.ReplaceOne(
 		ctx,
 		bson.D{{Key: "_id", Value: ipGroup.ID}},
@@ -149,18 +149,18 @@ func (r *MongoIPGroupRepository) UpdateIPGroup(ctx context.Context, ipGroup *mod
 	)
 
 	if err != nil {
-		r.logger.Error().Err(err).Str("id", ipGroup.ID.Hex()).Msg("更新IP组时出错")
+		r.logger.Error().Err(err).Str("id", ipGroup.ID.Hex()).Msg("Error al actualizar el grupo de IPs")
 		return err
 	}
 
 	return nil
 }
 
-// DeleteIPGroup 删除IP组
+// DeleteIPGroup Eliminar grupo de IPs
 func (r *MongoIPGroupRepository) DeleteIPGroup(ctx context.Context, id bson.ObjectID) error {
 	result, err := r.collection.DeleteOne(ctx, bson.D{{Key: "_id", Value: id}})
 	if err != nil {
-		r.logger.Error().Err(err).Str("id", id.Hex()).Msg("删除IP组时出错")
+		r.logger.Error().Err(err).Str("id", id.Hex()).Msg("Error al eliminar el grupo de IPs")
 		return err
 	}
 
@@ -171,18 +171,18 @@ func (r *MongoIPGroupRepository) DeleteIPGroup(ctx context.Context, id bson.Obje
 	return nil
 }
 
-// CheckIPGroupNameExists 检查IP组名称是否已存在
+// CheckIPGroupNameExists comprueba si el nombre del grupo de IPs ya existe
 func (r *MongoIPGroupRepository) CheckIPGroupNameExists(ctx context.Context, name string, excludeID bson.ObjectID) (bool, error) {
 	filter := bson.D{{Key: "name", Value: name}}
 
-	// 如果是更新操作，需要排除当前IP组ID
+	// Si es una actualización, excluir el ID del grupo de IPs actual
 	if excludeID != bson.NilObjectID {
 		filter = append(filter, bson.E{Key: "_id", Value: bson.D{{Key: "$ne", Value: excludeID}}})
 	}
 
 	count, err := r.collection.CountDocuments(ctx, filter)
 	if err != nil {
-		r.logger.Error().Err(err).Str("name", name).Msg("检查IP组名称是否存在时出错")
+		r.logger.Error().Err(err).Str("name", name).Msg("Error al comprobar si el nombre del grupo de IPs existe")
 		return false, err
 	}
 

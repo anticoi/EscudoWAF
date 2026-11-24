@@ -1,6 +1,6 @@
 import { HTMLMotionProps } from "motion/react"
 
-// 页面过渡动画配置 - 优化后
+// Configuración de animación de transición de página - optimizada
 export const pageTransitionAnimation: HTMLMotionProps<"div"> = {
   className: "w-full h-full",
   initial: "initial",
@@ -35,7 +35,7 @@ export const pageTransitionAnimation: HTMLMotionProps<"div"> = {
   }
 }
 
-// 页面淡入淡出过渡 - 优化后
+// Transición de fundido de página - optimizada
 export const pageFadeTransition: HTMLMotionProps<"div"> = {
   className: "w-full h-full",
   initial: { opacity: 0, scale: 0.985 },
@@ -57,7 +57,7 @@ export const pageFadeTransition: HTMLMotionProps<"div"> = {
   }
 }
 
-// 页面滑动过渡 - 优化后
+// Transición de deslizamiento de página - optimizada
 export const pageSlideTransition: HTMLMotionProps<"div"> = {
   className: "w-full h-full",
   initial: { x: 25, opacity: 0, filter: "blur(2px)" },
@@ -83,7 +83,7 @@ export const pageSlideTransition: HTMLMotionProps<"div"> = {
   }
 }
 
-// 新增：弹性缩放过渡
+// Nuevo: transición de escala elástica
 export const pageScaleTransition: HTMLMotionProps<"div"> = {
   className: "w-full h-full",
   initial: { 
@@ -113,7 +113,7 @@ export const pageScaleTransition: HTMLMotionProps<"div"> = {
   }
 }
 
-// 新增：3D卡片翻转效果
+// Nuevo: efecto de volteo 3D de tarjetas
 export const pageFlipTransition: HTMLMotionProps<"div"> = {
   className: "w-full h-full",
   initial: { 

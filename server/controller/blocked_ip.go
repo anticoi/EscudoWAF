@@ -3,28 +3,28 @@ package controller
 import (
 	"errors"
 
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/dto"
-	"github.com/HUAHUAI23/RuiQi/server/service"
-	"github.com/HUAHUAI23/RuiQi/server/utils/response"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/dto"
+	"github.com/anticoi/EscudoWAF/server/service"
+	"github.com/anticoi/EscudoWAF/server/utils/response"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 )
 
-// BlockedIPController 封禁IP控制器接口
+// BlockedIPController interfaz del controlador de IPs bloqueadas
 type BlockedIPController interface {
 	GetBlockedIPs(ctx *gin.Context)
 	GetBlockedIPStats(ctx *gin.Context)
 	CleanupExpiredBlockedIPs(ctx *gin.Context)
 }
 
-// BlockedIPControllerImpl 封禁IP控制器实现
+// BlockedIPControllerImpl implementación del controlador de IPs bloqueadas
 type BlockedIPControllerImpl struct {
 	blockedIPService service.BlockedIPService
 	logger           zerolog.Logger
 }
 
-// NewBlockedIPController 创建封禁IP控制器
+// NewBlockedIPController crea el controlador de IPs bloqueadas
 func NewBlockedIPController(blockedIPService service.BlockedIPService) BlockedIPController {
 	logger := config.GetControllerLogger("blocked_ip")
 	return &BlockedIPControllerImpl{
@@ -33,30 +33,30 @@ func NewBlockedIPController(blockedIPService service.BlockedIPService) BlockedIP
 	}
 }
 
-// GetBlockedIPs 获取封禁IP列表
+// GetBlockedIPs Obtener lista de IPs bloqueadas
 //
-//	@Summary		获取封禁IP列表
-//	@Description	获取被封禁的IP地址列表，支持分页、过滤和排序
-//	@Tags			封禁IP管理
+//	@Summary		Obtener lista de IPs bloqueadas
+//	@Description	Obtener la lista de IPs bloqueadas, con paginación, filtrado y ordenación
+//	@Tags			Gestión de IPs bloqueadas
 //	@Produce		json
-//	@Param			page	query	int		false	"页码，从1开始"								default(1)	minimum(1)
-//	@Param			size	query	int		false	"每页数量，最大100"							default(10)	minimum(1)	maximum(100)
-//	@Param			ip		query	string	false	"IP地址过滤，支持模糊匹配"							example(192.168.1.1)
-//	@Param			reason	query	string	false	"封禁原因过滤"								example(high_frequency_attack)
-//	@Param			status	query	string	false	"状态过滤：active-生效中，expired-已过期，all-全部"	default(all)		Enums(active, expired, all)
-//	@Param			sortBy	query	string	false	"排序字段"									default(blocked_at)	Enums(blocked_at, blocked_until, ip)
-//	@Param			sortDir	query	string	false	"排序方向：asc-升序，desc-降序"					default(desc)		Enums(asc, desc)
+//	@Param			page	query	int		false	"Número de página, comenzando en 1"								default(1)	minimum(1)
+//	@Param			size	query	int		false	"Cantidad por página, máximo 100"							default(10)	minimum(1)	maximum(100)
+//	@Param			ip		query	string	false	"Filtrar por dirección IP, admite coincidencia difusa"							example(192.168.1.1)
+//	@Param			reason	query	string	false	"Filtrar por motivo de bloqueo"								example(high_frequency_attack)
+//	@Param			status	query	string	false	"Filtro de estado: active - activo, expired - expirado, all - todos"	default(all)		Enums(active, expired, all)
+//	@Param			sortBy	query	string	false	"Campo de ordenación"									default(blocked_at)	Enums(blocked_at, blocked_until, ip)
+//	@Param			sortDir	query	string	false	"Dirección de ordenación: asc - ascendente, desc - descendente"					default(desc)		Enums(asc, desc)
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponse{data=dto.BlockedIPListResponse}	"获取封禁IP列表成功"
-//	@Failure		400	{object}	model.ErrResponse										"请求参数错误"
-//	@Failure		401	{object}	model.ErrResponseDontShowError							"未授权访问"
-//	@Failure		403	{object}	model.ErrResponseDontShowError							"禁止访问"
-//	@Failure		500	{object}	model.ErrResponseDontShowError							"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponse{data=dto.BlockedIPListResponse}	"Lista de IPs bloqueadas obtenida con éxito"
+//	@Failure		400	{object}	model.ErrResponse										"Parámetros de la petición incorrectos"
+//	@Failure		401	{object}	model.ErrResponseDontShowError							"Acceso no autorizado"
+//	@Failure		403	{object}	model.ErrResponseDontShowError							"Acceso prohibido"
+//	@Failure		500	{object}	model.ErrResponseDontShowError							"Error interno del servidor"
 //	@Router			/api/v1/blocked-ips [get]
 func (c *BlockedIPControllerImpl) GetBlockedIPs(ctx *gin.Context) {
 	var req dto.BlockedIPListRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
-		c.logger.Warn().Err(err).Msg("请求参数绑定失败")
+		c.logger.Warn().Err(err).Msg("Error al vincular los parámetros de la petición")
 		response.BadRequest(ctx, err, true)
 		return
 	}
@@ -69,7 +69,7 @@ func (c *BlockedIPControllerImpl) GetBlockedIPs(ctx *gin.Context) {
 		Str("status", req.Status).
 		Str("sortBy", req.SortBy).
 		Str("sortDir", req.SortDir).
-		Msg("获取封禁IP列表请求")
+		Msg("Petición de lista de IPs bloqueadas")
 
 	result, err := c.blockedIPService.GetBlockedIPs(ctx, &req)
 	if err != nil {
@@ -77,7 +77,7 @@ func (c *BlockedIPControllerImpl) GetBlockedIPs(ctx *gin.Context) {
 			response.BadRequest(ctx, err, true)
 			return
 		}
-		c.logger.Error().Err(err).Msg("获取封禁IP列表失败")
+		c.logger.Error().Err(err).Msg("Error al obtener la lista de IPs bloqueadas")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
@@ -87,29 +87,29 @@ func (c *BlockedIPControllerImpl) GetBlockedIPs(ctx *gin.Context) {
 		Int("items_count", len(result.Items)).
 		Int("page", result.Page).
 		Int("pages", result.Pages).
-		Msg("获取封禁IP列表成功")
+		Msg("Lista de IPs bloqueadas obtenida con éxito")
 
-	response.Success(ctx, "获取封禁IP列表成功", result)
+	response.Success(ctx, "Lista de IPs bloqueadas obtenida con éxito", result)
 }
 
-// GetBlockedIPStats 获取封禁IP统计信息
+// GetBlockedIPStats Obtener estadísticas de IPs bloqueadas
 //
-//	@Summary		获取封禁IP统计信息
-//	@Description	获取封禁IP的统计信息，包括总数、生效数、过期数、按原因统计和按小时统计
-//	@Tags			封禁IP管理
+//	@Summary		Obtener estadísticas de IPs bloqueadas
+//	@Description	Obtener estadísticas de IPs bloqueadas: total, activas, expiradas, por motivo y por hora
+//	@Tags			Gestión de IPs bloqueadas
 //	@Produce		json
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponse{data=dto.BlockedIPStatsResponse}	"获取统计信息成功"
-//	@Failure		401	{object}	model.ErrResponseDontShowError							"未授权访问"
-//	@Failure		403	{object}	model.ErrResponseDontShowError							"禁止访问"
-//	@Failure		500	{object}	model.ErrResponseDontShowError							"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponse{data=dto.BlockedIPStatsResponse}	"Información estadística obtenida con éxito"
+//	@Failure		401	{object}	model.ErrResponseDontShowError							"Acceso no autorizado"
+//	@Failure		403	{object}	model.ErrResponseDontShowError							"Acceso prohibido"
+//	@Failure		500	{object}	model.ErrResponseDontShowError							"Error interno del servidor"
 //	@Router			/api/v1/blocked-ips/stats [get]
 func (c *BlockedIPControllerImpl) GetBlockedIPStats(ctx *gin.Context) {
-	c.logger.Info().Msg("获取封禁IP统计信息请求")
+	c.logger.Info().Msg("Petición de estadísticas de IPs bloqueadas")
 
 	stats, err := c.blockedIPService.GetBlockedIPStats(ctx)
 	if err != nil {
-		c.logger.Error().Err(err).Msg("获取封禁IP统计信息失败")
+		c.logger.Error().Err(err).Msg("Error al obtener las estadísticas de IPs bloqueadas")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
@@ -120,39 +120,39 @@ func (c *BlockedIPControllerImpl) GetBlockedIPStats(ctx *gin.Context) {
 		Int64("expired_blocked", stats.ExpiredBlocked).
 		Int("reason_types", len(stats.ReasonStats)).
 		Int("hourly_stats", len(stats.Last24HourStats)).
-		Msg("获取封禁IP统计信息成功")
+		Msg("Estadísticas de IPs bloqueadas obtenidas con éxito")
 
-	response.Success(ctx, "获取统计信息成功", stats)
+	response.Success(ctx, "Información estadística obtenida con éxito", stats)
 }
 
-// CleanupExpiredBlockedIPs 清理过期的封禁IP记录
+// CleanupExpiredBlockedIPs Limpiar registros de IPs bloqueadas expirados
 //
-//	@Summary		清理过期的封禁IP记录
-//	@Description	删除已过期的封禁IP记录，释放存储空间
-//	@Tags			封禁IP管理
+//	@Summary		Limpiar registros de IPs bloqueadas expirados
+//	@Description	Eliminar registros de IPs bloqueadas expirados para liberar espacio
+//	@Tags			Gestión de IPs bloqueadas
 //	@Produce		json
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponse{data=dto.BlockedIPCleanupResponse}	"清理完成"
-//	@Failure		401	{object}	model.ErrResponseDontShowError								"未授权访问"
-//	@Failure		403	{object}	model.ErrResponseDontShowError								"禁止访问"
-//	@Failure		500	{object}	model.ErrResponseDontShowError								"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponse{data=dto.BlockedIPCleanupResponse}	"Limpieza completada"
+//	@Failure		401	{object}	model.ErrResponseDontShowError								"Acceso no autorizado"
+//	@Failure		403	{object}	model.ErrResponseDontShowError								"Acceso prohibido"
+//	@Failure		500	{object}	model.ErrResponseDontShowError								"Error interno del servidor"
 //	@Router			/api/v1/blocked-ips/cleanup [delete]
 func (c *BlockedIPControllerImpl) CleanupExpiredBlockedIPs(ctx *gin.Context) {
-	c.logger.Info().Msg("清理过期封禁IP记录请求")
+	c.logger.Info().Msg("Petición de limpieza de registros de IPs bloqueadas expirados")
 
 	deletedCount, err := c.blockedIPService.CleanupExpiredBlockedIPs(ctx)
 	if err != nil {
-		c.logger.Error().Err(err).Msg("清理过期封禁IP记录失败")
+		c.logger.Error().Err(err).Msg("Error al limpiar los registros de IPs bloqueadas expirados")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	c.logger.Info().Int64("deleted_count", deletedCount).Msg("清理过期封禁IP记录成功")
+	c.logger.Info().Int64("deleted_count", deletedCount).Msg("Registros de IPs bloqueadas expirados limpiados con éxito")
 
 	cleanupResponse := dto.BlockedIPCleanupResponse{
 		DeletedCount: deletedCount,
-		Message:      "已成功清理过期的封禁IP记录",
+		Message:      "Registros de IPs bloqueadas expirados limpiados con éxito",
 	}
 
-	response.Success(ctx, "清理完成", cleanupResponse)
+	response.Success(ctx, "Limpieza completada", cleanupResponse)
 }

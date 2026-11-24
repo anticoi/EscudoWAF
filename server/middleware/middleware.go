@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/model"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/model"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -29,12 +29,12 @@ func Logger() gin.HandlerFunc {
 		elapsed := time.Since(start)
 		statusCode := c.Writer.Status()
 
-		// 在生产环境中，只记录错误、警告或较慢的请求
+		// En producción, solo registrar errores, advertencias o peticiones lentas
 		if !isProduction ||
 			statusCode >= 400 ||
 			elapsed > 500*time.Millisecond {
 
-			// 根据状态码选择日志级别
+			// Elegir el nivel de log según el código de estado
 			event := log.Info()
 			if statusCode >= 400 && statusCode < 500 {
 				event = log.Warn()
@@ -45,7 +45,7 @@ func Logger() gin.HandlerFunc {
 			event.Str("method", method).
 				Str("path", path).
 				Int("status", statusCode).
-				// Dur("latency", elapsed). //单位是毫秒
+				// Dur("latency", elapsed). //unidad en milisegundos
 				Str("latency", elapsed.String()).
 				Msg("HTTP Request")
 		}
@@ -79,29 +79,29 @@ func RequestID() gin.HandlerFunc {
 	}
 }
 
-// CustomErrorHandler 简化版的错误处理函数
+// CustomErrorHandler función simplificada de manejo de errores
 func CustomErrorHandler(c *gin.Context, err any) {
 	requestID, _ := c.Get("RequestID")
 	requestIDStr, _ := requestID.(string)
 
-	// 记录错误日志
+	// Registrar el log de errores
 	config.Logger.Error().
 		Interface("error", err).
 		Str("request", c.Request.URL.Path).
 		Str("requestId", requestIDStr).
 		Msg("Recovery from panic")
 
-	// 创建标准错误响应
+	// Crear respuesta de error estándar
 	errorResp := model.NewErrorResponse(
 		http.StatusInternalServerError,
-		"服务器内部错误",
+		"Error interno del servidor",
 		nil,
 		// fmt.Errorf("%v", err),
 	)
 
-	// 添加请求ID
+	// Añadir ID de petición
 	errorResp.RequestID = requestIDStr
 
-	// 返回标准错误响应
+	// Devolver respuesta de error estándar
 	c.JSON(http.StatusInternalServerError, errorResp)
 }

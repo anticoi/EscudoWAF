@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
-	flowcontroller "github.com/HUAHUAI23/RuiQi/coraza-spoa/internal/flow-controller"
+	flowcontroller "github.com/anticoi/EscudoWAF/coraza-spoa/internal/flow-controller"
 	"github.com/rs/zerolog"
 )
 
-// BenchmarkMetricsOverhead 测试 Metrics 对系统的性能开销
+// BenchmarkMetricsOverhead mide el coste de Metrics en el sistema
 func BenchmarkMetricsOverhead(b *testing.B) {
 	logger := zerolog.Nop()
 
@@ -49,7 +49,7 @@ func BenchmarkMetricsOverhead(b *testing.B) {
 	})
 }
 
-// BenchmarkIPRecorderRealWorld 测试真实场景下的性能影响
+// BenchmarkIPRecorderRealWorld mide el impacto de rendimiento en escenarios reales
 func BenchmarkIPRecorderRealWorld(b *testing.B) {
 	logger := zerolog.Nop()
 	config := flowcontroller.DefaultConfig()
@@ -58,7 +58,7 @@ func BenchmarkIPRecorderRealWorld(b *testing.B) {
 	recorder := flowcontroller.NewMemoryIPRecorderWithConfig(config, logger)
 	defer recorder.Close()
 
-	// 预先添加一些IP记录
+	// Añadir previamente algunos registros de IP
 	for i := 0; i < 1000; i++ {
 		ip := fmt.Sprintf("192.168.1.%d", i%255)
 		recorder.RecordBlockedIP(ip, "test", "/", time.Hour)
@@ -67,7 +67,7 @@ func BenchmarkIPRecorderRealWorld(b *testing.B) {
 	b.Run("IsIPBlocked_Miss", func(b *testing.B) {
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
-				// 测试缓存未命中的场景
+				// Probar el escenario de fallo de caché
 				recorder.IsIPBlocked("10.0.0.1")
 			}
 		})
@@ -76,7 +76,7 @@ func BenchmarkIPRecorderRealWorld(b *testing.B) {
 	b.Run("IsIPBlocked_Hit", func(b *testing.B) {
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
-				// 测试缓存命中的场景
+				// Probar el escenario de acierto de caché
 				recorder.IsIPBlocked("192.168.1.1")
 			}
 		})
@@ -94,7 +94,7 @@ func BenchmarkIPRecorderRealWorld(b *testing.B) {
 	})
 }
 
-// BenchmarkAtomicOperations 测试原子操作的性能
+// BenchmarkAtomicOperations mide el rendimiento de operaciones atómicas
 func BenchmarkAtomicOperations(b *testing.B) {
 	var counter atomic.Uint64
 
@@ -123,7 +123,7 @@ func BenchmarkAtomicOperations(b *testing.B) {
 	})
 }
 
-// BenchmarkMetricsUpdate 模拟真实的指标更新场景
+// BenchmarkMetricsUpdate simula un escenario real de actualización de métricas
 func BenchmarkMetricsUpdate(b *testing.B) {
 	metrics := &flowcontroller.Metrics{}
 
@@ -138,7 +138,7 @@ func BenchmarkMetricsUpdate(b *testing.B) {
 	b.Run("MultipleMetricsUpdate", func(b *testing.B) {
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
-				// 模拟 IsIPBlocked 中的指标更新
+				// Simular la actualización de métricas en IsIPBlocked
 				metrics.CacheHits.Add(1)
 				metrics.CurrentBlocked.Store(100)
 			}
@@ -148,7 +148,7 @@ func BenchmarkMetricsUpdate(b *testing.B) {
 	b.Run("AllMetricsUpdate", func(b *testing.B) {
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
-				// 模拟完整的指标更新场景
+				// Simular un escenario completo de actualización de métricas
 				metrics.TotalBlocked.Add(1)
 				metrics.TotalExpired.Add(1)
 				metrics.CurrentBlocked.Store(100)
@@ -161,7 +161,7 @@ func BenchmarkMetricsUpdate(b *testing.B) {
 	})
 }
 
-// BenchmarkMemoryFootprint 测试内存占用
+// BenchmarkMemoryFootprint mide la huella de memoria
 func BenchmarkMemoryFootprint(b *testing.B) {
 	b.Run("WithMetrics", func(b *testing.B) {
 		var metrics []*flowcontroller.Metrics
@@ -173,7 +173,7 @@ func BenchmarkMemoryFootprint(b *testing.B) {
 		}
 
 		b.StopTimer()
-		// 防止编译器优化
+		// Evitar la optimización del compilador
 		_ = metrics
 	})
 
@@ -186,17 +186,17 @@ func BenchmarkMemoryFootprint(b *testing.B) {
 		}
 
 		b.StopTimer()
-		// 防止编译器优化
+		// Evitar la optimización del compilador
 		_ = counters
 	})
 }
 
-// BenchmarkCacheSimulation 模拟缓存命中率计算的性能开销
+// BenchmarkCacheSimulation simula el coste de cálculo de tasa de aciertos de caché
 func BenchmarkCacheSimulation(b *testing.B) {
 	metrics := &flowcontroller.Metrics{}
 
 	b.Run("CacheHitRateCalculation", func(b *testing.B) {
-		// 预先设置一些基础数据
+		// Preconfigurar algunos datos base
 		metrics.CacheHits.Store(1000)
 		metrics.CacheMisses.Store(100)
 
@@ -208,7 +208,7 @@ func BenchmarkCacheSimulation(b *testing.B) {
 				total := hits + misses
 				if total > 0 {
 					hitRate := float64(hits) / float64(total) * 100
-					_ = hitRate // 防止编译器优化
+					_ = hitRate // Evitar la optimización del compilador
 				}
 			}
 		})

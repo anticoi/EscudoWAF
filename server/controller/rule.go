@@ -6,18 +6,18 @@ import (
 	"errors"
 	"net/http"
 
-	pkgmodel "github.com/HUAHUAI23/RuiQi/pkg/model"
-	"github.com/HUAHUAI23/RuiQi/server/config"
-	"github.com/HUAHUAI23/RuiQi/server/dto"
-	"github.com/HUAHUAI23/RuiQi/server/model"
-	"github.com/HUAHUAI23/RuiQi/server/service"
-	"github.com/HUAHUAI23/RuiQi/server/utils/response"
+	pkgmodel "github.com/anticoi/EscudoWAF/pkg/model"
+	"github.com/anticoi/EscudoWAF/server/config"
+	"github.com/anticoi/EscudoWAF/server/dto"
+	"github.com/anticoi/EscudoWAF/server/model"
+	"github.com/anticoi/EscudoWAF/server/service"
+	"github.com/anticoi/EscudoWAF/server/utils/response"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-// MicroRuleController 微规则控制器接口
+// MicroRuleController interfaz del controlador de microrreglas
 type MicroRuleController interface {
 	CreateMicroRule(ctx *gin.Context)
 	GetMicroRules(ctx *gin.Context)
@@ -26,13 +26,13 @@ type MicroRuleController interface {
 	DeleteMicroRule(ctx *gin.Context)
 }
 
-// MicroRuleControllerImpl 微规则控制器实现
+// MicroRuleControllerImpl implementación del controlador de microrreglas
 type MicroRuleControllerImpl struct {
 	ruleService service.MicroRuleService
 	logger      zerolog.Logger
 }
 
-// NewMicroRuleController 创建微规则控制器
+// NewMicroRuleController crea el controlador de microrreglas
 func NewMicroRuleController(ruleService service.MicroRuleService) MicroRuleController {
 	logger := config.GetControllerLogger("microrule")
 	return &MicroRuleControllerImpl{
@@ -41,19 +41,19 @@ func NewMicroRuleController(ruleService service.MicroRuleService) MicroRuleContr
 	}
 }
 
-// BSONToJSON 将BSON数据转换为JSON
+// BSONToJSON convierte datos BSON a JSON
 func BSONToJSON(bsonData bson.Raw) (json.RawMessage, error) {
 	if len(bsonData) == 0 {
 		return nil, nil
 	}
 
-	// 将BSON解析为interface{}
+	// Convertir BSON a interface{}
 	var anyValue interface{}
 	if err := bson.Unmarshal(bsonData, &anyValue); err != nil {
 		return nil, err
 	}
 
-	// 将interface{}转换为JSON
+	// Convertir interface{} a JSON
 	jsonData, err := json.Marshal(anyValue)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func BSONToJSON(bsonData bson.Raw) (json.RawMessage, error) {
 	return jsonData, nil
 }
 
-// ConvertToResponse 将模型转换为DTO响应对象
+// ConvertToResponse convierte el modelo a un objeto de respuesta DTO
 func ConvertToResponse(rule *pkgmodel.MicroRule) (*dto.MicroRuleResponse, error) {
 	var jsonCondition json.RawMessage
 	var err error
@@ -84,120 +84,120 @@ func ConvertToResponse(rule *pkgmodel.MicroRule) (*dto.MicroRuleResponse, error)
 	}, nil
 }
 
-// CreateMicroRule 创建微规则
+// CreateMicroRule Crear microrregla
 //
-//	@Summary		创建微规则
-//	@Description	创建一个新的WAF微规则，用于匹配和过滤请求
-//	@Tags			规则管理
+//	@Summary		Crear microrregla
+//	@Description	Crear una nueva microrregla WAF para filtrar peticiones
+//	@Tags			Gestión de reglas
 //	@Accept			json
 //	@Produce		json
-//	@Param			rule	body	dto.MicroRuleCreateRequest	true	"微规则信息"
+//	@Param			rule	body	dto.MicroRuleCreateRequest	true	"Información de la microrregla"
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponse{data=dto.MicroRuleResponse}	"微规则创建成功"
-//	@Failure		400	{object}	model.ErrResponse									"请求参数错误"
-//	@Failure		401	{object}	model.ErrResponseDontShowError						"未授权访问"
-//	@Failure		403	{object}	model.ErrResponseDontShowError						"禁止访问"
-//	@Failure		409	{object}	model.ErrResponseDontShowError						"微规则名称已存在"
-//	@Failure		500	{object}	model.ErrResponseDontShowError						"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponse{data=dto.MicroRuleResponse}	"Microrregla creada con éxito"
+//	@Failure		400	{object}	model.ErrResponse									"Parámetros de la petición incorrectos"
+//	@Failure		401	{object}	model.ErrResponseDontShowError						"Acceso no autorizado"
+//	@Failure		403	{object}	model.ErrResponseDontShowError						"Acceso prohibido"
+//	@Failure		409	{object}	model.ErrResponseDontShowError						"El nombre de la microrregla ya existe"
+//	@Failure		500	{object}	model.ErrResponseDontShowError						"Error interno del servidor"
 //	@Router			/api/v1/micro-rules [post]
 func (c *MicroRuleControllerImpl) CreateMicroRule(ctx *gin.Context) {
 	var req dto.MicroRuleCreateRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		c.logger.Warn().Err(err).Msg("请求参数绑定失败")
+		c.logger.Warn().Err(err).Msg("Error al vincular los parámetros de la petición")
 		response.BadRequest(ctx, err, true)
 		return
 	}
 
-	c.logger.Info().Str("name", req.Name).Msg("创建微规则请求")
+	c.logger.Info().Str("name", req.Name).Msg("Petición de creación de microrregla")
 	rule, err := c.ruleService.CreateMicroRule(ctx, &req)
 	if err != nil {
 		if errors.Is(err, service.ErrMicroRuleNameExists) {
-			response.Error(ctx, model.NewAPIError(http.StatusConflict, "微规则名称已存在", err), false)
+			response.Error(ctx, model.NewAPIError(http.StatusConflict, "El nombre de la microrregla ya existe", err), false)
 			return
 		}
-		c.logger.Error().Err(err).Msg("创建微规则失败")
+		c.logger.Error().Err(err).Msg("Error al crear la microrregla")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	// 转换为响应DTO
+	// Convertir a DTO de respuesta
 	resp, err := ConvertToResponse(rule)
 	if err != nil {
-		c.logger.Error().Err(err).Msg("转换响应对象失败")
+		c.logger.Error().Err(err).Msg("Error al convertir el objeto de respuesta")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	c.logger.Info().Str("id", rule.ID.Hex()).Str("name", rule.Name).Msg("微规则创建成功")
-	response.Success(ctx, "微规则创建成功", resp)
+	c.logger.Info().Str("id", rule.ID.Hex()).Str("name", rule.Name).Msg("Microrregla creada con éxito")
+	response.Success(ctx, "Microrregla creada con éxito", resp)
 }
 
-// GetMicroRules 获取微规则列表
+// GetMicroRules Obtener lista de microrreglas
 //
-//	@Summary		获取微规则列表
-//	@Description	获取所有WAF微规则列表，支持分页
-//	@Tags			规则管理
+//	@Summary		Obtener lista de microrreglas
+//	@Description	Obtener todas las microrreglas del WAF, con paginación
+//	@Tags			Gestión de reglas
 //	@Produce		json
-//	@Param			page	query	int	false	"页码"	default(1)
-//	@Param			size	query	int	false	"每页数量"	default(10)
+//	@Param			page	query	int	false	"Número de página"	default(1)
+//	@Param			size	query	int	false	"Cantidad por página"	default(10)
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponse{data=dto.MicroRuleListResponse}	"获取微规则列表成功"
-//	@Failure		401	{object}	model.ErrResponseDontShowError							"未授权访问"
-//	@Failure		500	{object}	model.ErrResponseDontShowError							"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponse{data=dto.MicroRuleListResponse}	"Lista de microrreglas obtenida con éxito"
+//	@Failure		401	{object}	model.ErrResponseDontShowError							"Acceso no autorizado"
+//	@Failure		500	{object}	model.ErrResponseDontShowError							"Error interno del servidor"
 //	@Router			/api/v1/micro-rules [get]
 func (c *MicroRuleControllerImpl) GetMicroRules(ctx *gin.Context) {
 	page := ctx.DefaultQuery("page", "1")
 	size := ctx.DefaultQuery("size", "10")
 
-	c.logger.Info().Str("page", page).Str("size", size).Msg("获取微规则列表请求")
+	c.logger.Info().Str("page", page).Str("size", size).Msg("Petición de lista de microrreglas")
 	rules, total, err := c.ruleService.GetMicroRules(ctx, page, size)
 	if err != nil {
-		c.logger.Error().Err(err).Msg("获取微规则列表失败")
+		c.logger.Error().Err(err).Msg("Error al obtener la lista de microrreglas")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	// 转换响应对象
+	// Convertir el objeto de respuesta
 	responses := make([]*dto.MicroRuleResponse, len(rules))
 	for i, rule := range rules {
 		resp, err := ConvertToResponse(&rule)
 		if err != nil {
-			c.logger.Error().Err(err).Msg("转换响应对象失败")
+			c.logger.Error().Err(err).Msg("Error al convertir el objeto de respuesta")
 			response.InternalServerError(ctx, err, false)
 			return
 		}
 		responses[i] = resp
 	}
 
-	c.logger.Info().Int64("total", total).Msg("获取微规则列表成功")
-	response.Success(ctx, "获取微规则列表成功", gin.H{
+	c.logger.Info().Int64("total", total).Msg("Lista de microrreglas obtenida con éxito")
+	response.Success(ctx, "Lista de microrreglas obtenida con éxito", gin.H{
 		"total": total,
 		"items": responses,
 	})
 }
 
-// GetMicroRuleByID 获取单个微规则
+// GetMicroRuleByID Obtener una microrregla
 //
-//	@Summary		获取单个微规则
-//	@Description	根据ID获取微规则详情
-//	@Tags			规则管理
+//	@Summary		Obtener una microrregla
+//	@Description	Obtener detalles de la microrregla por ID
+//	@Tags			Gestión de reglas
 //	@Produce		json
-//	@Param			id	path	string	true	"微规则ID"
+//	@Param			id	path	string	true	"ID de la microrregla"
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponse{data=dto.MicroRuleResponse}	"获取微规则详情成功"
-//	@Failure		400	{object}	model.ErrResponse									"无效的ID格式"
-//	@Failure		401	{object}	model.ErrResponseDontShowError						"未授权访问"
-//	@Failure		404	{object}	model.ErrResponseDontShowError						"微规则不存在"
-//	@Failure		500	{object}	model.ErrResponseDontShowError						"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponse{data=dto.MicroRuleResponse}	"Detalles de la microrregla obtenidos con éxito"
+//	@Failure		400	{object}	model.ErrResponse									"Formato de ID no válido"
+//	@Failure		401	{object}	model.ErrResponseDontShowError						"Acceso no autorizado"
+//	@Failure		404	{object}	model.ErrResponseDontShowError						"La microrregla no existe"
+//	@Failure		500	{object}	model.ErrResponseDontShowError						"Error interno del servidor"
 //	@Router			/api/v1/micro-rules/{id} [get]
 func (c *MicroRuleControllerImpl) GetMicroRuleByID(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	c.logger.Info().Str("id", id).Msg("获取微规则详情请求")
+	c.logger.Info().Str("id", id).Msg("Petición de detalles de la microrregla")
 
 	objectID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
-		c.logger.Error().Err(err).Str("id", id).Msg("无效的ID格式")
+		c.logger.Error().Err(err).Str("id", id).Msg("Formato de ID no válido")
 		response.BadRequest(ctx, err, true)
 		return
 	}
@@ -207,54 +207,54 @@ func (c *MicroRuleControllerImpl) GetMicroRuleByID(ctx *gin.Context) {
 			response.NotFound(ctx, err)
 			return
 		}
-		c.logger.Error().Err(err).Str("id", id).Msg("获取微规则详情失败")
+		c.logger.Error().Err(err).Str("id", id).Msg("Error al obtener los detalles de la microrregla")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	// 转换为响应DTO
+	// Convertir a DTO de respuesta
 	resp, err := ConvertToResponse(rule)
 	if err != nil {
-		c.logger.Error().Err(err).Msg("转换响应对象失败")
+		c.logger.Error().Err(err).Msg("Error al convertir el objeto de respuesta")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	c.logger.Info().Str("id", id).Str("name", rule.Name).Msg("获取微规则详情成功")
-	response.Success(ctx, "获取微规则详情成功", resp)
+	c.logger.Info().Str("id", id).Str("name", rule.Name).Msg("Detalles de la microrregla obtenidos con éxito")
+	response.Success(ctx, "Detalles de la microrregla obtenidos con éxito", resp)
 }
 
-// UpdateMicroRule 更新微规则
+// UpdateMicroRule Actualizar microrregla
 //
-//	@Summary		更新微规则
-//	@Description	更新指定微规则的信息，系统默认规则不允许修改
-//	@Tags			规则管理
+//	@Summary		Actualizar microrregla
+//	@Description	Actualizar la microrregla especificada; las reglas por defecto del sistema no se pueden modificar
+//	@Tags			Gestión de reglas
 //	@Accept			json
 //	@Produce		json
-//	@Param			id		path	string						true	"微规则ID"
-//	@Param			rule	body	dto.MicroRuleUpdateRequest	true	"微规则更新信息"
+//	@Param			id		path	string						true	"ID de la microrregla"
+//	@Param			rule	body	dto.MicroRuleUpdateRequest	true	"Información de actualización de la microrregla"
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponse{data=dto.MicroRuleResponse}	"微规则更新成功"
-//	@Failure		400	{object}	model.ErrResponse									"请求参数错误"
-//	@Failure		401	{object}	model.ErrResponseDontShowError						"未授权访问"
-//	@Failure		403	{object}	model.ErrResponseDontShowError						"禁止修改系统默认规则"
-//	@Failure		404	{object}	model.ErrResponseDontShowError						"微规则不存在"
-//	@Failure		409	{object}	model.ErrResponseDontShowError						"微规则名称已存在"
-//	@Failure		500	{object}	model.ErrResponseDontShowError						"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponse{data=dto.MicroRuleResponse}	"Microrregla actualizada con éxito"
+//	@Failure		400	{object}	model.ErrResponse									"Parámetros de la petición incorrectos"
+//	@Failure		401	{object}	model.ErrResponseDontShowError						"Acceso no autorizado"
+//	@Failure		403	{object}	model.ErrResponseDontShowError						"Prohibido modificar las reglas por defecto del sistema"
+//	@Failure		404	{object}	model.ErrResponseDontShowError						"La microrregla no existe"
+//	@Failure		409	{object}	model.ErrResponseDontShowError						"El nombre de la microrregla ya existe"
+//	@Failure		500	{object}	model.ErrResponseDontShowError						"Error interno del servidor"
 //	@Router			/api/v1/micro-rules/{id} [put]
 func (c *MicroRuleControllerImpl) UpdateMicroRule(ctx *gin.Context) {
 	id := ctx.Param("id")
 	var req dto.MicroRuleUpdateRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		c.logger.Warn().Err(err).Str("id", id).Msg("请求参数绑定失败")
+		c.logger.Warn().Err(err).Str("id", id).Msg("Error al vincular los parámetros de la petición")
 		response.BadRequest(ctx, err, true)
 		return
 	}
 
-	c.logger.Info().Str("id", id).Msg("更新微规则请求")
+	c.logger.Info().Str("id", id).Msg("Petición de actualización de microrregla")
 	objectID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
-		c.logger.Error().Err(err).Str("id", id).Msg("无效的ID格式")
+		c.logger.Error().Err(err).Str("id", id).Msg("Formato de ID no válido")
 		response.BadRequest(ctx, err, true)
 		return
 	}
@@ -264,51 +264,51 @@ func (c *MicroRuleControllerImpl) UpdateMicroRule(ctx *gin.Context) {
 			response.NotFound(ctx, err)
 			return
 		} else if errors.Is(err, service.ErrMicroRuleNameExists) {
-			response.Error(ctx, model.NewAPIError(http.StatusConflict, "微规则名称已存在", err), false)
+			response.Error(ctx, model.NewAPIError(http.StatusConflict, "El nombre de la microrregla ya existe", err), false)
 			return
 		} else if errors.Is(err, service.ErrSystemRuleNoMod) {
-			response.Error(ctx, model.NewAPIError(http.StatusForbidden, "系统默认规则不允许修改", err), false)
+			response.Error(ctx, model.NewAPIError(http.StatusForbidden, "No se permite modificar las reglas por defecto del sistema", err), false)
 			return
 		}
-		c.logger.Error().Err(err).Str("id", id).Msg("更新微规则失败")
+		c.logger.Error().Err(err).Str("id", id).Msg("Error al actualizar la microrregla")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	// 转换为响应DTO
+	// Convertir a DTO de respuesta
 	resp, err := ConvertToResponse(rule)
 	if err != nil {
-		c.logger.Error().Err(err).Msg("转换响应对象失败")
+		c.logger.Error().Err(err).Msg("Error al convertir el objeto de respuesta")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	c.logger.Info().Str("id", id).Str("name", rule.Name).Msg("微规则更新成功")
-	response.Success(ctx, "微规则更新成功", resp)
+	c.logger.Info().Str("id", id).Str("name", rule.Name).Msg("Microrregla actualizada con éxito")
+	response.Success(ctx, "Microrregla actualizada con éxito", resp)
 }
 
-// DeleteMicroRule 删除微规则
+// DeleteMicroRule Eliminar microrregla
 //
-//	@Summary		删除微规则
-//	@Description	删除指定的微规则，系统默认规则不允许删除
-//	@Tags			规则管理
+//	@Summary		Eliminar microrregla
+//	@Description	Eliminar la microrregla especificada; las reglas por defecto del sistema no se pueden eliminar
+//	@Tags			Gestión de reglas
 //	@Produce		json
-//	@Param			id	path	string	true	"微规则ID"
+//	@Param			id	path	string	true	"ID de la microrregla"
 //	@Security		BearerAuth
-//	@Success		200	{object}	model.SuccessResponseNoData		"微规则删除成功"
-//	@Failure		400	{object}	model.ErrResponse				"无效的ID格式"
-//	@Failure		401	{object}	model.ErrResponseDontShowError	"未授权访问"
-//	@Failure		403	{object}	model.ErrResponseDontShowError	"禁止删除系统默认规则"
-//	@Failure		404	{object}	model.ErrResponseDontShowError	"微规则不存在"
-//	@Failure		500	{object}	model.ErrResponseDontShowError	"服务器内部错误"
+//	@Success		200	{object}	model.SuccessResponseNoData		"Microrregla eliminada con éxito"
+//	@Failure		400	{object}	model.ErrResponse				"Formato de ID no válido"
+//	@Failure		401	{object}	model.ErrResponseDontShowError	"Acceso no autorizado"
+//	@Failure		403	{object}	model.ErrResponseDontShowError	"Prohibido eliminar las reglas por defecto del sistema"
+//	@Failure		404	{object}	model.ErrResponseDontShowError	"La microrregla no existe"
+//	@Failure		500	{object}	model.ErrResponseDontShowError	"Error interno del servidor"
 //	@Router			/api/v1/micro-rules/{id} [delete]
 func (c *MicroRuleControllerImpl) DeleteMicroRule(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	c.logger.Info().Str("id", id).Msg("删除微规则请求")
+	c.logger.Info().Str("id", id).Msg("Petición de eliminación de microrregla")
 	objectID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
-		c.logger.Error().Err(err).Str("id", id).Msg("无效的ID格式")
+		c.logger.Error().Err(err).Str("id", id).Msg("Formato de ID no válido")
 		response.BadRequest(ctx, err, true)
 		return
 	}
@@ -318,14 +318,14 @@ func (c *MicroRuleControllerImpl) DeleteMicroRule(ctx *gin.Context) {
 			response.NotFound(ctx, err)
 			return
 		} else if errors.Is(err, service.ErrSystemRuleNoDelete) {
-			response.Error(ctx, model.NewAPIError(http.StatusForbidden, "系统默认规则不允许删除", err), false)
+			response.Error(ctx, model.NewAPIError(http.StatusForbidden, "No se permite eliminar las reglas por defecto del sistema", err), false)
 			return
 		}
-		c.logger.Error().Err(err).Str("id", id).Msg("删除微规则失败")
+		c.logger.Error().Err(err).Str("id", id).Msg("Error al eliminar la microrregla")
 		response.InternalServerError(ctx, err, false)
 		return
 	}
 
-	c.logger.Info().Str("id", id).Msg("微规则删除成功")
-	response.Success(ctx, "微规则删除成功", nil)
+	c.logger.Info().Str("id", id).Msg("Microrregla eliminada con éxito")
+	response.Success(ctx, "Microrregla eliminada con éxito", nil)
 }

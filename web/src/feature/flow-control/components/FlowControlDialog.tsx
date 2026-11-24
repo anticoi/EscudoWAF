@@ -36,10 +36,10 @@ export function FlowControlDialog({
                                 <motion.div {...dialogHeaderAnimation}>
                                     <DialogHeader className="p-6 pb-3">
                                         <DialogTitle className="text-xl">
-                                            {t('flowControl.dialog.title', '流量控制配置')}
+                                            {t('flowControl.dialog.title', 'Configuración de control de flujo')}
                                         </DialogTitle>
                                         <DialogDescription className="dark:text-shadow-glow-white">
-                                            {t('flowControl.dialog.description', '配置基于IP的访问频率、攻击频率和错误频率限制，保护系统免受恶意攻击')}
+                                            {t('flowControl.dialog.description', 'Configurar límites de frecuencia de acceso, ataques y errores por IP para proteger el sistema de ataques maliciosos')}
                                         </DialogDescription>
                                     </DialogHeader>
                                 </motion.div>

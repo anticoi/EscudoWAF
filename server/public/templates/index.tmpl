@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>RuiQi WAF</title>
+    <title>EscudoWAF</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
@@ -22,7 +22,7 @@
         overflow: hidden;
       }
 
-      /* 渐变背景 - 与web主页一致 */
+      /* Fondo degradado - consistente con la página principal */
       .background {
         position: absolute;
         inset: 0;
@@ -35,7 +35,7 @@
         background-size: 200% 200%;
       }
 
-      /* 装饰性模糊元素 */
+      /* Elementos decorativos difuminados */
       .blur-elements {
         position: absolute;
         inset: 0;
@@ -271,10 +271,10 @@
     
     <div class="container">
       <div class="status-icon">✅</div>
-      <h1>RuiQi WAF is Running!</h1>
+      <h1>EscudoWAF is Running!</h1>
 
       <div class="redirect-info">
-        <p>Web功能已禁用，正在跳转到项目主页：</p>
+        <p>La función web está deshabilitada, redirigiendo a la página del proyecto:</p>
         <a href="{{.URL}}" class="url-display" target="_self">{{.URL}}</a>
       </div>
 
@@ -284,7 +284,7 @@
       </div>
 
       <div>
-        <a href="{{.URL}}" class="btn" target="_self">立即访问</a>
+        <a href="{{.URL}}" class="btn" target="_self">Visitar ahora</a>
       </div>
     </div>
 
@@ -314,7 +314,7 @@
 
         if (countdown <= 0) {
           clearInterval(timer);
-          countdownElement.textContent = "正在跳转...";
+          countdownElement.textContent = "Redirigiendo...";
           progressBar.style.width = "0%";
 
           setTimeout(() => {
