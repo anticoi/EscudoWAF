@@ -3,4 +3,6 @@ credentials-file: /etc/cloudflared/creds.json
 ingress:
   - hostname: gps.anticoi.cl
     service: http://escudo:8080
+  - hostname: waf.anticoi.cl
+    service: http://escudo:2333
   - service: http_status:404
