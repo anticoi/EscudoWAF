@@ -330,7 +330,6 @@
 .dark .badge-neon {
     border: 1px solid rgba(var(--primary-rgb), 0.5);
     box-shadow: 0 0 5px rgba(var(--primary-rgb), 0.3);
-    text-shadow: 0 0 3px rgba(var(--primary-rgb), 0.5);
 }
 
 /* Efecto neón del interruptor en modo oscuro */
@@ -356,16 +355,6 @@
 
 /* Componentes neón en modo oscuro */
 .dark {
-    /* Efecto neón del título */
-    h1,
-    h2,
-    h3,
-    h4,
-    p,
-    span {
-        @apply text-shadow-glow-white;
-    }
-
     /* Borde neón de tarjetas */
     .card-neon {
         @apply border-neon-pulse;
@@ -382,15 +371,9 @@
         transform: translateY(-2px);
     }
 
-    /* Efecto neón del icono */
-    .icon-neon {
-        filter: drop-shadow(0 0 3px rgba(var(--primary-rgb), 0.5))
-            drop-shadow(0 0 5px rgba(var(--primary-rgb), 0.3));
-    }
-
     /* Efecto neón de texto de énfasis */
     .text-emphasis {
-        @apply text-neon-flicker;
+        font-weight: 600;
     }
 
     /* Borde neón del panel */

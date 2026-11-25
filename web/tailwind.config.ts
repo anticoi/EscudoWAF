@@ -156,20 +156,18 @@ const config = {
                 },
                 'neon-pulse': {
                     '0%': {
-                        textShadow: '0 0 7px rgba(var(--primary-rgb), 0.6), 0 0 10px rgba(var(--primary-rgb), 0.4), 0 0 15px rgba(var(--primary-rgb), 0.2)'
+                        opacity: '1'
                     },
                     '100%': {
-                        textShadow: '0 0 10px rgba(var(--primary-rgb), 0.9), 0 0 20px rgba(var(--primary-rgb), 0.6), 0 0 30px rgba(var(--primary-rgb), 0.3)'
+                        opacity: '0.95'
                     }
                 },
                 'text-flicker': {
                     '0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100%': {
-                        opacity: '1',
-                        textShadow: '0 0 4px rgba(var(--primary-rgb), 0.5), 0 0 11px rgba(var(--primary-rgb), 0.3), 0 0 19px rgba(var(--primary-rgb), 0.2)'
+                        opacity: '1'
                     },
                     '20%, 21.999%, 63%, 63.999%, 65%, 69.999%': {
-                        opacity: '0.9',
-                        textShadow: '0 0 4px rgba(var(--primary-rgb), 0.4), 0 0 10px rgba(var(--primary-rgb), 0.1)'
+                        opacity: '0.95'
                     }
                 },
                 'border-neon-flow': {
@@ -204,27 +202,27 @@ const config = {
         tailwindcssAnimate,
         function ({ addUtilities }) {
             const newUtilities = {
-                // Texto neón
+                // Texto neón (desactivado: sombras eliminadas para mejorar la legibilidad)
                 '.text-shadow-glow-purple': {
-                    textShadow: '0 0 8px rgba(232,223,255,0.8), 0 0 12px rgba(232,223,255,0.4)',
+                    textShadow: 'none',
                 },
                 '.text-shadow-glow-blue': {
-                    textShadow: '0 0 8px rgba(142,212,255,0.8), 0 0 12px rgba(142,212,255,0.4)',
+                    textShadow: 'none',
                 },
                 '.text-shadow-glow-white': {
-                    textShadow: '0 0 8px rgba(255,255,255,0.8), 0 0 12px rgba(255,255,255,0.4)',
+                    textShadow: 'none',
                 },
                 '.text-shadow-primary': {
-                    textShadow: '0 0 6px rgba(var(--primary-rgb), 0.7), 0 0 12px rgba(var(--primary-rgb), 0.4), 0 0 18px rgba(var(--primary-rgb), 0.2)',
+                    textShadow: 'none',
                 },
                 '.text-shadow-primary-sm': {
-                    textShadow: '0 0 4px rgba(var(--primary-rgb), 0.5), 0 0 8px rgba(var(--primary-rgb), 0.25)',
+                    textShadow: 'none',
                 },
                 '.text-shadow-primary-bold': {
-                    textShadow: '0 0 3px rgba(var(--primary-rgb), 0.9), 0 0 7px rgba(var(--primary-rgb), 0.6), 0 0 12px rgba(var(--primary-rgb), 0.3)',
+                    textShadow: 'none',
                 },
                 '.text-shadow-primary-subtle': {
-                    textShadow: '0 0 3px rgba(var(--primary-rgb), 0.4)',
+                    textShadow: 'none',
                 },
                 '.text-shadow-none': {
                     textShadow: 'none',
