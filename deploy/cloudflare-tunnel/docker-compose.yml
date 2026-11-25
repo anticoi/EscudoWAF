@@ -58,9 +58,13 @@ services:
     image: cloudflare/cloudflared:latest
     container_name: escudo-cloudflared
     restart: always
-    command: tunnel --no-autoupdate run
-    environment:
-      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?Define TUNNEL_TOKEN en .env - lo da Cloudflare al crear el túnel}
+    # Túnel gestionado localmente: la config de ingress vive en cloudflared/config.yml
+    # Alternativa: túnel gestionado por dashboard → command: tunnel --no-autoupdate run
+    #              y variable TUNNEL_TOKEN en .env
+    command: tunnel --config /etc/cloudflared/config.yml --no-autoupdate run
+    volumes:
+      - ./cloudflared/config.yml:/etc/cloudflared/config.yml:ro
+      - ./cloudflared/creds.json:/etc/cloudflared/creds.json:ro
     depends_on:
       - escudo
     networks:

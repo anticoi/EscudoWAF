@@ -1,0 +1,6 @@
+tunnel: af3bba6f-2106-4083-aabf-01c7c45f43fe
+credentials-file: /etc/cloudflared/creds.json
+ingress:
+  - hostname: gps.anticoi.cl
+    service: http://escudo:8080
+  - service: http_status:404
