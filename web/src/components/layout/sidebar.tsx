@@ -114,7 +114,6 @@ export function Sidebar({ displayConfig = {} }: SidebarProps) {
                 </div>
                 <div className="font-bold text-xl mt-2">
                     <span className="text-[#E8DFFF] dark:text-[#F0EBFF] text-shadow-glow-purple transition-all duration-300">EscudoWAF</span>
-                    <span className="text-[#8ED4FF] dark:text-[#A5DEFF] text-shadow-glow-blue transition-all duration-300"> WAF</span>
                 </div>
             </div>
 
