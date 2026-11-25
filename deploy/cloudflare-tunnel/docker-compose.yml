@@ -1,0 +1,75 @@
+# EscudoWAF detrás de Cloudflare Tunnel
+#
+# Arquitectura:
+#   Internet → Cloudflare Edge (TLS gratis) → cloudflared → HAProxy:8080 → Coraza → tu app
+#
+# Ventajas: no abre puertos en el router, no necesita IP fija, TLS gestionado por
+# Cloudflare y todo el tráfico sigue pasando por el WAF antes de llegar al backend.
+#
+# Uso:
+#   cp .env.example .env   # rellena los valores
+#   docker compose up -d
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: escudo-mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:?Define MONGO_PASSWORD en .env}
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - waf-network
+    healthcheck:
+      test: mongosh --quiet --eval "db.adminCommand('ping').ok" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  escudo:
+    image: escudowaf-escudo:latest
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    container_name: escudo-waf
+    restart: always
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      DB_URI: mongodb://root:${MONGO_PASSWORD:?}@mongodb:27017
+      JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env}
+      IS_PRODUCTION: "true"
+      VITE_API_BASE_URL: http://localhost:2333/api/v1
+    ports:
+      # Panel solo en localhost: NO lo expongas públicamente sin autenticación extra
+      - "127.0.0.1:2333:2333"
+      # Opcional: stats de HAProxy solo local
+      - "127.0.0.1:8404:8404"
+    volumes:
+      - escudo_data:/app/data
+    networks:
+      - waf-network
+    # El puerto 8080 queda accesible solo dentro de waf-network;
+    # cloudflared lo usa como origen (http://escudo:8080)
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: escudo-cloudflared
+    restart: always
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?Define TUNNEL_TOKEN en .env - lo da Cloudflare al crear el túnel}
+    depends_on:
+      - escudo
+    networks:
+      - waf-network
+
+volumes:
+  mongodb_data:
+  escudo_data:
+
+networks:
+  waf-network:
+    driver: bridge
