@@ -47,6 +47,10 @@ services:
       - "127.0.0.1:2333:2333"
       # Opcional: stats de HAProxy solo local
       - "127.0.0.1:8404:8404"
+      # Puerto de escucha del WAF para pruebas locales (mientras el túnel propaga)
+      - "127.0.0.1:9080:8080"
+      # :80 permite probar http://gps.anticoi.cl sin puerto en la URL
+      - "127.0.0.1:80:8080"
     volumes:
       - escudo_data:/app/data
     networks:

@@ -201,7 +201,7 @@ func (s *HAProxyServiceImpl) AddSiteConfig(site model.Site) error {
 		aclIndex := len(aclList)
 		acl_http := &models.ACL{
 			ACLName:   fmt.Sprintf("host_%s", getDashDomain(site.Domain)), // Usar el campo ACLName
-			Criterion: "hdr(host) -i -m end",
+			Criterion: "hdr(host),field(1,\":\") -i -m end",                 // ignorar el puerto del header Host
 			Value:     site.Domain, // Usar el campo Value
 			// Criterion: "hdr(host) -i",                                     // usar el campo Criterion
 			// Value:     site.Domain,                                        // usar el campo Value
@@ -340,7 +340,7 @@ func (s *HAProxyServiceImpl) AddSiteConfig(site model.Site) error {
 		// add ack and rule backend
 		acl_https := &models.ACL{
 			ACLName:   fmt.Sprintf("host_%s", getDashDomain(site.Domain)), // Usar el campo ACLName
-			Criterion: "hdr(host) -i -m end",                              // Modificar el campo Criterion para usar -m end
+			Criterion: "hdr(host),field(1,\":\") -i -m end",                 // ignorar el puerto del header Host
 			Value:     site.Domain,                                        // Añadir un punto delante del dominio
 			// Criterion: "hdr(host) -i",                                     // usar el campo Criterion
 			// Value:     site.Domain,                                        // usar el campo Value
